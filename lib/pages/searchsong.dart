@@ -53,6 +53,28 @@ class _SearchSongState extends State<SearchSong> {
                 ],
               ),
             ),
+            SongTileView(
+              image: "assets/images/sampleImage.jfif",
+              songName: "Bohemian Rapsody",
+              songDesc: "Queen",
+            ),
+            SongTileView(
+              image: "assets/images/sampleImage.jfif",
+              songName: "Bohemian Rapsody",
+              songDesc: "Queen",
+            ),SongTileView(
+              image: "assets/images/sampleImage.jfif",
+              songName: "Bohemian Rapsody",
+              songDesc: "Queen",
+            ),SongTileView(
+              image: "assets/images/sampleImage.jfif",
+              songName: "Bohemian Rapsody",
+              songDesc: "Queen",
+            ),SongTileView(
+              image: "assets/images/sampleImage.jfif",
+              songName: "Bohemian Rapsody",
+              songDesc: "Queen",
+            ),
           ],
         ),
       ),

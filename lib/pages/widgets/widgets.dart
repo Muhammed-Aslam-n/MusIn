@@ -1,7 +1,14 @@
-import 'package:assets_audio_player/assets_audio_player.dart';
+import 'package:assets_audio_player/assets_audio_player.dart' as aap;
+import 'package:fluttericon/typicons_icons.dart';
+import 'package:marquee/marquee.dart';
+import 'package:percent_indicator/percent_indicator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttericon/entypo_icons.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:musin/database/database.dart';
+import 'package:musin/main.dart';
 import 'package:musin/materials/colors.dart';
 import 'package:musin/pages/home.dart';
 import 'package:fluttericon/font_awesome_icons.dart';
@@ -11,6 +18,7 @@ import 'package:musin/provider/provider_class.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/src/provider.dart';
+import 'package:sleek_circular_slider/sleek_circular_slider.dart';
 import '../settings.dart';
 import '../songplayingpage.dart';
 import 'package:path_provider/path_provider.dart';
@@ -121,7 +129,7 @@ class CommonHeaders extends StatelessWidget {
       height: MediaQuery.of(context).size.height * 0.13,
       decoration: BoxDecoration(
           color: HexColor("#fff"),
-          borderRadius: BorderRadius.only(
+          borderRadius: const BorderRadius.only(
               bottomLeft: Radius.circular(24),
               bottomRight: Radius.circular(24))),
       child: Padding(
@@ -190,21 +198,19 @@ class _SongTileViewState extends State<SongTileView> {
   }
 }
 
+// Cunstructor Based Play and Pause
+
 // class CommonMiniPlayer extends StatefulWidget {
 //   bool isSelected;
 //   final songName, artistName, image, path, type, duration;
 //
-//   CommonMiniPlayer(
-//       {Key? key,
-//       this.isSelected = true,
-//       this.songName,
-//       this.artistName,
-//       this.image,
-//       this.path,
-//       this.duration,
-//       this.type})
-//       : super(key: key);
-//
+//   CommonMiniPlayer({this.isSelected = true,
+//     this.songName,
+//     this.artistName,
+//     this.image,
+//     this.path,
+//     this.duration,
+//     this.type});
 //   @override
 //   State<CommonMiniPlayer> createState() => _CommonMiniPlayerState();
 // }
@@ -219,7 +225,10 @@ class _SongTileViewState extends State<SongTileView> {
 //     player = AssetsAudioPlayer();
 //     super.initState();
 //   }
+//
 // //-----------------------------------------------
+//
+//
 //   playOrpause() async {
 //     if (playOrPaused==false) {
 //        await playSong(widget.path);
@@ -233,10 +242,10 @@ class _SongTileViewState extends State<SongTileView> {
 //       setState(() {});
 //     }
 //   }
-//   playSong(link){
+//   playSong(link)async{
 //     try {
-//       player.open(
-//         Audio(link),
+//       await player.open(
+//         Audio(link),autoStart: true,
 //         showNotification: true,
 //       );
 //       getDuration();
@@ -252,8 +261,6 @@ class _SongTileViewState extends State<SongTileView> {
 //   //------------------------------------------------------------
 //   Duration? currentPosition = Duration(seconds: 0);
 //   Duration? dur=Duration(seconds: 0);
-//
-//
 //
 //   totalDuration()async{
 //    player.current.listen((event) {
@@ -297,7 +304,7 @@ class _SongTileViewState extends State<SongTileView> {
 //     setState(() {
 //     });
 //   }
-
+//
 //   finishedOrNot(){
 //     player.playlistAudioFinished.listen((event) {
 //       playOrPaused = false;
@@ -822,7 +829,8 @@ class _AddtoPlaylistSongListState extends State<AddtoPlaylistSongList> {
   }
 }
 
-// Provider Integrated Working Player
+// Provider Integrated Working Player database
+
 class CommonMiniPlayer extends StatefulWidget {
   CommonMiniPlayer({Key? key, this.isSelected = true}) : super(key: key);
   bool isSelected = true;
@@ -834,100 +842,111 @@ class CommonMiniPlayer extends StatefulWidget {
 }
 
 class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
-  bool isIconChange = true;
-  final AssetsAudioPlayer _player = AssetsAudioPlayer();
+  Box<SongDetailsList>? songDetailsBox;
 
   @override
   void initState() {
+    songDetailsBox = Hive.box<SongDetailsList>(songDetailListBoxName);
     super.initState();
   }
-
-
 
   @override
   Widget build(BuildContext context) {
     return Consumer<PlayerCurrespondingItems>(
-
-      builder: (context, songDetailsProvider, child) => Offstage(
+        builder: (context, songDetailsProvider, child) {
+      return Offstage(
         offstage: songDetailsProvider.isSelectedOrNot,
         child: Miniplayer(
           maxHeight: MediaQuery.of(context).size.height,
           minHeight: 80,
           builder: (height, percentage) {
             if (height <= 80) {
-              return Row(
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: ListTile(
-                      tileColor: Colors.white38,
-                      isThreeLine: true,
-                      leading:
-                          // QueryArtworkWidget(
-                          //   id: songDetailsProvider.image??0,
-                          //   type: ArtworkType.AUDIO,
-                          //   nullArtworkWidget:
-                          //   Image.asset("assets/images/defaultImage.png"),
-                          //   // artworkWidth: 200,
-                          // ),
-                          Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          image: DecorationImage(
-                            image: ExactAssetImage(
-                              songDetailsProvider.image ?? '',
+              return ValueListenableBuilder(
+                valueListenable: songDetailsBox!.listenable(),
+                builder: (context, Box<SongDetailsList> songFetcher, _) {
+                  var keys = songFetcher.keys.cast<int>().toList();
+
+                  songDetailsProvider.currentSongKey =
+                      songDetailsProvider.selectedSongKey;
+
+                  var songData =
+                      songFetcher.get(songDetailsProvider.currentSongKey);
+
+                  if (songFetcher.isEmpty) {
+                    return const Center(
+                      child: Text("No Data Available"),
+                    );
+                  } else {
+                    return Row(
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: ListTile(
+                            tileColor: Colors.white38,
+                            isThreeLine: true,
+                            leading: QueryArtworkWidget(
+                              id: songData!.songId,
+                              type: ArtworkType.AUDIO,
+                              nullArtworkWidget:
+                                  Image.asset("assets/images/defaultImage.png"),
+                              // artworkWidth: 200,
                             ),
-                            fit: BoxFit.cover,
+                            title:  commonMarquees(
+                                text: songData.songName,
+                                hPadding: 0.0,
+                                size: 13.0,
+                                height: 25.0
+                            ),
+                            subtitle: commonText(
+                                text: songData.artistName ?? "", size: 11,),
                           ),
                         ),
-                      ),
-                      title: commonText(
-                          text: songDetailsProvider.songName ?? "", size: 13),
-                      subtitle: commonText(
-                          text: songDetailsProvider.artistName ?? "", size: 11),
-                    ),
-                  ),
-                  Expanded(
-                      flex: 1,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: IconButton(
-                              onPressed: () {
-                                debugPrint("Previous Icon Pressed");
-                              },
-                              icon: const Icon(FontAwesome.left_dir),
-                            ),
+                        Expanded(
+                          flex: 1,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: IconButton(
+                                  onPressed: () {
+                                    debugPrint("Previous Icon Clicked");
+                                    songDetailsProvider.prev();
+                                  },
+                                  icon: const Icon(FontAwesome.left_dir),
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: () {
+                                  songDetailsProvider.playOrpause();
+                                },
+                                icon: songDetailsProvider.isIconChanged
+                                    ? const Icon(
+                                        Icons.pause,
+                                        size: 32,
+                                      )
+                                    : const Icon(
+                                        Icons.play_arrow,
+                                        size: 32,
+                                      ),
+                              ),
+                              IconButton(
+                                onPressed: () {
+                                  debugPrint("Next Icon Pressed");
+                                  songDetailsProvider.next();
+                                },
+                                icon: const Icon(FontAwesome.right_dir),
+                              ),
+                            ],
                           ),
-                          IconButton(
-                            onPressed: () {
-                              songDetailsProvider.changeIcon();
-                              },
-                            icon: songDetailsProvider.isIconChanged
-                                ? const Icon(
-                                    Icons.pause,
-                                    size: 32,
-                                  )
-                                : const Icon(
-                                    Icons.play_arrow,
-                                    size: 32,
-                                  ),
-                          ),
-                          IconButton(
-                              onPressed: () {
-                                debugPrint("Next Icon Pressed");
-                              },
-                              icon: const Icon(FontAwesome.right_dir),),
-                        ],
-                      ))
-                ],
+                        ),
+                      ],
+                    );
+                  }
+                },
               );
             } else {
               // return SongPlayingPage();
-              bool? isFavourite = false, isLoop = false, isShuffle = false, isAdded = false;
+              bool? isFavourite = false, isShuffle = false, isAdded = false;
               return Consumer<PlayerCurrespondingItems>(
                 builder: (_, setSongDetails, child) => Container(
                   margin: const EdgeInsets.only(top: 20),
@@ -936,12 +955,13 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                   decoration: const BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(24), topRight: Radius.circular(24))),
+                          topLeft: Radius.circular(24),
+                          topRight: Radius.circular(24))),
                   child: ListView(
                     children: [
                       sizedh2,
                       Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 30),
+                          padding: const EdgeInsets.symmetric(horizontal: 30),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -951,26 +971,29 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                                   IconButton(
                                     onPressed: () {
                                       isFavourite = !isFavourite!;
-                                      showFavouriteSnackBar(context,isFavourite);
+                                      showFavouriteSnackBar(
+                                          context, isFavourite);
                                       setState(() {});
                                     },
                                     icon: const Icon(CupertinoIcons.heart),
-                                    color: isFavourite! ? Colors.red : Colors.black87,
+                                    color: isFavourite!
+                                        ? Colors.red
+                                        : Colors.black87,
                                   ),
                                   IconButton(
                                       onPressed: () {
                                         isAdded = !isAdded!;
-                                        showPlaylistSnackBar(context,isAdded);
+                                        showPlaylistSnackBar(context, isAdded);
                                         setState(() {});
                                       },
                                       icon: isAdded!
                                           ? const Icon(
-                                        CupertinoIcons.add,
-                                      )
+                                              CupertinoIcons.add,
+                                            )
                                           : const Icon(
-                                        CupertinoIcons.checkmark_circle,
-                                        color: Colors.green,
-                                      )),
+                                              CupertinoIcons.checkmark_circle,
+                                              color: Colors.green,
+                                            ),),
                                 ],
                               )
                             ],
@@ -978,127 +1001,172 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                       SizedBox(
                         height: MediaQuery.of(context).size.height * 0.05,
                       ),
-                      Column(
-                        children: [
-                          Container(
-                            height: 200,
-                            width: 200,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                width: 5,
-                                color: commonColor,
-                              ),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: CircleAvatar(
-                                backgroundImage: AssetImage(setSongDetails.image),
-                              ),
-                            ),
-                          ),
-                          sizedh2,
-                          commonText(
-                            text: setSongDetails.songName,
-                            size: 21,
-                          ),
-                          commonText(
-                              text: setSongDetails.artistName,
-                              size: 15,
-                              color: HexColor("656F77"),
-                              weight: FontWeight.w400),
-                          sizedh2,
-                          sizedh2,
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.8,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      ValueListenableBuilder(
+                        valueListenable: songDetailsBox!.listenable(),
+                        builder:
+                            (context, Box<SongDetailsList> songFetcher, _) {
+
+                          songDetailsProvider.currentSongKey =
+                              songDetailsProvider.selectedSongKey;
+
+                          var songData =
+                          songFetcher.get(songDetailsProvider.currentSongKey);
+
+                          if (songFetcher.isEmpty) {
+                            return const Center(
+                              child: Text("No Songs Available"),
+                            );
+                          } else {
+                            return Column(
                               children: [
-                                IconButton(
-                                  onPressed: () {
-                                    setSongDetails.loopSongs();
-                                  },
-                                  icon: Icon(Icons.loop_outlined,
-                                      size: 26,
-                                      color: setSongDetails.isRepeat
-                                          ? Colors.blueAccent
-                                          : HexColor("#656F77")),
-                                ),
-                                sizedw1,
-                                const Icon(
-                                  FontAwesome.left_dir,
-                                  size: 37,
-                                ),
-                                sizedw2,
                                 Container(
-                                  width: 80,
-                                  height: 80,
-                                  decoration: BoxDecoration(
-                                      shape: BoxShape.circle, color: commonColor),
-                                  child: IconButton(
-                                    onPressed: () {
-                                      setSongDetails.changeIcon();
-                                      // setSongDetails.isIconChanged?setSongDetails.playSong(audio,context):songDetailsProvider.pauseSong();
-                                    },
-                                    icon: setSongDetails.isIconChanged
-                                        ? const Icon(
-                                      Icons.pause,
-                                      size: 60,
-                                      color: Colors.white,
-                                    )
-                                        : const Icon(
-                                      Icons.play_arrow,
-                                      size: 60,
-                                      color: Colors.white,
+                                  height: 200,
+                                  width: 200,
+                                  decoration:  BoxDecoration(
+                                    border: Border.all(
+                                      color: commonColor,
+                                      width: 3
+                                    ),
+                                    shape: BoxShape.circle
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: QueryArtworkWidget(
+                                      id: songData!.songId,
+                                      type: ArtworkType.AUDIO,
+                                      artworkBorder: const BorderRadius.all(
+                                          Radius.circular(100)),
+                                      artworkFit: BoxFit.fill,
+                                      artworkHeight: double.infinity,
+                                      artworkWidth: double.infinity,
+                                      nullArtworkWidget: ClipRRect(
+                                        borderRadius:
+                                        const BorderRadius.all(
+                                            Radius.circular(100)),
+                                        child: Image.asset(
+                                          "assets/images/defaultImage.png",
+                                        ),
+                                      ),
+                                      // artworkWidth: 200,
                                     ),
                                   ),
                                 ),
-                                sizedw2,
-                                IconButton(
-                                  onPressed: () {
-                                    // setSongDetails.isIconChanged?setSongDetails.playSong(setSongDetails.path, context):setSongDetails.pauseSong();
-                                    // setSongDetails.duration();
-                                  },
-                                  icon: const Icon(
-                                    FontAwesome.right_dir,
-                                    size: 37,
+                                sizedh2,
+                                commonMarquees(
+                                  text: songData.songName,
+                                  size: 18.0,
+                                  height: 30.0,
+                                  duration: 23
+                                ),
+                                commonMarquees(
+                                  text: songData.artistName,
+                                  size: 13.0,
+                                  color: HexColor("656F77"),
+                                ),
+                                sizedh2,
+                                SizedBox(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.8,
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      IconButton(
+                                        onPressed: () {
+                                          setSongDetails.loopSongs();
+                                        },
+                                        icon: setSongDetails.loopIcon==1?const Icon(Typicons.loop,size: 26,color: Colors.blueAccent,):setSongDetails.loopIcon==2?const Icon(Icons.playlist_play_outlined,size: 26,color: Colors.blueAccent,):const Icon(Icons.loop_outlined,size: 26,)                                        ,
+                                        // icon: Icon(Icons.loop_outlined,
+                                        //     size: 26,
+                                        //     color: setSongDetails.isRepeat
+                                        //         ? Colors.blueAccent
+                                        //         : HexColor("#656F77")),
+                                      ),
+                                      sizedw1,
+                                      IconButton(
+                                        onPressed: () {
+                                          songDetailsProvider.prev();
+                                        },
+                                        icon: const Icon(
+                                          FontAwesome.left_dir,
+                                          size: 37,
+                                        ),
+                                      ),
+                                      sizedw2,
+                                      Container(
+                                        width: 80,
+                                        height: 80,
+                                        decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: commonColor),
+                                        child: IconButton(
+                                          onPressed: () {
+                                            setSongDetails
+                                                .playOrpause();
+                                          },
+                                          icon: setSongDetails.isIconChanged
+                                              ? const Icon(
+                                                  Icons.pause,
+                                                  size: 60,
+                                                  color: Colors.white,
+                                                )
+                                              : const Icon(
+                                                  Icons.play_arrow,
+                                                  size: 60,
+                                                  color: Colors.white,
+                                                ),
+                                        ),
+                                      ),
+                                      sizedw2,
+                                      IconButton(
+                                        onPressed: () {
+                                          setSongDetails.next();
+                                        },
+                                        icon: const Icon(
+                                          FontAwesome.right_dir,
+                                          size: 37,
+                                        ),
+                                      ),
+                                      sizedw2,
+                                      IconButton(
+                                        onPressed: () {
+                                         setSongDetails.shuffleSongs();
+                                        },
+                                        icon: Icon(
+                                          Entypo.shuffle,
+                                          size: 22,
+                                          color: setSongDetails.isShuffled
+                                              ? Colors.blueAccent
+                                              : HexColor("#656F77"),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                sizedw2,
-                                IconButton(
-                                  onPressed: () {
-                                    isShuffle = !isShuffle!;
-                                    setState(() {});
-                                  },
-                                  icon: Icon(
-                                    Entypo.shuffle,
-                                    size: 22,
-                                    color: isShuffle!
-                                        ? Colors.blueAccent
-                                        : HexColor("#656F77"),
+                                sizedh2,
+                                SizedBox(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.8,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Expanded(
+                                        child: setSongDetails.getDuration(),
+                                      ),
+                                      Expanded(
+                                        flex: 3,
+                                        child: setSongDetails.slider(),
+                                      ),
+                                      Expanded(
+                                        child: setSongDetails.totalDuration(),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
-                            ),
-                          ),
-                          sizedh2,
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.8,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Expanded(child: setSongDetails.getDuration(),),
-                                sizedw1,
-                                Expanded(
-                                  flex: 3,
-                                  child:setSongDetails.slider()
-                                  ),
-                                sizedw1,
-                                Expanded(child: setSongDetails.totalDuration()),
-                              ],
-                            ),
-                          ),
-                        ],
+                            );
+                          }
+                        },
                       ),
                     ],
                   ),
@@ -1107,12 +1175,11 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
             }
           },
         ),
-      ),
-    );
+      );
+    });
   }
 
-
-showPlaylistSnackBar(BuildContext context,isAdded) {
+  showPlaylistSnackBar(BuildContext context, isAdded) {
     final snack = SnackBar(
       content: isAdded!
           ? commonText(
@@ -1127,7 +1194,7 @@ showPlaylistSnackBar(BuildContext context,isAdded) {
               size: 13,
               weight: FontWeight.w500,
               isCenter: true),
-      duration: Duration(seconds: 1),
+      duration: const Duration(seconds: 1),
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
@@ -1138,7 +1205,7 @@ showPlaylistSnackBar(BuildContext context,isAdded) {
     return ScaffoldMessenger.of(context).showSnackBar(snack);
   }
 
-  showFavouriteSnackBar(BuildContext context,isFavourite) {
+  showFavouriteSnackBar(BuildContext context, isFavourite) {
     final snack = SnackBar(
       content: isFavourite!
           ? commonText(
@@ -1153,7 +1220,7 @@ showPlaylistSnackBar(BuildContext context,isAdded) {
               size: 13,
               weight: FontWeight.w500,
               isCenter: true),
-      duration: Duration(seconds: 1),
+      duration: const Duration(seconds: 1),
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
@@ -1163,100 +1230,114 @@ showPlaylistSnackBar(BuildContext context,isAdded) {
     );
     return ScaffoldMessenger.of(context).showSnackBar(snack);
   }
-
-
-
-
 }
-//
-// //
-// // class DrawerAll extends StatefulWidget {
-// //   const DrawerAll({Key? key}) : super(key: key);
-// //
-// //   @override
-// //   _DrawerAllState createState() => _DrawerAllState();
-// // }
-// //
-// // class _DrawerAllState extends State<DrawerAll> {
-// //   @override
-// //   Widget build(BuildContext context) {
-// //     return Drawer(
-// //       child: ListView(
-// //         children: [
-// //           Container(
-// //             width: double.infinity,
-// //             padding: EdgeInsets.only(top: 50, left: 30),
-// //             height: 150,
-// //             decoration: BoxDecoration(
-// //               color: HexColor("#A6B9FF"),
-// //               borderRadius: BorderRadius.only(
-// //                   bottomLeft: Radius.circular(30),
-// //                   bottomRight: Radius.circular(30)),
-// //             ),
-// //             child: Column(
-// //               crossAxisAlignment: CrossAxisAlignment.start,
-// //               children: [
-// //                 Row(
-// //                   children: [
-// //                     Image.asset(
-// //                       "assets/images/MusInNoBackground.png",
-// //                       height: 34,
-// //                       width: 45,
-// //                     ),
-// //                     commonText(
-// //                         text: "MusIn", color: HexColor("#1814E4"), size: 27),
-// //                   ],
-// //                 ),
-// //                 commonText(
-// //                     text: "\tHear The Best",
-// //                     size: 12,
-// //                     color: HexColor("#656F77"))
-// //               ],
-// //             ),
-// //           ),
-// //           const SizedBox(
-// //             height: 40,
-// //           ),
-// //           sizedh2,
-// //           Container(
-// //             margin: EdgeInsets.symmetric(horizontal: 35),
-// //             child: Column(
-// //               children: [
-// //                 drawerItems(itemName: "Favourites", routName: "/favourites"),
-// //                 sizedh2,
-// //                 drawerItems(itemName: "Playlist", routName: "/playlist"),
-// //                 // sizedh2,
-// //                 // drawerItems(itemName: "Search",routName: "/searchSong"),
-// //                 sizedh2,
-// //                 drawerItems(itemName: "Settings", routName: "/settings"),
-// //               ],
-// //             ),
-// //           )
-// //         ],
-// //       ),
-// //     );
-// //   }
-// //
-// //   drawerItems({required itemName, size, required routName}) {
-// //     return GestureDetector(
-// //       child: Row(
-// //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-// //         children: [
-// //           commonText(text: itemName, size: size ?? 17),
-// //           Icon(
-// //             Icons.arrow_forward_ios_rounded,
-// //             size: 15,
-// //           ),
-// //         ],
-// //       ),
-// //       onTap: () {
-// //         Navigator.of(context).pop();
-// //         Navigator.pushNamed(context, routName);
-// //       },
-// //     );
-// //   }
-// // }
 
+commonMarquees({height,width,hPadding,vPadding,text="",velocity,blankSpace,color,weight,size,family,duration}){
+  return SizedBox(
+    height:height??50,
+    width: width??double.infinity,
+    child: Padding(
+      padding:  EdgeInsets.symmetric(horizontal: hPadding??40.0,vertical: vPadding??0.0,),
+      child: Marquee(
+        text: text ?? "Not Found",
+        blankSpace: blankSpace??300,
+        velocity: velocity??30,
+        pauseAfterRound: Duration(seconds: duration??3),
+        style: style(color: color??Colors.black,weight: weight??FontWeight.w700,size: size,family: family??"Poppins-Regular"),
+      ),
+    ),
+  );
+}
+
+
+
+//
+// class DrawerAll extends StatefulWidget {
+//   const DrawerAll({Key? key}) : super(key: key);
+//
+//   @override
+//   _DrawerAllState createState() => _DrawerAllState();
+// }
+//
+// class _DrawerAllState extends State<DrawerAll> {
+//   @override
+//   Widget build(BuildContext context) {
+//     return Drawer(
+//       child: ListView(
+//         children: [
+//           Container(
+//             width: double.infinity,
+//             padding: EdgeInsets.only(top: 50, left: 30),
+//             height: 150,
+//             decoration: BoxDecoration(
+//               color: HexColor("#A6B9FF"),
+//               borderRadius: BorderRadius.only(
+//                   bottomLeft: Radius.circular(30),
+//                   bottomRight: Radius.circular(30)),
+//             ),
+//             child: Column(
+//               crossAxisAlignment: CrossAxisAlignment.start,
+//               children: [
+//                 Row(
+//                   children: [
+//                     Image.asset(
+//                       "assets/images/MusInNoBackground.png",
+//                       height: 34,
+//                       width: 45,
+//                     ),
+//                     commonText(
+//                         text: "MusIn", color: HexColor("#1814E4"), size: 27),
+//                   ],
+//                 ),
+//                 commonText(
+//                     text: "\tHear The Best",
+//                     size: 12,
+//                     color: HexColor("#656F77"))
+//               ],
+//             ),
+//           ),
+//           const SizedBox(
+//             height: 40,
+//           ),
+//           sizedh2,
+//           Container(
+//             margin: EdgeInsets.symmetric(horizontal: 35),
+//             child: Column(
+//               children: [
+//                 drawerItems(itemName: "Favourites", routName: "/favourites"),
+//                 sizedh2,
+//                 drawerItems(itemName: "Playlist", routName: "/playlist"),
+//                 // sizedh2,
+//                 // drawerItems(itemName: "Search",routName: "/searchSong"),
+//                 sizedh2,
+//                 drawerItems(itemName: "Settings", routName: "/settings"),
+//               ],
+//             ),
+//           )
+//         ],
+//       ),
+//     );
+//   }
+//
+//   drawerItems({required itemName, size, required routName}) {
+//     return GestureDetector(
+//       child: Row(
+//         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//         children: [
+//           commonText(text: itemName, size: size ?? 17),
+//           Icon(
+//             Icons.arrow_forward_ios_rounded,
+//             size: 15,
+//           ),
+//         ],
+//       ),
+//       onTap: () {
+//         Navigator.of(context).pop();
+//         Navigator.pushNamed(context, routName);
+//       },
+//     );
+//   }
+// }
 
 class FavouriteSongs extends StatefulWidget {
   var padding, image, songName, songDesc;

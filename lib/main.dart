@@ -29,7 +29,6 @@ const String songDetailListBoxName = 'songDetailsBox';
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   AssetsAudioPlayer.setupNotificationsOpenAction((notification) {
-    print(notification.audioId);
     return true;
   });
   final directory =await getApplicationDocumentsDirectory();

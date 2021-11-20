@@ -35,7 +35,7 @@ class _HomeState extends State<Home> {
   void initState() {
     requestPermission();
     songDetailsList = Hive.box<SongDetailsList>(songDetailListBoxName);
-    // querySongs();
+    querySongs();
     super.initState();
   }
   requestPermission() async {
@@ -51,22 +51,13 @@ class _HomeState extends State<Home> {
 
   querySongs()async{
     queriedSongs = await _audioQuery.querySongs();
-    queriedSongs.forEach((element) {
-      //   // var i=0;
-      //   // debugPrint("Data in List ${element.data}");
-      //   // debugPrint("Uri in List ${element.uri}");
-      //   // debugPrint("Album in List ${element.album}");
-      //   // debugPrint("Artist in List ${element.artist}");
-      //   // debugPrint("Size in List ${element.size}");
-      //   // debugPrint("ID in List ${element.id}");
-      //   // debugPrint("Album Id in List ${element.albumId}");
-      //   // debugPrint("Duration in List ${element.duration}");
-      //   // debugPrint("SongName in List ${element.title}\n---------------------------------------------------");
+    final sortedQueriedSongs = queriedSongs..sort((item1,item2)=>item1.title.compareTo(item2.title));
+    sortedQueriedSongs.forEach((element) {
       // final model = SongDetailsList(songName: element.title,artistName: element.artist,songId: element.id,path: element.data,duration: element.duration,);
       // songDetailsList!.add(model);
       //   songDetailsList!.clear();
     });
-  }
+  } 
 
 
 

@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:musin/materials/colors.dart';
 import 'package:musin/pages/home.dart';
@@ -19,7 +20,6 @@ bool isSelected = true;
 class _PlaylistSongsState extends State<PlaylistSongs> {
   @override
   Widget build(BuildContext context) {
-    DateTime pre_backpress = DateTime.now();
     return Scaffold(
       appBar: commonAppBar(context),
       body: Stack(
@@ -30,18 +30,23 @@ class _PlaylistSongsState extends State<PlaylistSongs> {
               SizedBox(
                 width: 180,
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    sizedw2,
-                    IconButton(
-                        onPressed: () {
-                          Navigator.pushNamed(context, '/');
-                        },
-                        icon: Icon(Icons.chevron_left_outlined,size: 27,)),
-                    commonText(text: "Classic")
+                    Row(
+                      children: [
+                        IconButton(
+                            onPressed: () {
+                              Navigator.pushNamed(context, '/');
+                            },
+                            icon: const Icon(Icons.chevron_left_outlined,size: 27,),),
+                        commonText(text: "Classic"),
+                      ],
+                    ),
+                    IconButton(onPressed: (){}, icon: const Icon(CupertinoIcons.delete),tooltip: "Delete Playlist",)
                   ],
                 ),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 20,
               ),
               GestureDetector(
