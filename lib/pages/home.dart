@@ -27,14 +27,14 @@ class Home extends StatefulWidget {
 Color commonColor = HexColor("#A6B9FF");
 
 class _HomeState extends State<Home> {
-  Box<SongDetailsList>? songDetailsList;
+  Box<UserSongs>? userSong;
   List<SongModel> queriedSongs=[];
 
   final OnAudioQuery _audioQuery = OnAudioQuery();
   @override
   void initState() {
     requestPermission();
-    songDetailsList = Hive.box<SongDetailsList>(songDetailListBoxName);
+    userSong = Hive.box<UserSongs>(songDetailListBoxName);
     querySongs();
     super.initState();
   }
@@ -48,24 +48,23 @@ class _HomeState extends State<Home> {
       setState(() {});
     }
   }
-
-  querySongs()async{
+  querySongs()async {
     queriedSongs = await _audioQuery.querySongs();
-    final sortedQueriedSongs = queriedSongs..sort((item1,item2)=>item1.title.compareTo(item2.title));
-    sortedQueriedSongs.forEach((element) {
-      // final model = SongDetailsList(songName: element.title,artistName: element.artist,songId: element.id,path: element.data,duration: element.duration,);
-      // songDetailsList!.add(model);
-      //   songDetailsList!.clear();
-    });
-  } 
-
-
-
-
-
+    // final sortedQueriedSongs = queriedSongs..sort((item1,item2)=>item1.title.compareTo(item2.title));
+    if (userSong!.isEmpty) {
+      for (var element in queriedSongs) {
+        final model = UserSongs(songName: element.title,
+            artistName: element.artist,
+            imageId: element.id,
+            songPath: element.data,
+            duration: element.duration);
+        userSong!.add(model);
+      }
+    }
+  }
 
   int currentIndex = 0;
-  PageController _pageController =
+  final PageController _pageController =
       PageController(initialPage: 0, keepPage: true);
 
   @override

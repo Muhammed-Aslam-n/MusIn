@@ -29,55 +29,22 @@ var isSelected = true;
 
 class _SongsListMainState extends State<SongsListMain> {
   final OnAudioQuery audioQuery = OnAudioQuery();
-  Box<SongDetailsList>? songDbInstance;
-
+  Box<UserSongs>? songDbInstance;
+  Box<UserPlaylistNames>? userPlaylistNameInstance;
+  Box<UserPlaylistSongs>? userPlaylistSongsInstance;
+  List completeSongsKey =[];
   @override
   void initState() {
-    songDbInstance = Hive.box<SongDetailsList>(songDetailListBoxName);
-    final pInstance = Provider.of<PlayerCurrespondingItems>(context,listen: false);
+    songDbInstance = Hive.box<UserSongs>(songDetailListBoxName);
+    userPlaylistNameInstance = Hive.box<UserPlaylistNames>(userPlaylistBoxName);
+    userPlaylistSongsInstance =
+        Hive.box<UserPlaylistSongs>(userPlaylistSongBoxName);
+    final pInstance =
+        Provider.of<PlayerCurrespondingItems>(context, listen: false);
     pInstance.getKeys();
     pInstance.showKeys();
     super.initState();
   }
-
-  // // Constructor
-  // @override
-  // Widget build(BuildContext context) {
-  //   return Scaffold(
-  //     appBar: commonAppBar(context),
-  //     body: Stack(
-  //       children: [
-  //         SingleChildScrollView(
-  //           padding: EdgeInsets.all(10),
-  //           child: Column(
-  //             children: [
-  //               Padding(
-  //                 padding: EdgeInsets.only(left: 13, top: 20),
-  //                 child: Align(
-  //                   alignment: Alignment.topLeft,
-  //                   child: commonText(text: "Your Songs"),
-  //                 ),
-  //               ),
-  //               sizedh1,
-  //               ImageContainer(),
-  //             ],
-  //           ),
-  //         ),
-  //         CommonMiniPlayer(
-  //             // isSelected: isSelected,
-  //             // songName: "Don't Let Me Go",
-  //             // artistName: "ABBA",
-  //             // image: "assets/images/defaultImage.png",
-  //             // type: ArtworkType.AUDIO,
-  //             // path:
-  //             //     "assets/music/Best of Bollywood Shreya Ghoshal CD 1 TRACK 2 (320).mp3",
-  //             // duration: 3.12
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -100,15 +67,7 @@ class _SongsListMainState extends State<SongsListMain> {
               ],
             ),
           ),
-          CommonMiniPlayer(              // isSelected: isSelected,
-              // songName: "Don't Let Me Go",
-              // artistName: "ABBA",
-              // image: "assets/images/defaultImage.png",
-              // type: ArtworkType.AUDIO,
-              // path:
-              // "assets/music/Best of Bollywood Shreya Ghoshal CD 1 TRACK 2 (320).mp3",
-              // duration: 3.12
-         ),
+          CommonMiniPlayer(),
         ],
       ),
     );
@@ -117,10 +76,11 @@ class _SongsListMainState extends State<SongsListMain> {
   // PLAYS WITH DATABASE and Provider also
 
   ImageContainer(BuildContext context) {
+    bool addToFavs = false;
     return Consumer<PlayerCurrespondingItems>(
       builder: (_, setSongDetails, child) => ValueListenableBuilder(
         valueListenable: songDbInstance!.listenable(),
-        builder: (context, Box<SongDetailsList> songFetcher, _) {
+        builder: (context, Box<UserSongs> songFetcher, _) {
           List<int> keys = songFetcher.keys.cast<int>().toList();
           if (songFetcher.isEmpty) {
             return Column(
@@ -144,11 +104,13 @@ class _SongsListMainState extends State<SongsListMain> {
                 return GestureDetector(
                   onTap: () {
                     setSongDetails.isSelectedOrNot = false;
-                    debugPrint(songDatas!.path);
+                    debugPrint(songDatas!.songPath);
                     setSongDetails.selectedSongKey = key;
-                    setSongDetails.currentSongDuration = songDatas.duration;
-                    setSongDetails.songPath = songDatas.path;
-                    setSongDetails.opnPlaylist(setSongDetails.playList,setSongDetails.selectedSongKey);
+                    setSongDetails.currentSongDuration =
+                        songDatas.duration.toString();
+                    setSongDetails.songPath = songDatas.songPath;
+                    setSongDetails.opnPlaylist(setSongDetails.playList,
+                        setSongDetails.selectedSongKey);
                   },
                   child: Container(
                     decoration: BoxDecoration(
@@ -159,10 +121,19 @@ class _SongsListMainState extends State<SongsListMain> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         QueryArtworkWidget(
-                          id: songDatas!.songId,
+                          id: songDatas!.imageId!,
                           type: ArtworkType.AUDIO,
-                          nullArtworkWidget:
-                              ClipRRect(child: Image.asset("assets/images/defaultImage.png",height: MediaQuery.of(context).size.height * 0.16,width: double.infinity,fit: BoxFit.fill,),borderRadius: const BorderRadius.only( topLeft: Radius.circular(24),topRight: Radius.circular(24)),),
+                          nullArtworkWidget: ClipRRect(
+                            child: Image.asset(
+                              "assets/images/defaultImage.png",
+                              height: MediaQuery.of(context).size.height * 0.16,
+                              width: double.infinity,
+                              fit: BoxFit.fill,
+                            ),
+                            borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(24),
+                                topRight: Radius.circular(24)),
+                          ),
                           artworkHeight:
                               MediaQuery.of(context).size.height * 0.16,
                           artworkFit: BoxFit.fill,
@@ -176,27 +147,56 @@ class _SongsListMainState extends State<SongsListMain> {
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
                               IconButton(
-                                onPressed: () {},
-                                icon: const Icon(CupertinoIcons.heart),
+                                onPressed: () {
+                                  if (songDatas.isFavourited == true) {
+                                    addToFavs = false;
+                                  } else {
+                                    addToFavs = true;
+                                  }
+                                  final model = UserSongs(
+                                      songName: songDatas.songName,
+                                      artistName: songDatas.artistName,
+                                      duration: songDatas.duration,
+                                      songPath: songDatas.songPath,
+                                      imageId: songDatas.imageId,
+                                      isAddedtoPlaylist: false,
+                                      isFavourited: addToFavs);
+                                  songFetcher.putAt(key, model);
+                                  debugPrint("Added to Favourites $addToFavs");
+                                  showFavouriteSnackBar(
+                                      context: context, isFavourite: addToFavs);
+                                },
+                                icon: Icon(CupertinoIcons.heart,
+                                    color: songDatas.isFavourited
+                                        ? Colors.red
+                                        : Colors.black87),
                               ),
                               PopupMenuButton(
-                                  itemBuilder: (context) => [
-                                        const PopupMenuItem(
-                                          child: Text("Add to Playlist"),
-                                          value: 1,
-                                        ),
-                                        const PopupMenuItem(
-                                          child: Text("Create Playlist"),
-                                          value: 2,
-                                        )
-                                      ])
+                                onSelected: (result) {
+                                  if (result == 1) {
+                                    showPlaylistNames(context, key);
+                                  } else if (result == 2) {
+                                    createPlaylist(context, key);
+                                  }
+                                },
+                                itemBuilder: (context) => [
+                                  const PopupMenuItem(
+                                    child: Text("Add to Playlist"),
+                                    value: 1,
+                                  ),
+                                  const PopupMenuItem(
+                                    child: Text("Create Playlist"),
+                                    value: 2,
+                                  ),
+                                ],
+                              ),
                             ],
                           ),
                         ),
                         Expanded(
                           child: Padding(
                             padding: const EdgeInsets.only(left: 20),
-                            child:Marquee(
+                            child: Marquee(
                               text: songDatas.artistName ?? "No Artist",
                               blankSpace: 100,
                               velocity: 30,
@@ -227,325 +227,107 @@ class _SongsListMainState extends State<SongsListMain> {
     );
   }
 
-//
-//
-// Pure Code
-// ImageContainer() {
-//   return Consumer<PlayerCurrespondingItems>(
-//       builder: (_, setSongDetails, child) => FutureBuilder<List<SongModel>>(
-//             // Default values:
-//             future: _audioQuery.querySongs(
-//               sortType: null,
-//               orderType: OrderType.ASC_OR_SMALLER,
-//               uriType: UriType.EXTERNAL,
-//               ignoreCase: true,
-//             ),
-//             builder: (context, item) {
-//               for (var i = 0; i < item.data!.length; i++) {
-//                 setSongDetails.
-//               }
-//               // Loading content
-//               if (item.data == null) return const CircularProgressIndicator();
-//
-//               // When you try "query" without asking for [READ] or [Library] permission
-//               // the plugin will return a [Empty] list.
-//               if (item.data!.isEmpty) return const Text("Nothing found!");
-//
-//               // You can use [item.data!] direct or you can create a:
-//               // List<SongModel> songs = item.data!;
-//               return GridView.builder(
-//                 physics: ScrollPhysics(),
-//                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-//                     crossAxisCount: 2,
-//                     childAspectRatio: 0.95 / 1.7,
-//                     mainAxisSpacing: 18,
-//                     crossAxisSpacing: 8),
-//                 shrinkWrap: true,
-//                 itemCount: item.data!.length,
-//                 itemBuilder: (context, index) {
-//                   return GestureDetector(
-//                     onTap: () {
-//                       setSongDetails.isSelectedOrNot = false;
-//                       setSongDetails.getSongDetails(
-//                           nameOfSong: item.data![index].title,
-//                           nameOfArtist: item.data![index].artist,
-//                           artistImage: item.data![index].id,
-//                           artistType: ArtworkType.AUDIO,
-//                           songPath: item.data![index].data);
-//                     },
-//                     child: Container(
-//                       decoration: BoxDecoration(
-//                         color: HexColor("#A6B9FF"),
-//                         borderRadius: BorderRadius.circular(24),
-//                       ),
-//                       child: Column(
-//                         crossAxisAlignment: CrossAxisAlignment.start,
-//                         children: [
-//                           QueryArtworkWidget(
-//                             id: item.data![index].id,
-//                             type: ArtworkType.AUDIO,
-//                             nullArtworkWidget:
-//                                 Image.asset("assets/images/defaultImage.png"),
-//                             artworkHeight:
-//                                 MediaQuery.of(context).size.height * 0.22,
-//                             artworkBorder: const BorderRadius.only(
-//                                 topRight: Radius.circular(24),
-//                                 topLeft: Radius.circular(24)),
-//                             artworkWidth: 200,
-//                           ),
-//                           const SizedBox(
-//                             height: 7,
-//                           ),
-//                           Expanded(
-//                             child: Row(
-//                               mainAxisAlignment: MainAxisAlignment.end,
-//                               children: [
-//                                 IconButton(
-//                                   onPressed: () {},
-//                                   icon: Icon(CupertinoIcons.heart),
-//                                 ),
-//                                 PopupMenuButton(
-//                                     itemBuilder: (context) => [
-//                                           const PopupMenuItem(
-//                                             child: Text("Add to Playlist"),
-//                                             value: 1,
-//                                           ),
-//                                           const PopupMenuItem(
-//                                             child: Text("Create Playlist"),
-//                                             value: 2,
-//                                           )
-//                                         ])
-//                               ],
-//                             ),
-//                           ),
-//                           SizedBox(
-//                             height: 7,
-//                           ),
-//                           Expanded(
-//                             child: Padding(
-//                               padding: const EdgeInsets.only(left: 20),
-//                               child: commonText(
-//                                   text:
-//                                       item.data![index].artist ?? "No Artist",
-//                                   color: Colors.grey.shade500,
-//                                   size: 12),
-//                             ),
-//                           ),
-//                           SizedBox(
-//                             height: 7,
-//                           ),
-//                           Expanded(
-//                             child: Padding(
-//                               padding:
-//                                   const EdgeInsets.only(left: 20, bottom: 10),
-//                               child: commonText(
-//                                   text: item.data![index].title, size: 17),
-//                             ),
-//                           ),
-//                           SizedBox(
-//                             height: 7,
-//                           ),
-//                         ],
-//                       ),
-//                     ),
-//                   );
-//                 },
-//               );
-//             },
-//           ));
-// }
+  showPlaylistNames(BuildContext context, songKey) {
+    return showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Add to...'),
+        content: SizedBox(
+          height: 100,
+          width: 200,
+          child: ValueListenableBuilder(
+              valueListenable: userPlaylistNameInstance!.listenable(),
+              builder: (context, Box<UserPlaylistNames> songFetcher, _) {
+                List<int> allKeys =
+                    userPlaylistNameInstance!.keys.cast<int>().toList();
+                return ListView.separated(
+                    itemBuilder: (_, index) {
+                      final key = allKeys[index];
+                      final currentPlaylist = songFetcher.get(key);
+                      return GestureDetector(
+                        onTap: () {
+                          debugPrint(
+                              "${currentPlaylist!.playlistNames} Selected");
+                          debugPrint("Key is $key");
+                          final songData = songDbInstance!.get(songKey);
+                          final model = UserPlaylistSongs(
+                              currespondingPlaylistId: key,
+                              songName: songData!.songName,
+                              artistName: songData.artistName,
+                              songPath: songData.songPath,
+                              songImageId: songData.imageId,
+                              songDuration: songData.duration);
+                          userPlaylistSongsInstance!.add(model);
+                          Navigator.of(context).pop();
+                          showPlaylistSnackBar(context: context, isAdded: true);
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  currentPlaylist!.playlistNames.toString(),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                    separatorBuilder: (_, index) => const Divider(),
+                    itemCount: allKeys.length);
+              }),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'Cancel'),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+  }
 
-// Playing Using Asset
-//   ImageContainer() {
-//     return GridView.builder(
-//       physics: ScrollPhysics(),
-//       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-//           crossAxisCount: 2,
-//           childAspectRatio: 0.95 / 1.7,
-//           mainAxisSpacing: 18,
-//           crossAxisSpacing: 8),
-//       shrinkWrap: true,
-//       itemCount: 20,
-//       itemBuilder: (context, index) {
-//         return GestureDetector(
-//           onTap: () {
-//             isSelected = false;
-//             setState(() {});
-//           },
-//           child: Container(
-//             decoration: BoxDecoration(
-//               color: HexColor("#A6B9FF"),
-//               borderRadius: BorderRadius.circular(24),
-//             ),
-//             child: Column(
-//               crossAxisAlignment: CrossAxisAlignment.start,
-//               children: [
-//                 Container(
-//                   height: 80,
-//                   width: 80,
-//                   decoration: const BoxDecoration(
-//                       image: DecorationImage(
-//                     image: ExactAssetImage("assets/images/defaultImage.png"),
-//                     fit: BoxFit.cover,
-//                   )),
-//                 ),
-//                 const SizedBox(
-//                   height: 7,
-//                 ),
-//                 Expanded(
-//                   child: Row(
-//                     mainAxisAlignment: MainAxisAlignment.end,
-//                     children: [
-//                       IconButton(
-//                         onPressed: () {},
-//                         icon: Icon(CupertinoIcons.heart),
-//                       ),
-//                       PopupMenuButton(
-//                           itemBuilder: (context) => [
-//                                 const PopupMenuItem(
-//                                   child: Text("Add to Playlist"),
-//                                   value: 1,
-//                                 ),
-//                                 const PopupMenuItem(
-//                                   child: Text("Create Playlist"),
-//                                   value: 2,
-//                                 )
-//                               ])
-//                     ],
-//                   ),
-//                 ),
-//                 const SizedBox(
-//                   height: 7,
-//                 ),
-//                 Expanded(
-//                   child: Padding(
-//                     padding: const EdgeInsets.only(left: 20),
-//                     child: commonText(
-//                         text: "ABBA", color: Colors.grey.shade500, size: 12),
-//                   ),
-//                 ),
-//                 const SizedBox(
-//                   height: 7,
-//                 ),
-//                 Expanded(
-//                   child: Padding(
-//                     padding: const EdgeInsets.only(left: 20, bottom: 10),
-//                     child: commonText(text: "Don't Let Me Go", size: 17),
-//                   ),
-//                 ),
-//                 const SizedBox(
-//                   height: 7,
-//                 ),
-//               ],
-//             ),
-//           ),
-//         );
-//       },
-//     );
-//   }
-
-// Playing Using Asset
-
-// ImageContainer Working By passing The Data to Provider by user click
-
-//   ImageContainer() {
-//     return GridView.builder(
-//       physics: ScrollPhysics(),
-//       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-//           crossAxisCount: 2,
-//           childAspectRatio: 0.95 / 1.7,
-//           mainAxisSpacing: 18,
-//           crossAxisSpacing: 8),
-//       shrinkWrap: true,
-//       itemCount: 20,
-//       itemBuilder: (context, index) {
-//         return Consumer<PlayerCurrespondingItems>(
-//           builder: (_, setSongDetails, child) =>GestureDetector(
-//             onTap: () {
-//               isSelected = false;
-//               setSongDetails.isSelectedOrNot = false;
-//               setSongDetails.getSongDetails(
-//                 totalDuration: 3.12,
-//                 artistType: ArtistModel,
-//                 artistImage: "assets/images/defaultImage.png",
-//                 nameOfArtist: "ABBA",
-//                 nameOfSong: "Don't Let Me Go",
-//                 songPath: "assets/music/Best of Bollywood Shreya Ghoshal CD 1 TRACK 2 (320).mp3"
-//               );
-//               setState(() {
-//               }
-//               );debugPrint("Tapped");
-//             },
-//             child: Container(
-//               decoration: BoxDecoration(
-//                 color: HexColor("#A6B9FF"),
-//                 borderRadius: BorderRadius.circular(24),
-//               ),
-//               child: Column(
-//                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 children: [
-//                   Container(
-//                     height: 80,
-//                     width: 80,
-//                     decoration: const BoxDecoration(
-//                         image: DecorationImage(
-//                       image: ExactAssetImage("assets/images/defaultImage.png"),
-//                       fit: BoxFit.cover,
-//                     )),
-//                   ),
-//                   const SizedBox(
-//                     height: 7,
-//                   ),
-//                   Expanded(
-//                     child: Row(
-//                       mainAxisAlignment: MainAxisAlignment.end,
-//                       children: [
-//                         IconButton(
-//                           onPressed: () {},
-//                           icon: Icon(CupertinoIcons.heart),
-//                         ),
-//                         PopupMenuButton(
-//                             itemBuilder: (context) => [
-//                                   const PopupMenuItem(
-//                                     child: Text("Add to Playlist"),
-//                                     value: 1,
-//                                   ),
-//                                   const PopupMenuItem(
-//                                     child: Text("Create Playlist"),
-//                                     value: 2,
-//                                   )
-//                                 ])
-//                       ],
-//                     ),
-//                   ),
-//                   const SizedBox(
-//                     height: 7,
-//                   ),
-//                   Expanded(
-//                     child: Padding(
-//                       padding: const EdgeInsets.only(left: 20),
-//                       child: commonText(
-//                           text: "ABBA", color: Colors.grey.shade500, size: 12),
-//                     ),
-//                   ),
-//                   const SizedBox(
-//                     height: 7,
-//                   ),
-//                   Expanded(
-//                     child: Padding(
-//                       padding: const EdgeInsets.only(left: 20, bottom: 10),
-//                       child: commonText(text: "Don't Let Me Go", size: 17),
-//                     ),
-//                   ),
-//                   const SizedBox(
-//                     height: 7,
-//                   ),
-//                 ],
-//               ),
-//             ),
-//           ),
-//         );
-//       },
-//     );
-//   }
+  createPlaylist(BuildContext context, songKey) {
+    var playlistName = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Create New Playlist'),
+        content: TextFormField(
+          controller: playlistName,
+          decoration: const InputDecoration(
+              hintText: "Enter The Name of Your Playlist"),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'Cancel'),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              final playlistNameFromTextField = playlistName.text;
+              final playlistModelVariable =
+                  UserPlaylistNames(playlistNames: playlistNameFromTextField);
+              userPlaylistNameInstance!.add(playlistModelVariable);
+              final songData = songDbInstance!.get(songKey);
+              final model = UserPlaylistSongs(
+                  currespondingPlaylistId: userPlaylistNameInstance!.keys.last,
+                  songName: songData!.songName,
+                  artistName: songData.artistName,
+                  songImageId: songData.imageId,
+                  songDuration: songData.duration,
+                  songPath: songData.songPath);
+              userPlaylistSongsInstance!.add(model);
+              Navigator.of(context).pop();
+              showPlaylistSnackBar(context: context, isAdded: true);
+            },
+            child: const Text('Add'),
+          ),
+        ],
+      ),
+    );
+  }
 }

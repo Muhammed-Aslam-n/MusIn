@@ -19,10 +19,11 @@ import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import '/SettingsPages/feedback.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-
 import 'database/database.dart';
 
-const String songDetailListBoxName = 'songDetailsBox';
+const String songDetailListBoxName = 'userSongs';
+const String userPlaylistBoxName = 'userPlaylistNames';
+const String userPlaylistSongBoxName = 'userPlaylistSongs';
 
 
 
@@ -33,13 +34,17 @@ void main() async{
   });
   final directory =await getApplicationDocumentsDirectory();
   Hive.init(directory.path);
-  Hive.registerAdapter(SongDetailsListAdapter());
-  await Hive.openBox<SongDetailsList>(songDetailListBoxName);
-  runApp(MyApp());
+  Hive.registerAdapter(UserSongsAdapter());
+  Hive.registerAdapter(UserPlaylistNamesAdapter());
+  Hive.registerAdapter(UserPlaylistSongsAdapter());
+  await Hive.openBox<UserSongs>(songDetailListBoxName);
+  await Hive.openBox<UserPlaylistNames>(userPlaylistBoxName);
+  await Hive.openBox<UserPlaylistSongs>(userPlaylistSongBoxName);
+  runApp(const MusinApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+class MusinApp extends StatelessWidget {
+  const MusinApp({Key? key}) : super(key: key);
 
   // This widget is the root of your application.
   @override
@@ -62,8 +67,7 @@ class MyApp extends StatelessWidget {
           // '/searchSong': (context) => const SearchSong(),
           '/settings': (context) => const Settings(),
           '/playlist': (context) => const PlayList(),
-          '/playlistsongs': (context) => const PlaylistSongs(),
-          '/addsongstoplaylist': (context) => const AddSongstoPlaylist(),
+          '/playlistsongs': (context) => PlaylistSongs(),
           // '/upcomingsongs': (context) => const UpcomingSongs(),
           '/favourites': (context) => const Favourites(),
           '/feedback': (context) => const UserFeedback(),

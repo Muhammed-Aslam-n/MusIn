@@ -748,92 +748,11 @@ class _SongTileViewState extends State<SongTileView> {
 //   }
 // }
 
-class AddtoPlaylistSongList extends StatefulWidget {
-  var image, songName, songDesc, padding;
-
-  AddtoPlaylistSongList(
-      {this.padding, this.songName, this.songDesc, this.image});
-
-  @override
-  _AddtoPlaylistSongListState createState() => _AddtoPlaylistSongListState();
-}
-
-class _AddtoPlaylistSongListState extends State<AddtoPlaylistSongList> {
-  bool? isAdded = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: Padding(
-        padding: EdgeInsets.symmetric(horizontal: widget.padding ?? 20),
-        child: Container(
-          width: 50,
-          height: 50,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            image: DecorationImage(
-              image: ExactAssetImage(
-                widget.image!,
-              ),
-              fit: BoxFit.cover,
-            ),
-          ),
-        ),
-      ),
-      title:
-          commonText(text: widget.songName, size: 15, weight: FontWeight.w600),
-      subtitle: commonText(
-          text: widget.songDesc,
-          size: 12,
-          color: HexColor("#ACB8C2"),
-          weight: FontWeight.w600),
-      trailing: IconButton(
-        icon: Icon(
-          Icons.add,
-          color: isAdded! ? Colors.red : Colors.grey.shade500,
-        ),
-        onPressed: () {
-          isAdded = !isAdded!;
-          //show snackbar
-          setState(() {});
-          debugPrint("Add Button Clicked");
-        },
-      ),
-    );
-  }
-
-  showPlaylistSnackBar(BuildContext context) {
-    final snack = SnackBar(
-      content: isAdded!
-          ? commonText(
-              text: "Added to Playlist",
-              color: Colors.green,
-              size: 13,
-              weight: FontWeight.w500,
-              isCenter: true)
-          : commonText(
-              text: "Removed from Playlist",
-              color: Colors.red,
-              size: 13,
-              weight: FontWeight.w500,
-              isCenter: true),
-      duration: Duration(seconds: 1),
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
-      ),
-      backgroundColor: Colors.white,
-      width: 250,
-    );
-    return ScaffoldMessenger.of(context).showSnackBar(snack);
-  }
-}
 
 // Provider Integrated Working Player database
 
 class CommonMiniPlayer extends StatefulWidget {
-  CommonMiniPlayer({Key? key, this.isSelected = true}) : super(key: key);
-  bool isSelected = true;
+  const CommonMiniPlayer({Key? key,}) : super(key: key);
 
   // var songName,artistName,image,path,type;
 
@@ -842,11 +761,15 @@ class CommonMiniPlayer extends StatefulWidget {
 }
 
 class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
-  Box<SongDetailsList>? songDetailsBox;
-
+  Box<UserSongs>? songDetailsBox;
+  Box<UserPlaylistNames>? userPlaylistNameInstance;
+  Box<UserPlaylistSongs>? userPlaylistSongsInstance;
   @override
   void initState() {
-    songDetailsBox = Hive.box<SongDetailsList>(songDetailListBoxName);
+    songDetailsBox = Hive.box<UserSongs>(songDetailListBoxName);
+    userPlaylistNameInstance = Hive.box<UserPlaylistNames>(userPlaylistBoxName);
+    userPlaylistSongsInstance =
+        Hive.box<UserPlaylistSongs>(userPlaylistSongBoxName);
     super.initState();
   }
 
@@ -863,7 +786,7 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
             if (height <= 80) {
               return ValueListenableBuilder(
                 valueListenable: songDetailsBox!.listenable(),
-                builder: (context, Box<SongDetailsList> songFetcher, _) {
+                builder: (context, Box<UserSongs> songFetcher, _) {
                   var keys = songFetcher.keys.cast<int>().toList();
 
                   songDetailsProvider.currentSongKey =
@@ -885,7 +808,7 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                             tileColor: Colors.white38,
                             isThreeLine: true,
                             leading: QueryArtworkWidget(
-                              id: songData!.songId,
+                              id: songData!.imageId!,
                               type: ArtworkType.AUDIO,
                               nullArtworkWidget:
                                   Image.asset("assets/images/defaultImage.png"),
@@ -947,6 +870,7 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
             } else {
               // return SongPlayingPage();
               bool? isFavourite = false, isShuffle = false, isAdded = false;
+              bool addToFavs = false;
               return Consumer<PlayerCurrespondingItems>(
                 builder: (_, setSongDetails, child) => Container(
                   margin: const EdgeInsets.only(top: 20),
@@ -958,53 +882,12 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                           topLeft: Radius.circular(24),
                           topRight: Radius.circular(24))),
                   child: ListView(
+                    shrinkWrap: true,
                     children: [
-                      sizedh2,
-                      Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 30),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              commonText(text: "Now Playing", size: 17),
-                              Row(
-                                children: [
-                                  IconButton(
-                                    onPressed: () {
-                                      isFavourite = !isFavourite!;
-                                      showFavouriteSnackBar(
-                                          context, isFavourite);
-                                      setState(() {});
-                                    },
-                                    icon: const Icon(CupertinoIcons.heart),
-                                    color: isFavourite!
-                                        ? Colors.red
-                                        : Colors.black87,
-                                  ),
-                                  IconButton(
-                                      onPressed: () {
-                                        isAdded = !isAdded!;
-                                        showPlaylistSnackBar(context, isAdded);
-                                        setState(() {});
-                                      },
-                                      icon: isAdded!
-                                          ? const Icon(
-                                              CupertinoIcons.add,
-                                            )
-                                          : const Icon(
-                                              CupertinoIcons.checkmark_circle,
-                                              color: Colors.green,
-                                            ),),
-                                ],
-                              )
-                            ],
-                          )),
-                      SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.05,
-                      ),
                       ValueListenableBuilder(
                         valueListenable: songDetailsBox!.listenable(),
                         builder:
-                            (context, Box<SongDetailsList> songFetcher, _) {
+                            (context, Box<UserSongs> songFetcher, _) {
 
                           songDetailsProvider.currentSongKey =
                               songDetailsProvider.selectedSongKey;
@@ -1017,153 +900,208 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                               child: Text("No Songs Available"),
                             );
                           } else {
-                            return Column(
-                              children: [
-                                Container(
-                                  height: 200,
-                                  width: 200,
-                                  decoration:  BoxDecoration(
-                                    border: Border.all(
-                                      color: commonColor,
-                                      width: 3
-                                    ),
-                                    shape: BoxShape.circle
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: QueryArtworkWidget(
-                                      id: songData!.songId,
-                                      type: ArtworkType.AUDIO,
-                                      artworkBorder: const BorderRadius.all(
-                                          Radius.circular(100)),
-                                      artworkFit: BoxFit.fill,
-                                      artworkHeight: double.infinity,
-                                      artworkWidth: double.infinity,
-                                      nullArtworkWidget: ClipRRect(
-                                        borderRadius:
-                                        const BorderRadius.all(
-                                            Radius.circular(100)),
-                                        child: Image.asset(
-                                          "assets/images/defaultImage.png",
-                                        ),
-                                      ),
-                                      // artworkWidth: 200,
-                                    ),
-                                  ),
-                                ),
-                                sizedh2,
-                                commonMarquees(
-                                  text: songData.songName,
-                                  size: 18.0,
-                                  height: 30.0,
-                                  duration: 23
-                                ),
-                                commonMarquees(
-                                  text: songData.artistName,
-                                  size: 13.0,
-                                  color: HexColor("656F77"),
-                                ),
-                                sizedh2,
-                                SizedBox(
-                                  width:
-                                      MediaQuery.of(context).size.width * 0.8,
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      IconButton(
-                                        onPressed: () {
-                                          setSongDetails.loopSongs();
-                                        },
-                                        icon: setSongDetails.loopIcon==1?const Icon(Typicons.loop,size: 26,color: Colors.blueAccent,):setSongDetails.loopIcon==2?const Icon(Icons.playlist_play_outlined,size: 26,color: Colors.blueAccent,):const Icon(Icons.loop_outlined,size: 26,)                                        ,
-                                        // icon: Icon(Icons.loop_outlined,
-                                        //     size: 26,
-                                        //     color: setSongDetails.isRepeat
-                                        //         ? Colors.blueAccent
-                                        //         : HexColor("#656F77")),
-                                      ),
-                                      sizedw1,
-                                      IconButton(
-                                        onPressed: () {
-                                          songDetailsProvider.prev();
-                                        },
-                                        icon: const Icon(
-                                          FontAwesome.left_dir,
-                                          size: 37,
-                                        ),
-                                      ),
-                                      sizedw2,
-                                      Container(
-                                        width: 80,
-                                        height: 80,
-                                        decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: commonColor),
-                                        child: IconButton(
-                                          onPressed: () {
-                                            setSongDetails
-                                                .playOrpause();
-                                          },
-                                          icon: setSongDetails.isIconChanged
-                                              ? const Icon(
-                                                  Icons.pause,
-                                                  size: 60,
-                                                  color: Colors.white,
-                                                )
-                                              : const Icon(
-                                                  Icons.play_arrow,
-                                                  size: 60,
-                                                  color: Colors.white,
+                            return SingleChildScrollView(
+                                child: Column(
+                                  children: [
+                                    sizedh2,
+                                    Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 30),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            commonText(text: "Now Playing", size: 17),
+                                            Row(
+                                              children: [
+                                                IconButton(
+                                                  onPressed: () {
+                                                    if(songData!.isFavourited==true){
+                                                      addToFavs = false;
+                                                    }else{
+                                                      addToFavs = true;
+                                                    }
+                                                    final model = UserSongs(songName: songData.songName,artistName: songData.artistName,duration: songData.duration,songPath: songData.songPath,imageId: songData.imageId,isAddedtoPlaylist: false,isFavourited: addToFavs);
+                                                    songFetcher.putAt(songDetailsProvider.currentSongKey!, model);
+                                                    debugPrint("Added to Favourites $addToFavs");
+                                                    showFavouriteSnackBar(context: context,isFavourite: addToFavs);
+
+                                                  },
+                                                  icon: const Icon(CupertinoIcons.heart),
+                                                  color: songData!.isFavourited
+                                                      ? Colors.red
+                                                      : Colors.black87,
                                                 ),
+                                                PopupMenuButton(
+                                                  onSelected: (result) {
+                                                    if (result == 1) {
+                                                      showPlaylistNames(context, songDetailsProvider.currentSongKey);
+                                                    } else if (result == 2) {
+                                                      createPlaylist(context, songDetailsProvider.currentSongKey);
+                                                    }
+                                                  },
+                                                  itemBuilder: (context) => [
+                                                    const PopupMenuItem(
+                                                      child: Text("Add to Playlist"),
+                                                      value: 1,
+                                                    ),
+                                                    const PopupMenuItem(
+                                                      child: Text("Create Playlist"),
+                                                      value: 2,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            )
+                                          ],
+                                        )),
+                                    SizedBox(
+                                      height: MediaQuery.of(context).size.height * 0.05,
+                                    ),
+                                    Container(
+                                      height: 200,
+                                      width: 200,
+                                      decoration:  BoxDecoration(
+                                        border: Border.all(
+                                          color: commonColor,
+                                          width: 3
+                                        ),
+                                        shape: BoxShape.circle
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: QueryArtworkWidget(
+                                          id: songData.imageId!,
+                                          type: ArtworkType.AUDIO,
+                                          artworkBorder: const BorderRadius.all(
+                                              Radius.circular(100)),
+                                          artworkFit: BoxFit.fill,
+                                          artworkHeight: double.infinity,
+                                          artworkWidth: double.infinity,
+                                          nullArtworkWidget: ClipRRect(
+                                            borderRadius:
+                                            const BorderRadius.all(
+                                                Radius.circular(100)),
+                                            child: Image.asset(
+                                              "assets/images/defaultImage.png",
+                                            ),
+                                          ),
+                                          // artworkWidth: 200,
                                         ),
                                       ),
-                                      sizedw2,
-                                      IconButton(
-                                        onPressed: () {
-                                          setSongDetails.next();
-                                        },
-                                        icon: const Icon(
-                                          FontAwesome.right_dir,
-                                          size: 37,
-                                        ),
+                                    ),
+                                    sizedh2,
+                                    commonMarquees(
+                                      text: songData.songName,
+                                      size: 18.0,
+                                      height: 30.0,
+                                      duration: 23
+                                    ),
+                                    commonMarquees(
+                                      text: songData.artistName,
+                                      size: 13.0,
+                                      color: HexColor("656F77"),
+                                    ),
+                                    sizedh2,
+                                    SizedBox(
+                                      width:
+                                          MediaQuery.of(context).size.width * 0.8,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          IconButton(
+                                            onPressed: () {
+                                              setSongDetails.loopSongs();
+                                            },
+                                            icon: setSongDetails.loopIcon==1?const Icon(Typicons.loop,size: 26,color: Colors.blueAccent,):setSongDetails.loopIcon==2?const Icon(Icons.playlist_play_outlined,size: 26,color: Colors.blueAccent,):const Icon(Icons.loop_outlined,size: 26,)                                        ,
+                                            // icon: Icon(Icons.loop_outlined,
+                                            //     size: 26,
+                                            //     color: setSongDetails.isRepeat
+                                            //         ? Colors.blueAccent
+                                            //         : HexColor("#656F77")),
+                                          ),
+                                          sizedw1,
+                                          IconButton(
+                                            onPressed: () {
+                                              songDetailsProvider.prev();
+                                            },
+                                            icon: const Icon(
+                                              FontAwesome.left_dir,
+                                              size: 37,
+                                            ),
+                                          ),
+                                          sizedw2,
+                                          Container(
+                                            width: 80,
+                                            height: 80,
+                                            decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: commonColor),
+                                            child: IconButton(
+                                              onPressed: () {
+                                                setSongDetails
+                                                    .playOrpause();
+                                              },
+                                              icon: setSongDetails.isIconChanged
+                                                  ? const Icon(
+                                                      Icons.pause,
+                                                      size: 60,
+                                                      color: Colors.white,
+                                                    )
+                                                  : const Icon(
+                                                      Icons.play_arrow,
+                                                      size: 60,
+                                                      color: Colors.white,
+                                                    ),
+                                            ),
+                                          ),
+                                          sizedw2,
+                                          IconButton(
+                                            onPressed: () {
+                                              setSongDetails.next();
+                                            },
+                                            icon: const Icon(
+                                              FontAwesome.right_dir,
+                                              size: 37,
+                                            ),
+                                          ),
+                                          sizedw2,
+                                          IconButton(
+                                            onPressed: () {
+                                             setSongDetails.shuffleSongs();
+                                            },
+                                            icon: Icon(
+                                              Entypo.shuffle,
+                                              size: 22,
+                                              color: setSongDetails.isShuffled
+                                                  ? Colors.blueAccent
+                                                  : HexColor("#656F77"),
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      sizedw2,
-                                      IconButton(
-                                        onPressed: () {
-                                         setSongDetails.shuffleSongs();
-                                        },
-                                        icon: Icon(
-                                          Entypo.shuffle,
-                                          size: 22,
-                                          color: setSongDetails.isShuffled
-                                              ? Colors.blueAccent
-                                              : HexColor("#656F77"),
-                                        ),
+                                    ),
+                                    sizedh2,
+                                    SizedBox(
+                                      width:
+                                          MediaQuery.of(context).size.width * 0.8,
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Expanded(
+                                            child: setSongDetails.getDuration(),
+                                          ),
+                                          Expanded(
+                                            flex: 3,
+                                            child: setSongDetails.slider(),
+                                          ),
+                                          Expanded(
+                                            child: setSongDetails.totalDuration(),
+                                          ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
-                                sizedh2,
-                                SizedBox(
-                                  width:
-                                      MediaQuery.of(context).size.width * 0.8,
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Expanded(
-                                        child: setSongDetails.getDuration(),
-                                      ),
-                                      Expanded(
-                                        flex: 3,
-                                        child: setSongDetails.slider(),
-                                      ),
-                                      Expanded(
-                                        child: setSongDetails.totalDuration(),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
                             );
                           }
                         },
@@ -1176,60 +1114,163 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
           },
         ),
       );
-    });
+    },);
+  }
+  showPlaylistNames(BuildContext context, songKey) {
+    return showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Add to...'),
+        content: SizedBox(
+          height: 100,
+          width: 200,
+          child: ValueListenableBuilder(
+              valueListenable: userPlaylistNameInstance!.listenable(),
+              builder: (context, Box<UserPlaylistNames> songFetcher, _) {
+                List<int> allKeys =
+                userPlaylistNameInstance!.keys.cast<int>().toList();
+                return ListView.separated(
+                    itemBuilder: (_, index) {
+                      final key = allKeys[index];
+                      final currentPlaylist = songFetcher.get(key);
+                      return GestureDetector(
+                        onTap: () {
+                          debugPrint(
+                              "${currentPlaylist!.playlistNames} Selected");
+                          debugPrint("Key is $key");
+                          final songData = songDetailsBox!.get(songKey);
+                          final model = UserPlaylistSongs(
+                              currespondingPlaylistId: key,
+                              songName: songData!.songName,
+                              artistName: songData.artistName,
+                              songPath: songData.songPath,
+                              songImageId: songData.imageId,
+                              songDuration: songData.duration);
+                          userPlaylistSongsInstance!.add(model);
+                          Navigator.of(context).pop();
+                          showPlaylistSnackBar(context: context, isAdded: true);
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          child: Row(
+                            // crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  currentPlaylist!.playlistNames.toString(),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                    separatorBuilder: (_, index) => const Divider(),
+                    itemCount: allKeys.length);
+              }),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'Cancel'),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
   }
 
-  showPlaylistSnackBar(BuildContext context, isAdded) {
-    final snack = SnackBar(
-      content: isAdded!
-          ? commonText(
-              text: "Added to Playlist",
-              color: Colors.green,
-              size: 13,
-              weight: FontWeight.w500,
-              isCenter: true)
-          : commonText(
-              text: "Removed from Playlist",
-              color: Colors.red,
-              size: 13,
-              weight: FontWeight.w500,
-              isCenter: true),
-      duration: const Duration(seconds: 1),
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
+  createPlaylist(BuildContext context, songKey) {
+    var playlistName = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Create New Playlist'),
+        content: TextFormField(
+          controller: playlistName,
+          decoration: const InputDecoration(
+              hintText: "Enter The Name of Your Playlist"),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'Cancel'),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              final playlistNameFromTextField = playlistName.text;
+              final playlistModelVariable =
+              UserPlaylistNames(playlistNames: playlistNameFromTextField);
+              userPlaylistNameInstance!.add(playlistModelVariable);
+              final songData = songDetailsBox!.get(songKey);
+              final model = UserPlaylistSongs(
+                  currespondingPlaylistId: userPlaylistNameInstance!.keys.last,
+                  songName: songData!.songName,
+                  artistName: songData.artistName,
+                  songImageId: songData.imageId,
+                  songDuration: songData.duration,
+                  songPath: songData.songPath);
+              userPlaylistSongsInstance!.add(model);
+              Navigator.of(context).pop();
+              showPlaylistSnackBar(context: context, isAdded: true);
+            },
+            child: const Text('Add'),
+          ),
+        ],
       ),
-      backgroundColor: Colors.white,
-      width: 250,
     );
-    return ScaffoldMessenger.of(context).showSnackBar(snack);
   }
+}
 
-  showFavouriteSnackBar(BuildContext context, isFavourite) {
-    final snack = SnackBar(
-      content: isFavourite!
-          ? commonText(
-              text: "Added to Favourites",
-              color: Colors.green,
-              size: 13,
-              weight: FontWeight.w500,
-              isCenter: true)
-          : commonText(
-              text: "Removed from Favourites",
-              color: Colors.red,
-              size: 13,
-              weight: FontWeight.w500,
-              isCenter: true),
-      duration: const Duration(seconds: 1),
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
-      ),
-      backgroundColor: Colors.white,
-      width: 250,
-    );
-    return ScaffoldMessenger.of(context).showSnackBar(snack);
-  }
+showFavouriteSnackBar({required BuildContext context, isFavourite}) {
+  final snack = SnackBar(
+    content: isFavourite!
+        ? commonText(
+        text: "Added to Favourites",
+        color: Colors.green,
+        size: 13,
+        weight: FontWeight.w500,
+        isCenter: true)
+        : commonText(
+        text: "Removed from Favourites",
+        color: Colors.red,
+        size: 13,
+        weight: FontWeight.w500,
+        isCenter: true),
+    duration: const Duration(seconds: 1),
+    behavior: SnackBarBehavior.floating,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(24),
+    ),
+    backgroundColor: Colors.white,
+    width: 250,
+  );
+  return ScaffoldMessenger.of(context).showSnackBar(snack);
+}
+showPlaylistSnackBar({required BuildContext context, isAdded}) {
+  final snack = SnackBar(
+    content: isAdded!
+        ? commonText(
+        text: "Added to Playlist",
+        color: Colors.green,
+        size: 13,
+        weight: FontWeight.w500,
+        isCenter: true)
+        : commonText(
+        text: "Removed from Playlist",
+        color: Colors.red,
+        size: 13,
+        weight: FontWeight.w500,
+        isCenter: true),
+    duration: const Duration(seconds: 1),
+    behavior: SnackBarBehavior.floating,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(24),
+    ),
+    backgroundColor: Colors.white,
+    width: 250,
+  );
+  return ScaffoldMessenger.of(context).showSnackBar(snack);
 }
 
 commonMarquees({height,width,hPadding,vPadding,text="",velocity,blankSpace,color,weight,size,family,duration}){
@@ -1338,77 +1379,28 @@ commonMarquees({height,width,hPadding,vPadding,text="",velocity,blankSpace,color
 //     );
 //   }
 // }
-
-class FavouriteSongs extends StatefulWidget {
-  var padding, image, songName, songDesc;
-
-  FavouriteSongs({this.padding, this.image, this.songName, this.songDesc});
-
-  @override
-  _FavouriteSongsState createState() => _FavouriteSongsState();
-}
-
-class _FavouriteSongsState extends State<FavouriteSongs> {
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: Padding(
-        padding: EdgeInsets.symmetric(horizontal: widget.padding ?? 20),
-        child: Container(
-          width: 50,
-          height: 50,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            image: DecorationImage(
-              image: ExactAssetImage(
-                widget.image!,
-              ),
-              fit: BoxFit.cover,
-            ),
-          ),
-        ),
-      ),
-      title:
-          commonText(text: widget.songName, size: 15, weight: FontWeight.w600),
-      subtitle: commonText(
-          text: widget.songDesc,
-          size: 12,
-          color: HexColor("#ACB8C2"),
-          weight: FontWeight.w600),
-      trailing: SizedBox(
-        width: 80,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: IconButton(
-                icon: Icon(
-                  Icons.play_arrow,
-                ),
-                onPressed: () {
-                  debugPrint("Play Button Clicked");
-                },
-              ),
-            ),
-            Expanded(
-              child: IconButton(
-                icon: Icon(
-                  Icons.remove_circle_outline,
-                ),
-                onPressed: () {
-                  debugPrint("Delete Button Clicked");
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+//
+// class FavouriteSongs extends StatefulWidget {
+//   @override
+//   _FavouriteSongsState createState() => _FavouriteSongsState();
+// }
+//
+// class _FavouriteSongsState extends State<FavouriteSongs> {
+//   Box<UserSongs>? userSongDbInstance;
+//
+//   @override
+//   void initState() {
+//     userSongDbInstance = Hive.box<UserSongs>(songDetailListBoxName);
+//     super.initState();
+//   }
+//   @override
+//   Widget build(BuildContext context) {
+//
+//   }
+// }
 
 var screenHeight, screenWidth;
-var sizedh1 = SizedBox(
+var sizedh1 = const SizedBox(
   height: 10,
 );
 var sizedh2 = const SizedBox(

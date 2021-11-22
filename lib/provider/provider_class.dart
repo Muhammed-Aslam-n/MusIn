@@ -381,8 +381,6 @@
 
 // Changes to accommada
 
-import 'dart:math';
-
 import 'package:flutter/cupertino.dart';
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
@@ -390,17 +388,16 @@ import 'package:hive/hive.dart';
 import 'package:musin/database/database.dart';
 import 'package:musin/materials/colors.dart';
 import 'package:musin/pages/widgets/widgets.dart';
-import 'package:on_audio_query/on_audio_query.dart';
 
 import '../main.dart';
 
 class PlayerCurrespondingItems extends ChangeNotifier {
 
-  Box<SongDetailsList> db = Hive.box<SongDetailsList>(songDetailListBoxName);
+  Box<UserSongs> db = Hive.box<UserSongs>(songDetailListBoxName);
   List<String> songsPathList = [];
   getKeys(){
     db.values.forEach((element) {
-      songsPathList.add(element.path!);
+      songsPathList.add(element.songPath!);
     });
     songsPathList.forEach((element) {
       final audio = Audio.file(element);
@@ -414,11 +411,15 @@ class PlayerCurrespondingItems extends ChangeNotifier {
   bool isSelectedOrNot = true;
   int? currentSongKey = 0;
   bool isNotificationOn=true;
-  int? currentSongDuration=0;
+  String? currentSongDuration;
   String? songPath = "";
   int? selectedSongKey;
   bool isIconChanged = false;
   bool isRepeat = false;
+
+  // Inserting and Removing Using This Variable in Playlist;
+  bool isAddedToPlaylist = true;
+  get isAddedVariableGetter => isAddedToPlaylist;
 
   final _assetsAudioPlayer = AssetsAudioPlayer();
   List<Audio> playList = <Audio>[];
