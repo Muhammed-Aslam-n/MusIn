@@ -9,7 +9,9 @@ import 'package:musin/pages/addsongtoplaylist.dart';
 import 'package:musin/pages/home.dart';
 import 'package:musin/pages/songlist.dart';
 import 'package:musin/pages/songplayingpage.dart';
+import 'package:musin/provider/provider_class.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import 'package:provider/provider.dart';
 import '/pages/widgets/widgets.dart';
 import 'package:miniplayer/miniplayer.dart';
 import 'package:fluttericon/font_awesome_icons.dart';
@@ -23,12 +25,11 @@ class PlaylistSongs extends StatefulWidget {
   _PlaylistSongsState createState() => _PlaylistSongsState();
 }
 
-bool isSelected = true;
 
 class _PlaylistSongsState extends State<PlaylistSongs> {
   Box<UserPlaylistSongs>? userPlaylistSongDbInstance;
   Box<UserPlaylistNames>? userPlaylistNameDbInstance;
-
+  List<String> songsPaths =[];
   @override
   void initState() {
     userPlaylistNameDbInstance =
@@ -37,6 +38,28 @@ class _PlaylistSongsState extends State<PlaylistSongs> {
         Hive.box<UserPlaylistSongs>(userPlaylistSongBoxName);
     super.initState();
   }
+
+
+  getSongPathsMan(){
+    final pInstance = Provider.of<PlayerCurrespondingItems>(context, listen: false);
+    userPlaylistSongDbInstance!.values.forEach((element) {
+      if(!pInstance.didUserClickedANewPlaylst){
+        if(element.currespondingPlaylistId == widget.selectedPlaylistKey){
+          songsPaths.add(element.songPath!);
+        }
+      }else{
+        pInstance.playlistSongsPlaylist.clear();
+        if(element.currespondingPlaylistId == widget.selectedPlaylistKey){
+          songsPaths.add(element.songPath!);
+        }
+      }
+
+    });
+    pInstance.getPlaylistSongsPaths(songsPaths);
+    pInstance.modeOfPlaylist = 3;
+    pInstance.showKeys();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -106,101 +129,107 @@ class _PlaylistSongsState extends State<PlaylistSongs> {
               playlistSongTileView(context),
             ],
           ),
-          CommonMiniPlayer(
-            // isSelected: isSelected,
-          ),
+          CommonMiniPlayer(),
         ],
       ),
     );
   }
 
   playlistSongTileView(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: userPlaylistSongDbInstance!.listenable(),
-      builder: (context, Box<UserPlaylistSongs> songFetcher, _) {
-        List<int> keys = songFetcher.keys.cast<int>()
-            .where((key) =>
-        songFetcher.get(key)!.currespondingPlaylistId ==
-            widget.selectedPlaylistKey)
-            .toList();
-        if (songFetcher.isEmpty) {
-          return Column(
-            children: const [
-              Text("No Songs So Far..."),
-            ],
-          );
-        } else {
-          return ListView.builder(
-            itemCount: keys.length,
-            shrinkWrap: true,
-            physics: const ScrollPhysics(),
-            itemBuilder: (context, index) {
-              final key = keys[index];
-              final songDatas = songFetcher.get(key);
-              return GestureDetector(
-                onTap: () {},
-                child: ListTile(
-                  leading: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: QueryArtworkWidget(
-                        id: songDatas!.songImageId!,
-                        type: ArtworkType.AUDIO,
-                        nullArtworkWidget: ClipRRect(
-                            child: Image.asset(
-                              "assets/images/defaultImage.png",
-                              height: 50,
-                              width: 50,
-                              fit: BoxFit.fill,
+    return Consumer<PlayerCurrespondingItems>(
+        builder: (_, setSongDetails, child) =>ValueListenableBuilder(
+        valueListenable: userPlaylistSongDbInstance!.listenable(),
+        builder: (context, Box<UserPlaylistSongs> songFetcher, _) {
+          List<int> keys = songFetcher.keys.cast<int>()
+              .where((key) =>
+          songFetcher.get(key)!.currespondingPlaylistId ==
+              widget.selectedPlaylistKey)
+              .toList();
+          if (songFetcher.isEmpty) {
+            return Column(
+              children: const [
+                Text("No Songs So Far..."),
+              ],
+            );
+          } else {
+            return ListView.builder(
+              itemCount: keys.length,
+              shrinkWrap: true,
+              physics: const ScrollPhysics(),
+              itemBuilder: (context, index) {
+                final key = keys[index];
+                final songDatas = songFetcher.get(key);
+                return GestureDetector(
+                  onTap: () {
+                    setSongDetails.didUserClickedANewPlaylst = true;
+                    getSongPathsMan();
+                    setSongDetails.isSelectedOrNot = false;
+                    setSongDetails.selectedSongKey = key;
+                    setSongDetails.opnPlaylist(setSongDetails.selectedSongKey);
+                    },
+                  child: ListTile(
+                    leading: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: QueryArtworkWidget(
+                          id: songDatas!.songImageId!,
+                          type: ArtworkType.AUDIO,
+                          nullArtworkWidget: ClipRRect(
+                              child: Image.asset(
+                                "assets/images/defaultImage.png",
+                                height: 50,
+                                width: 50,
+                                fit: BoxFit.fill,
+                              ),
+                              borderRadius: BorderRadius.circular(10)),
+                          artworkHeight: 50,
+                          artworkWidth: 50,
+                          artworkFit: BoxFit.fill,
+                          artworkBorder: BorderRadius.circular(10)),
+                    ),
+                    title: Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: commonText(
+                          text: songDatas.songName,
+                          size: 15,
+                          weight: FontWeight.w600),
+                    ),
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: commonMarquees(
+                          text: songDatas.artistName,
+                          size: 12.0,
+                          color: HexColor("#ACB8C2"),
+                          weight: FontWeight.w600,
+                          hPadding: 0.0,
+                          vPadding: 1.0),
+                    ),
+                    trailing: SizedBox(
+                      width: 80,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: IconButton(
+                              icon: const Icon(
+                                CupertinoIcons.minus_circled,
+                              ),
+                              onPressed: () {
+                                debugPrint("Delete Item Key is $key");
+                                songFetcher.delete(key);
+                                debugPrint("Delete Button Clicked");
+                              },
                             ),
-                            borderRadius: BorderRadius.circular(10)),
-                        artworkHeight: 50,
-                        artworkWidth: 50,
-                        artworkFit: BoxFit.fill,
-                        artworkBorder: BorderRadius.circular(10)),
-                  ),
-                  title: Padding(
-                    padding: const EdgeInsets.only(top: 10),
-                    child: commonText(
-                        text: songDatas.songName,
-                        size: 15,
-                        weight: FontWeight.w600),
-                  ),
-                  subtitle: Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: commonMarquees(
-                        text: songDatas.artistName,
-                        size: 12.0,
-                        color: HexColor("#ACB8C2"),
-                        weight: FontWeight.w600,
-                        hPadding: 0.0,
-                        vPadding: 1.0),
-                  ),
-                  trailing: SizedBox(
-                    width: 80,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: IconButton(
-                            icon: const Icon(
-                              CupertinoIcons.minus_circled,
-                            ),
-                            onPressed: () {
-                              debugPrint("Delete Item Key is $key");
-                              songFetcher.delete(key);
-                              debugPrint("Delete Button Clicked");
-                            },
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              );
-            },
-          );
-        }
-      },
+                );
+              },
+            );
+          }
+        },
+      ),
     );
   }
 }

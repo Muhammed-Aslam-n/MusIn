@@ -787,10 +787,19 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
               return ValueListenableBuilder(
                 valueListenable: songDetailsBox!.listenable(),
                 builder: (context, Box<UserSongs> songFetcher, _) {
-                  var keys = songFetcher.keys.cast<int>().toList();
+                  List<int> keys = songFetcher.keys.cast<int>().toList();
 
-                  songDetailsProvider.currentSongKey =
-                      songDetailsProvider.selectedSongKey;
+                  if(songDetailsProvider.modeOfPlaylist == 1){
+                    keys = songDetailsBox!.keys.cast<int>().toList();
+                  }else if(songDetailsProvider.modeOfPlaylist == 2){
+                    keys = songFetcher.keys.cast<int>().where((key) => songFetcher.get(key)!.isFavourited == true).toList();
+                  }
+                  else{
+                    keys = userPlaylistSongsInstance!.keys.cast<int>().toList();
+                  }
+
+                  songDetailsProvider.currentSongKey =keys[songDetailsProvider.selectedSongKey!];
+                      // songDetailsProvider.selectedSongKey;
 
                   var songData =
                       songFetcher.get(songDetailsProvider.currentSongKey);

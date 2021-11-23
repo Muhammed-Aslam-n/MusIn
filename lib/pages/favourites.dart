@@ -18,16 +18,27 @@ class Favourites extends StatefulWidget {
   _FavouritesState createState() => _FavouritesState();
 }
 
-bool isSelected = true;
 
 class _FavouritesState extends State<Favourites> {
   Box<UserSongs>? userSongDbInstance;
-
+  List<String> songsPaths =[];
   @override
   void initState() {
     userSongDbInstance = Hive.box<UserSongs>(songDetailListBoxName);
+    getSongPathsMan();
     super.initState();
-    List<int> keys = userSongDbInstance!.keys.cast<int>().where((key) => userSongDbInstance!.get(key)!.isFavourited == true).toList();
+  }
+
+  getSongPathsMan(){
+    final pInstance = Provider.of<PlayerCurrespondingItems>(context, listen: false);
+    userSongDbInstance!.values.forEach((element) {
+      if(element.isFavourited == true){
+        songsPaths.add(element.songPath!);
+      }
+    });
+    pInstance.getFavSongsPaths(songsPaths);
+    pInstance.modeOfPlaylist = 2;
+    // pInstance.showKeys();
   }
 
   @override
@@ -76,7 +87,11 @@ class _FavouritesState extends State<Favourites> {
                 final key = keys[index];
                 final songDatas = songFetcher.get(key);
                 return GestureDetector(
-                  onTap: () {},
+                  onTap: () {
+                    setSongDetails.isSelectedOrNot = false;
+                    setSongDetails.selectedSongKey = key;
+                    setSongDetails.opnPlaylist(setSongDetails.selectedSongKey);
+                  },
                   child: ListTile(
                     leading: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),

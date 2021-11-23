@@ -393,43 +393,63 @@ import '../main.dart';
 
 class PlayerCurrespondingItems extends ChangeNotifier {
 
-  Box<UserSongs> db = Hive.box<UserSongs>(songDetailListBoxName);
   List<String> songsPathList = [];
-  getKeys(){
-    db.values.forEach((element) {
-      songsPathList.add(element.songPath!);
-    });
-    songsPathList.forEach((element) {
+
+  List<String> sampleKeys =[];
+  getAllSongsPaths(List<String> songPathList){
+    songPathList.forEach((element) {
       final audio = Audio.file(element);
-      playList.add(audio);
+      allSongsplayList.add(audio);
+    });
+  }
+  getFavSongsPaths(List<String> songPathList){
+    songPathList.forEach((element) {
+      final audio = Audio.file(element);
+      favPlaylist.add(audio);
+    });
+  }
+  bool didUserClickedANewPlaylst = false;
+
+  getPlaylistSongsPaths(List<String> songPathList){
+    songPathList.forEach((element) {
+      final audio = Audio.file(element);
+      playlistSongsPlaylist.add(audio);
     });
   }
   showKeys(){
-    playList.forEach((element) {debugPrint(element.path);});
+    selectModeOfPlaylist().forEach((element) {debugPrint(element.path);});
   }
 
   bool isSelectedOrNot = true;
   int? currentSongKey = 0;
   bool isNotificationOn=true;
   String? currentSongDuration;
-  String? songPath = "";
   int? selectedSongKey;
   bool isIconChanged = false;
   bool isRepeat = false;
 
-  // Inserting and Removing Using This Variable in Playlist;
-  bool isAddedToPlaylist = true;
-  get isAddedVariableGetter => isAddedToPlaylist;
 
   final _assetsAudioPlayer = AssetsAudioPlayer();
-  List<Audio> playList = <Audio>[];
- //
- opnPlaylist(List<Audio> audios,startingIndex) async{
+  List<Audio> allSongsplayList = <Audio>[];
+  List<Audio> favPlaylist = <Audio>[];
+  List<Audio> playlistSongsPlaylist = <Audio>[];
+  int modeOfPlaylist = 1;
+  selectModeOfPlaylist(){
+    if(modeOfPlaylist == 1){
+      return allSongsplayList;
+    }else if(modeOfPlaylist == 2){
+      return favPlaylist;
+    }else if(modeOfPlaylist == 3){
+      return playlistSongsPlaylist;
+    }
+  }
+
+ opnPlaylist(startingIndex) async{
    listenEverything();
    change();
     try{
       await _assetsAudioPlayer.open(
-       Playlist(audios: audios,startIndex: startingIndex!),autoStart: true,loopMode: LoopMode.playlist,showNotification: true,
+       Playlist(audios: selectModeOfPlaylist(),startIndex: startingIndex!),autoStart: true,loopMode: LoopMode.playlist,showNotification: true,
         notificationSettings: NotificationSettings(
           customPlayPauseAction: (handle){
              playOrpause();

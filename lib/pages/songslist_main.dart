@@ -32,19 +32,26 @@ class _SongsListMainState extends State<SongsListMain> {
   Box<UserSongs>? songDbInstance;
   Box<UserPlaylistNames>? userPlaylistNameInstance;
   Box<UserPlaylistSongs>? userPlaylistSongsInstance;
-  List completeSongsKey =[];
+  List<String> songsPaths =[];
   @override
   void initState() {
     songDbInstance = Hive.box<UserSongs>(songDetailListBoxName);
     userPlaylistNameInstance = Hive.box<UserPlaylistNames>(userPlaylistBoxName);
-    userPlaylistSongsInstance =
-        Hive.box<UserPlaylistSongs>(userPlaylistSongBoxName);
-    final pInstance =
-        Provider.of<PlayerCurrespondingItems>(context, listen: false);
-    pInstance.getKeys();
-    pInstance.showKeys();
+    userPlaylistSongsInstance = Hive.box<UserPlaylistSongs>(userPlaylistSongBoxName);
+    getSongPathsMan();
     super.initState();
   }
+
+  getSongPathsMan(){
+    final pInstance = Provider.of<PlayerCurrespondingItems>(context, listen: false);
+    songDbInstance!.values.forEach((element) {
+     songsPaths.add(element.songPath!);
+    });
+    pInstance.getAllSongsPaths(songsPaths);
+    pInstance.modeOfPlaylist = 1;
+    pInstance.showKeys();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -56,14 +63,14 @@ class _SongsListMainState extends State<SongsListMain> {
             child: Column(
               children: [
                 Padding(
-                  padding: EdgeInsets.only(left: 13, top: 20),
+                  padding: const EdgeInsets.only(left: 13, top: 20),
                   child: Align(
                     alignment: Alignment.topLeft,
                     child: commonText(text: "Your Songs"),
                   ),
                 ),
                 sizedh1,
-                ImageContainer(context),
+                imageContainer(context),
               ],
             ),
           ),
@@ -75,7 +82,7 @@ class _SongsListMainState extends State<SongsListMain> {
 
   // PLAYS WITH DATABASE and Provider also
 
-  ImageContainer(BuildContext context) {
+  imageContainer(BuildContext context) {
     bool addToFavs = false;
     return Consumer<PlayerCurrespondingItems>(
       builder: (_, setSongDetails, child) => ValueListenableBuilder(
@@ -108,9 +115,7 @@ class _SongsListMainState extends State<SongsListMain> {
                     setSongDetails.selectedSongKey = key;
                     setSongDetails.currentSongDuration =
                         songDatas.duration.toString();
-                    setSongDetails.songPath = songDatas.songPath;
-                    setSongDetails.opnPlaylist(setSongDetails.playList,
-                        setSongDetails.selectedSongKey);
+                    setSongDetails.opnPlaylist(setSongDetails.selectedSongKey);
                   },
                   child: Container(
                     decoration: BoxDecoration(
