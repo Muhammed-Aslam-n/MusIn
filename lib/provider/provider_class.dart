@@ -428,6 +428,13 @@ class PlayerCurrespondingItems extends ChangeNotifier {
   bool isIconChanged = false;
   bool isRepeat = false;
 
+  bool isAllSongsAlreadyClicked = false;
+  bool isFavsAlreadyClicked = false;
+
+  bool isAudioPlayingFromPlaylist = false;
+  bool isPlaylistSongAlreadyPlaying = false;
+  int alreadyPlayingPlaylistIndex = 0;
+  int test =0;
 
   final _assetsAudioPlayer = AssetsAudioPlayer();
   List<Audio> allSongsplayList = <Audio>[];

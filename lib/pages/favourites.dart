@@ -31,14 +31,20 @@ class _FavouritesState extends State<Favourites> {
 
   getSongPathsMan(){
     final pInstance = Provider.of<PlayerCurrespondingItems>(context, listen: false);
-    userSongDbInstance!.values.forEach((element) {
-      if(element.isFavourited == true){
-        songsPaths.add(element.songPath!);
+    if(pInstance.favPlaylist.isEmpty){
+      for (var element in userSongDbInstance!.values) {
+        if(element.isFavourited == true){
+          songsPaths.add(element.songPath!);
+        }
       }
-    });
+    }
+    pInstance.showKeys();
+    debugPrint("Favourites Done");
+  }
+  changeModeOfPlay(){
+    final pInstance = Provider.of<PlayerCurrespondingItems>(context, listen: false);
     pInstance.getFavSongsPaths(songsPaths);
     pInstance.modeOfPlaylist = 2;
-    // pInstance.showKeys();
   }
 
   @override
@@ -59,7 +65,7 @@ class _FavouritesState extends State<Favourites> {
               favouriteSongs(),
             ],
           ),
-          CommonMiniPlayer(),
+          const CommonMiniPlayer(),
         ],
       ),
     );
@@ -88,8 +94,11 @@ class _FavouritesState extends State<Favourites> {
                 final songDatas = songFetcher.get(key);
                 return GestureDetector(
                   onTap: () {
+                    // setSongDetails.isFavsAlreadyClicked = true;
+                    changeModeOfPlay();
+                    // setSongDetails.isAllSongsAlreadyClicked = false;
                     setSongDetails.isSelectedOrNot = false;
-                    setSongDetails.selectedSongKey = key;
+                    setSongDetails.selectedSongKey = index;
                     setSongDetails.opnPlaylist(setSongDetails.selectedSongKey);
                   },
                   child: ListTile(

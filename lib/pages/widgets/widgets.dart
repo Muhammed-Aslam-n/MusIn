@@ -784,132 +784,219 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
           minHeight: 80,
           builder: (height, percentage) {
             if (height <= 80) {
-              return ValueListenableBuilder(
-                valueListenable: songDetailsBox!.listenable(),
-                builder: (context, Box<UserSongs> songFetcher, _) {
-                  List<int> keys = songFetcher.keys.cast<int>().toList();
+              if(songDetailsProvider.isAudioPlayingFromPlaylist == false){
+                return ValueListenableBuilder(
+                  valueListenable: songDetailsBox!.listenable(),
+                  builder: (context, Box<UserSongs> songFetcher, _) {
+                    List keys =[];
+                    if(songDetailsProvider.modeOfPlaylist == 1){
+                      keys = songDetailsBox!.keys.cast<int>().toList();
+                    }else if(songDetailsProvider.modeOfPlaylist == 2){
+                      keys = songFetcher.keys.cast<int>().where((key) => songFetcher.get(key)!.isFavourited == true).toList();
+                    }
+                    songDetailsProvider.currentSongKey =keys[songDetailsProvider.selectedSongKey??0];
+                    var songData =
+                    songFetcher.get(songDetailsProvider.currentSongKey);
 
-                  if(songDetailsProvider.modeOfPlaylist == 1){
-                    keys = songDetailsBox!.keys.cast<int>().toList();
-                  }else if(songDetailsProvider.modeOfPlaylist == 2){
-                    keys = songFetcher.keys.cast<int>().where((key) => songFetcher.get(key)!.isFavourited == true).toList();
-                  }
-                  else{
-                    keys = userPlaylistSongsInstance!.keys.cast<int>().toList();
-                  }
-
-                  songDetailsProvider.currentSongKey =keys[songDetailsProvider.selectedSongKey!];
-                      // songDetailsProvider.selectedSongKey;
-
-                  var songData =
-                      songFetcher.get(songDetailsProvider.currentSongKey);
-
-                  if (songFetcher.isEmpty) {
-                    return const Center(
-                      child: Text("No Data Available"),
-                    );
-                  } else {
-                    return Row(
-                      children: [
-                        Expanded(
-                          flex: 2,
-                          child: ListTile(
-                            tileColor: Colors.white38,
-                            isThreeLine: true,
-                            leading: QueryArtworkWidget(
-                              id: songData!.imageId!,
-                              type: ArtworkType.AUDIO,
-                              nullArtworkWidget:
-                                  Image.asset("assets/images/defaultImage.png"),
-                              // artworkWidth: 200,
+                    if (songFetcher.isEmpty) {
+                      return const Center(
+                        child: Text("No Data Available"),
+                      );
+                    } else {
+                      return Row(
+                        children: [
+                          Expanded(
+                            flex: 2,
+                            child: ListTile(
+                              tileColor: Colors.white38,
+                              isThreeLine: true,
+                              leading: QueryArtworkWidget(
+                                id: songData?.imageId??0,
+                                type: ArtworkType.AUDIO,
+                                nullArtworkWidget:
+                                Image.asset("assets/images/defaultImage.png"),
+                                // artworkWidth: 200,
+                              ),
+                              title:  commonMarquees(
+                                  text: songData?.songName,
+                                  hPadding: 0.0,
+                                  size: 13.0,
+                                  height: 25.0
+                              ),
+                              subtitle: commonMarquees(
+                                  text: songData?.artistName,
+                                  hPadding: 0.0,
+                                  size: 11.0,
+                                  height: 25.0
+                              ),
                             ),
-                            title:  commonMarquees(
-                                text: songData.songName,
-                                hPadding: 0.0,
-                                size: 13.0,
-                                height: 25.0
-                            ),
-                            subtitle: commonText(
-                                text: songData.artistName ?? "", size: 11,),
                           ),
-                        ),
-                        Expanded(
-                          flex: 1,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: IconButton(
-                                  onPressed: () {
-                                    debugPrint("Previous Icon Clicked");
-                                    songDetailsProvider.prev();
-                                  },
-                                  icon: const Icon(FontAwesome.left_dir),
+                          Expanded(
+                            flex: 1,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: IconButton(
+                                    onPressed: () {
+                                      debugPrint("Previous Icon Clicked");
+                                      songDetailsProvider.prev();
+                                    },
+                                    icon: const Icon(FontAwesome.left_dir),
+                                  ),
                                 ),
-                              ),
-                              IconButton(
-                                onPressed: () {
-                                  songDetailsProvider.playOrpause();
-                                },
-                                icon: songDetailsProvider.isIconChanged
-                                    ? const Icon(
-                                        Icons.pause,
-                                        size: 32,
-                                      )
-                                    : const Icon(
-                                        Icons.play_arrow,
-                                        size: 32,
-                                      ),
-                              ),
-                              IconButton(
-                                onPressed: () {
-                                  debugPrint("Next Icon Pressed");
-                                  songDetailsProvider.next();
-                                },
-                                icon: const Icon(FontAwesome.right_dir),
-                              ),
-                            ],
+                                IconButton(
+                                  onPressed: () {
+                                    songDetailsProvider.playOrpause();
+                                  },
+                                  icon: songDetailsProvider.isIconChanged
+                                      ? const Icon(
+                                    Icons.pause,
+                                    size: 32,
+                                  )
+                                      : const Icon(
+                                    Icons.play_arrow,
+                                    size: 32,
+                                  ),
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    debugPrint("Next Icon Pressed");
+                                    songDetailsProvider.next();
+                                  },
+                                  icon: const Icon(FontAwesome.right_dir),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
-                    );
-                  }
-                },
-              );
+                        ],
+                      );
+                    }
+                  },
+                );
+              }else{
+                return ValueListenableBuilder(
+                  valueListenable: userPlaylistSongsInstance!.listenable(),
+                  builder: (context, Box<UserPlaylistSongs> songFetcher, _) {
+                    List keys = songFetcher.keys.cast<int>().where((key) => songFetcher.get(key)!.currespondingPlaylistId == songDetailsProvider.test).toList();
+
+                    songDetailsProvider.currentSongKey =keys[songDetailsProvider.selectedSongKey??0];
+                    // songDetailsProvider.selectedSongKey;
+
+                    var songData =
+                    songFetcher.get(songDetailsProvider.currentSongKey);
+
+                    if (songFetcher.isEmpty) {
+                      return const Center(
+                        child: Text("No Data Available"),
+                      );
+                    } else {
+                      return Row(
+                        children: [
+                          Expanded(
+                            flex: 2,
+                            child: ListTile(
+                              tileColor: Colors.white38,
+                              isThreeLine: true,
+                              leading: QueryArtworkWidget(
+                                id: songData!.songImageId!,
+                                type: ArtworkType.AUDIO,
+                                nullArtworkWidget:
+                                Image.asset("assets/images/defaultImage.png"),
+                                // artworkWidth: 200,
+                              ),
+                              title:  commonMarquees(
+                                  text: songData.songName,
+                                  hPadding: 0.0,
+                                  size: 13.0,
+                                  height: 25.0
+                              ),
+                              subtitle: commonMarquees(
+                                  text: songData.artistName,
+                                  hPadding: 0.0,
+                                  size: 11.0,
+                                  height: 25.0
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 1,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: IconButton(
+                                    onPressed: () {
+                                      debugPrint("Previous Icon Clicked");
+                                      songDetailsProvider.prev();
+                                    },
+                                    icon: const Icon(FontAwesome.left_dir),
+                                  ),
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    songDetailsProvider.playOrpause();
+                                  },
+                                  icon: songDetailsProvider.isIconChanged
+                                      ? const Icon(
+                                    Icons.pause,
+                                    size: 32,
+                                  )
+                                      : const Icon(
+                                    Icons.play_arrow,
+                                    size: 32,
+                                  ),
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    debugPrint("Next Icon Pressed");
+                                    songDetailsProvider.next();
+                                  },
+                                  icon: const Icon(FontAwesome.right_dir),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      );
+                    }
+                  },
+                );
+              }
+
             } else {
-              // return SongPlayingPage();
-              bool? isFavourite = false, isShuffle = false, isAdded = false;
               bool addToFavs = false;
-              return Consumer<PlayerCurrespondingItems>(
-                builder: (_, setSongDetails, child) => Container(
-                  margin: const EdgeInsets.only(top: 20),
-                  width: double.infinity,
-                  height: MediaQuery.of(context).size.height,
-                  decoration: const BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(24),
-                          topRight: Radius.circular(24))),
-                  child: ListView(
-                    shrinkWrap: true,
-                    children: [
-                      ValueListenableBuilder(
-                        valueListenable: songDetailsBox!.listenable(),
-                        builder:
-                            (context, Box<UserSongs> songFetcher, _) {
+              if(songDetailsProvider.isAudioPlayingFromPlaylist == false){
+                return Consumer<PlayerCurrespondingItems>(
+                  builder: (_, setSongDetails, child) => Container(
+                    margin: const EdgeInsets.only(top: 20),
+                    width: double.infinity,
+                    height: MediaQuery.of(context).size.height,
+                    decoration: const BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(24),
+                            topRight: Radius.circular(24))),
+                    child: ListView(
+                      shrinkWrap: true,
+                      children: [
+                        ValueListenableBuilder(
+                          valueListenable: songDetailsBox!.listenable(),
+                          builder:
+                              (context, Box<UserSongs> songFetcher, _) {
 
-                          songDetailsProvider.currentSongKey =
-                              songDetailsProvider.selectedSongKey;
+                            songDetailsProvider.currentSongKey =
+                                songDetailsProvider.selectedSongKey;
 
-                          var songData =
-                          songFetcher.get(songDetailsProvider.currentSongKey);
+                            var songData =
+                            songFetcher.get(songDetailsProvider.currentSongKey);
 
-                          if (songFetcher.isEmpty) {
-                            return const Center(
-                              child: Text("No Songs Available"),
-                            );
-                          } else {
-                            return SingleChildScrollView(
+                            if (songFetcher.isEmpty) {
+                              return const Center(
+                                child: Text("No Songs Available"),
+                              );
+                            } else {
+                              return SingleChildScrollView(
                                 child: Column(
                                   children: [
                                     sizedh2,
@@ -969,11 +1056,11 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                                       height: 200,
                                       width: 200,
                                       decoration:  BoxDecoration(
-                                        border: Border.all(
-                                          color: commonColor,
-                                          width: 3
-                                        ),
-                                        shape: BoxShape.circle
+                                          border: Border.all(
+                                              color: commonColor,
+                                              width: 3
+                                          ),
+                                          shape: BoxShape.circle
                                       ),
                                       child: Padding(
                                         padding: const EdgeInsets.all(8.0),
@@ -999,10 +1086,10 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                                     ),
                                     sizedh2,
                                     commonMarquees(
-                                      text: songData.songName,
-                                      size: 18.0,
-                                      height: 30.0,
-                                      duration: 23
+                                        text: songData.songName,
+                                        size: 18.0,
+                                        height: 30.0,
+                                        duration: 23
                                     ),
                                     commonMarquees(
                                       text: songData.artistName,
@@ -1012,10 +1099,10 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                                     sizedh2,
                                     SizedBox(
                                       width:
-                                          MediaQuery.of(context).size.width * 0.8,
+                                      MediaQuery.of(context).size.width * 0.8,
                                       child: Row(
                                         mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
+                                        MainAxisAlignment.spaceBetween,
                                         children: [
                                           IconButton(
                                             onPressed: () {
@@ -1052,15 +1139,15 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                                               },
                                               icon: setSongDetails.isIconChanged
                                                   ? const Icon(
-                                                      Icons.pause,
-                                                      size: 60,
-                                                      color: Colors.white,
-                                                    )
+                                                Icons.pause,
+                                                size: 60,
+                                                color: Colors.white,
+                                              )
                                                   : const Icon(
-                                                      Icons.play_arrow,
-                                                      size: 60,
-                                                      color: Colors.white,
-                                                    ),
+                                                Icons.play_arrow,
+                                                size: 60,
+                                                color: Colors.white,
+                                              ),
                                             ),
                                           ),
                                           sizedw2,
@@ -1076,7 +1163,7 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                                           sizedw2,
                                           IconButton(
                                             onPressed: () {
-                                             setSongDetails.shuffleSongs();
+                                              setSongDetails.shuffleSongs();
                                             },
                                             icon: Icon(
                                               Entypo.shuffle,
@@ -1092,7 +1179,7 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                                     sizedh2,
                                     SizedBox(
                                       width:
-                                          MediaQuery.of(context).size.width * 0.8,
+                                      MediaQuery.of(context).size.width * 0.8,
                                       child: Row(
                                         mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
@@ -1111,14 +1198,205 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                                     ),
                                   ],
                                 ),
-                            );
-                          }
-                        },
-                      ),
-                    ],
+                              );
+                            }
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              );
+                );
+              }else{
+                return Consumer<PlayerCurrespondingItems>(
+                  builder: (_, setSongDetails, child) => Container(
+                    margin: const EdgeInsets.only(top: 20),
+                    width: double.infinity,
+                    height: MediaQuery.of(context).size.height,
+                    decoration: const BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(24),
+                            topRight: Radius.circular(24))),
+                    child: ListView(
+                      shrinkWrap: true,
+                      children: [
+                        ValueListenableBuilder(
+                          valueListenable: userPlaylistSongsInstance!.listenable(),
+                          builder:
+                              (context, Box<UserPlaylistSongs> songFetcher, _) {
+
+                            songDetailsProvider.currentSongKey =
+                                songDetailsProvider.selectedSongKey;
+
+                            var songData =
+                            songFetcher.get(songDetailsProvider.currentSongKey);
+
+                            if (songFetcher.isEmpty) {
+                              return const Center(
+                                child: Text("No Songs Available"),
+                              );
+                            } else {
+                              return SingleChildScrollView(
+                                child: Column(
+                                  children: [
+                                    sizedh2,
+                                    Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 30),
+                                        child:commonText(text: "Now Playing", size: 17),
+                                    ),
+                                    SizedBox(
+                                      height: MediaQuery.of(context).size.height * 0.05,
+                                    ),
+                                    Container(
+                                      height: 200,
+                                      width: 200,
+                                      decoration:  BoxDecoration(
+                                          border: Border.all(
+                                              color: commonColor,
+                                              width: 3
+                                          ),
+                                          shape: BoxShape.circle
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: QueryArtworkWidget(
+                                          id: songData!.songImageId??0,
+                                          type: ArtworkType.AUDIO,
+                                          artworkBorder: const BorderRadius.all(
+                                              Radius.circular(100)),
+                                          artworkFit: BoxFit.fill,
+                                          artworkHeight: double.infinity,
+                                          artworkWidth: double.infinity,
+                                          nullArtworkWidget: ClipRRect(
+                                            borderRadius:
+                                            const BorderRadius.all(
+                                                Radius.circular(100)),
+                                            child: Image.asset(
+                                              "assets/images/defaultImage.png",
+                                            ),
+                                          ),
+                                          // artworkWidth: 200,
+                                        ),
+                                      ),
+                                    ),
+                                    sizedh2,
+                                    commonMarquees(
+                                        text: songData.songName,
+                                        size: 18.0,
+                                        height: 30.0,
+                                        duration: 23
+                                    ),
+                                    commonMarquees(
+                                      text: songData.artistName,
+                                      size: 13.0,
+                                      color: HexColor("656F77"),
+                                    ),
+                                    sizedh2,
+                                    SizedBox(
+                                      width:
+                                      MediaQuery.of(context).size.width * 0.8,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          IconButton(
+                                            onPressed: () {
+                                              setSongDetails.loopSongs();
+                                            },
+                                            icon: setSongDetails.loopIcon==1?const Icon(Typicons.loop,size: 26,color: Colors.blueAccent,):setSongDetails.loopIcon==2?const Icon(Icons.playlist_play_outlined,size: 26,color: Colors.blueAccent,):const Icon(Icons.loop_outlined,size: 26,)                                        ,
+                                          ),
+                                          sizedw1,
+                                          IconButton(
+                                            onPressed: () {
+                                              songDetailsProvider.prev();
+                                            },
+                                            icon: const Icon(
+                                              FontAwesome.left_dir,
+                                              size: 37,
+                                            ),
+                                          ),
+                                          sizedw2,
+                                          Container(
+                                            width: 80,
+                                            height: 80,
+                                            decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: commonColor),
+                                            child: IconButton(
+                                              onPressed: () {
+                                                setSongDetails
+                                                    .playOrpause();
+                                              },
+                                              icon: setSongDetails.isIconChanged
+                                                  ? const Icon(
+                                                Icons.pause,
+                                                size: 60,
+                                                color: Colors.white,
+                                              )
+                                                  : const Icon(
+                                                Icons.play_arrow,
+                                                size: 60,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ),
+                                          sizedw2,
+                                          IconButton(
+                                            onPressed: () {
+                                              setSongDetails.next();
+                                            },
+                                            icon: const Icon(
+                                              FontAwesome.right_dir,
+                                              size: 37,
+                                            ),
+                                          ),
+                                          sizedw2,
+                                          IconButton(
+                                            onPressed: () {
+                                              setSongDetails.shuffleSongs();
+                                            },
+                                            icon: Icon(
+                                              Entypo.shuffle,
+                                              size: 22,
+                                              color: setSongDetails.isShuffled
+                                                  ? Colors.blueAccent
+                                                  : HexColor("#656F77"),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    sizedh2,
+                                    SizedBox(
+                                      width:
+                                      MediaQuery.of(context).size.width * 0.8,
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Expanded(
+                                            child: setSongDetails.getDuration(),
+                                          ),
+                                          Expanded(
+                                            flex: 3,
+                                            child: setSongDetails.slider(),
+                                          ),
+                                          Expanded(
+                                            child: setSongDetails.totalDuration(),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
             }
           },
         ),
@@ -1291,6 +1569,7 @@ commonMarquees({height,width,hPadding,vPadding,text="",velocity,blankSpace,color
       child: Marquee(
         text: text ?? "Not Found",
         blankSpace: blankSpace??300,
+        numberOfRounds: 1,
         velocity: velocity??30,
         pauseAfterRound: Duration(seconds: duration??3),
         style: style(color: color??Colors.black,weight: weight??FontWeight.w700,size: size,family: family??"Poppins-Regular"),

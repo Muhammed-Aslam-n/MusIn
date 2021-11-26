@@ -10,6 +10,8 @@ import 'package:musin/pages/home.dart';
 import 'package:musin/pages/playlist_songs.dart';
 import 'package:musin/pages/songlist.dart';
 import 'package:musin/pages/widgets/widgets.dart';
+import 'package:musin/provider/provider_class.dart';
+import 'package:provider/provider.dart';
 
 import 'addsongtoplaylist.dart';
 
@@ -95,9 +97,9 @@ class _PlayListState extends State<PlayList> {
   playListHeads(BuildContext context) {
     return ValueListenableBuilder(
       valueListenable: userPlaylistNameDbInstance!.listenable(),
-      builder: (context,Box<UserPlaylistNames> PlaylistNameFetcher,_){
+      builder: (context,Box<UserPlaylistNames> playlistNameFetcher,_){
         List<int> allKeys =
-        PlaylistNameFetcher.keys.cast<int>().toList();
+        playlistNameFetcher.keys.cast<int>().toList();
         return GridView.builder(
           padding: const EdgeInsets.symmetric(horizontal: 15),
           physics: const ScrollPhysics(),
@@ -110,9 +112,12 @@ class _PlayListState extends State<PlayList> {
           itemCount: allKeys.length,
           itemBuilder: (context, index) {
             final key = allKeys[index];
-            final songDatas = PlaylistNameFetcher.get(key);
+            final songDatas = playlistNameFetcher.get(key);
             return GestureDetector(
               onTap: () {
+                debugPrint("Index Curresponding to Playlist is $index");
+                debugPrint("Key Curresponding to Playlist is $key");
+                final pInstance = Provider.of<PlayerCurrespondingItems>(context,listen:false);
                 Navigator.push(context,
                     MaterialPageRoute(builder: (context) => PlaylistSongs(selectedPlaylistKey: key,)));
                 debugPrint("Navigator to Playlist Clicked");

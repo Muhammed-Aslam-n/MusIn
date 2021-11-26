@@ -18,6 +18,31 @@ import 'package:assets_audio_player/assets_audio_player.dart' as aap;
 
 import '../main.dart';
 
+
+class SongListMainHolder extends StatefulWidget {
+  const SongListMainHolder({Key? key}) : super(key: key);
+
+  @override
+  _SongListMainHolderState createState() => _SongListMainHolderState();
+}
+
+class _SongListMainHolderState extends State<SongListMainHolder> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Stack(
+        children: const [
+          SongsListMain(),
+          CommonMiniPlayer(),
+        ],
+      ),
+    );
+  }
+}
+
+
+
+
 class SongsListMain extends StatefulWidget {
   const SongsListMain({Key? key}) : super(key: key);
 
@@ -44,12 +69,18 @@ class _SongsListMainState extends State<SongsListMain> {
 
   getSongPathsMan(){
     final pInstance = Provider.of<PlayerCurrespondingItems>(context, listen: false);
-    songDbInstance!.values.forEach((element) {
-     songsPaths.add(element.songPath!);
-    });
+    if(pInstance.allSongsplayList.isEmpty){
+      for (var element in songDbInstance!.values) {
+        songsPaths.add(element.songPath!);
+      }
+    }
+    pInstance.showKeys();
+    debugPrint("SonglistMain Done");
+  }
+  changeModeOfPlay(){
+    final pInstance = Provider.of<PlayerCurrespondingItems>(context, listen: false);
     pInstance.getAllSongsPaths(songsPaths);
     pInstance.modeOfPlaylist = 1;
-    pInstance.showKeys();
   }
 
   @override
@@ -74,11 +105,12 @@ class _SongsListMainState extends State<SongsListMain> {
               ],
             ),
           ),
-          CommonMiniPlayer(),
         ],
       ),
     );
   }
+
+
 
   // PLAYS WITH DATABASE and Provider also
 
@@ -100,7 +132,7 @@ class _SongsListMainState extends State<SongsListMain> {
               physics: const ScrollPhysics(),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  childAspectRatio: 1.4 / 1.7,
+                  childAspectRatio: 1.4 / 1.9,
                   mainAxisSpacing: 18,
                   crossAxisSpacing: 12),
               shrinkWrap: true,
@@ -110,11 +142,14 @@ class _SongsListMainState extends State<SongsListMain> {
                 final songDatas = songFetcher.get(key);
                 return GestureDetector(
                   onTap: () {
+                    setSongDetails.isAudioPlayingFromPlaylist = false;
+                    // setSongDetails.isAllSongsAlreadyClicked = true;
+                    changeModeOfPlay();
+                    setSongDetails.isFavsAlreadyClicked = false;
                     setSongDetails.isSelectedOrNot = false;
-                    debugPrint(songDatas!.songPath);
                     setSongDetails.selectedSongKey = key;
                     setSongDetails.currentSongDuration =
-                        songDatas.duration.toString();
+                        songDatas?.duration.toString();
                     setSongDetails.opnPlaylist(setSongDetails.selectedSongKey);
                   },
                   child: Container(

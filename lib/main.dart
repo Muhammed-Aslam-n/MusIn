@@ -52,7 +52,7 @@ class MusinApp extends StatelessWidget {
     return ChangeNotifierProvider<PlayerCurrespondingItems>(
       create: (_)=>PlayerCurrespondingItems(),
       child: MaterialApp(
-        title: 'Flutter Demo',
+        title: 'Musin',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           primarySwatch: Colors.blue,

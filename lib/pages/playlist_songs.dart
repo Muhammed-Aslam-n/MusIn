@@ -36,29 +36,82 @@ class _PlaylistSongsState extends State<PlaylistSongs> {
         Hive.box<UserPlaylistNames>(userPlaylistBoxName);
     userPlaylistSongDbInstance =
         Hive.box<UserPlaylistSongs>(userPlaylistSongBoxName);
+    final pInstance = Provider.of<PlayerCurrespondingItems>(context,listen: false);
+    getSongPathsMan();
+    debugPrint("Path in AudioPlayer is ");
+    pInstance.showKeys();
+    debugPrint("Playlist Songs Done");
+
+
+
     super.initState();
   }
 
-
   getSongPathsMan(){
     final pInstance = Provider.of<PlayerCurrespondingItems>(context, listen: false);
-    userPlaylistSongDbInstance!.values.forEach((element) {
-      if(!pInstance.didUserClickedANewPlaylst){
-        if(element.currespondingPlaylistId == widget.selectedPlaylistKey){
-          songsPaths.add(element.songPath!);
-        }
-      }else{
-        pInstance.playlistSongsPlaylist.clear();
-        if(element.currespondingPlaylistId == widget.selectedPlaylistKey){
-          songsPaths.add(element.songPath!);
-        }
+    // pInstance.playlistSongsPlaylist.clear();
+    debugPrint("\n----------------------------------------------------------------------");
+    var data = userPlaylistNameDbInstance!.get(widget.selectedPlaylistKey);
+    debugPrint(data!.playlistNames.toString().toUpperCase());
+    if(pInstance.playlistSongsPlaylist.isEmpty){
+      for (var element in userPlaylistSongDbInstance!.values) {
+       if(widget.selectedPlaylistKey == element.currespondingPlaylistId){
+         debugPrint(element.songName);
+         songsPaths.add(element.songPath??'');
+         pInstance.alreadyPlayingPlaylistIndex = element.currespondingPlaylistId!;
+
+         debugPrint(element.songPath);
+
+         debugPrint("FIrst Key isssss   ----- ${element.currespondingPlaylistId}");
+
+       }
       }
 
-    });
-    pInstance.getPlaylistSongsPaths(songsPaths);
-    pInstance.modeOfPlaylist = 3;
-    pInstance.showKeys();
+    }else{
+         if(pInstance.alreadyPlayingPlaylistIndex != widget.selectedPlaylistKey ){
+           debugPrint("Entered ");
+           pInstance.playlistSongsPlaylist.clear();
+           debugPrint("Emptied");
+           debugPrint("AlreadyPlaying Key is ${pInstance.alreadyPlayingPlaylistIndex}");
+           debugPrint("Selected Key is ${widget.selectedPlaylistKey}");
+           for (var element in userPlaylistSongDbInstance!.values) {
+             if(element.currespondingPlaylistId == widget.selectedPlaylistKey){
+               songsPaths.add(element.songPath!);
+               debugPrint(element.songPath);
+             }
+           }
+           pInstance.alreadyPlayingPlaylistIndex = widget.selectedPlaylistKey!;
+           debugPrint("ALreadY Key nOW IS ${pInstance.alreadyPlayingPlaylistIndex}");
+         }
+    }
+    debugPrint("\n----------------------------------------------------------------------");
   }
+
+  changePlaylistMode(){
+    final pInstance = Provider.of<PlayerCurrespondingItems>(context,listen: false);
+    pInstance.getPlaylistSongsPaths(songsPaths);
+    pInstance.test = widget.selectedPlaylistKey!;
+    pInstance.modeOfPlaylist = 3;
+  }
+  // getSongPathsMan(){
+  //   final pInstance = Provider.of<PlayerCurrespondingItems>(context, listen: false);
+  //   userPlaylistSongDbInstance!.values.forEach((element) {
+  //     if(!pInstance.didUserClickedANewPlaylst){
+  //       if(element.currespondingPlaylistId == widget.selectedPlaylistKey){
+  //         songsPaths.add(element.songPath!);
+  //       }
+  //     }else{
+  //       pInstance.playlistSongsPlaylist.clear();
+  //       if(element.currespondingPlaylistId == widget.selectedPlaylistKey){
+  //         songsPaths.add(element.songPath!);
+  //       }
+  //     }
+  //
+  //   });
+  //   pInstance.getPlaylistSongsPaths(songsPaths);
+  //   pInstance.modeOfPlaylist = 3;
+  //   pInstance.showKeys();
+  // }
 
 
   @override
@@ -94,14 +147,14 @@ class _PlaylistSongsState extends State<PlaylistSongs> {
                                 },
                                 icon: const Icon(
                                   Icons.chevron_left_outlined, size: 27,),),
-                              commonText(text: songDatas!.playlistNames),
+                              commonText(text: songDatas?.playlistNames),
                             ],
                           ),
                           Row(
                             children: [
                               IconButton(
                                 onPressed: () {
-                                   Navigator.push(context, MaterialPageRoute(builder: (context)=>AddSongstoPlaylist(currentPlaylistName: songDatas.playlistNames,currentPlaylistKey: widget.selectedPlaylistKey,)));
+                                   Navigator.push(context, MaterialPageRoute(builder: (context)=>AddSongstoPlaylist(currentPlaylistName: songDatas!.playlistNames,currentPlaylistKey: widget.selectedPlaylistKey,)));
                                 },
                                 icon: const Icon(Icons.add),
                                 tooltip: "Add More",
@@ -161,11 +214,12 @@ class _PlaylistSongsState extends State<PlaylistSongs> {
                 final songDatas = songFetcher.get(key);
                 return GestureDetector(
                   onTap: () {
-                    setSongDetails.didUserClickedANewPlaylst = true;
-                    getSongPathsMan();
+                    changePlaylistMode();
+                    setSongDetails.isAudioPlayingFromPlaylist = true;
                     setSongDetails.isSelectedOrNot = false;
-                    setSongDetails.selectedSongKey = key;
+                    setSongDetails.selectedSongKey = index;
                     setSongDetails.opnPlaylist(setSongDetails.selectedSongKey);
+
                     },
                   child: ListTile(
                     leading: Padding(

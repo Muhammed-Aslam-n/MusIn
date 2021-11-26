@@ -50,7 +50,7 @@ class _HomeState extends State<Home> {
   }
   querySongs()async {
     queriedSongs = await _audioQuery.querySongs();
-    // final sortedQueriedSongs = queriedSongs..sort((item1,item2)=>item1.title.compareTo(item2.title));
+
     if (userSong!.isEmpty) {
       for (var element in queriedSongs) {
         final model = UserSongs(songName: element.title,
@@ -59,6 +59,23 @@ class _HomeState extends State<Home> {
             songPath: element.data,
             duration: element.duration);
         userSong!.add(model);
+      }
+    }else {
+      // userSong!.clear();
+      var list = userSong!.values.toList();
+      for(var i=0;i<queriedSongs.length;i++){
+        for(var j=0;j<userSong!.length;j++){
+          if(queriedSongs[i].title != list[i].songName){
+            final model = UserSongs(songName: queriedSongs[i].title,
+                artistName: queriedSongs[i].artist,
+                imageId: queriedSongs[i].id,
+                songPath: queriedSongs[i].data,
+                duration: queriedSongs[i].duration);
+            userSong!.add(model);
+          }else{
+            break;
+          }
+        }
       }
     }
   }
@@ -127,7 +144,7 @@ class _HomeState extends State<Home> {
   }
 
   final tabs = [
-    SongsListMain(),
+    SongListMainHolder(),
     SearchSong(),
     Favourites(),
     PlayList(),
@@ -166,10 +183,12 @@ class _SplashScreenState extends State<SplashScreen> {
               fit: BoxFit.contain,
             ),
           ),
-          const Text(
-            "MusIn",
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-          ),
+          Expanded(
+            child: const Text(
+              "MusIn",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+            ),
+          )
         ],
       ),
       nextScreen: isLaunched ? Home() : OnBoarding(),
