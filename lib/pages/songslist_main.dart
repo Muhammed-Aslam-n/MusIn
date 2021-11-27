@@ -5,6 +5,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:marquee/marquee.dart';
 import 'package:musin/database/database.dart';
 import 'package:musin/materials/colors.dart';
+import 'package:musin/pages/addsongtoplaylist.dart';
 import 'package:musin/pages/playlist.dart';
 import 'package:musin/pages/widgets/widgets.dart';
 import 'package:musin/provider/provider_class.dart';
@@ -17,7 +18,6 @@ import 'package:provider/provider.dart';
 import 'package:assets_audio_player/assets_audio_player.dart' as aap;
 
 import '../main.dart';
-
 
 class SongListMainHolder extends StatefulWidget {
   const SongListMainHolder({Key? key}) : super(key: key);
@@ -40,9 +40,6 @@ class _SongListMainHolderState extends State<SongListMainHolder> {
   }
 }
 
-
-
-
 class SongsListMain extends StatefulWidget {
   const SongsListMain({Key? key}) : super(key: key);
 
@@ -57,19 +54,22 @@ class _SongsListMainState extends State<SongsListMain> {
   Box<UserSongs>? songDbInstance;
   Box<UserPlaylistNames>? userPlaylistNameInstance;
   Box<UserPlaylistSongs>? userPlaylistSongsInstance;
-  List<String> songsPaths =[];
+  List<String> songsPaths = [];
+
   @override
   void initState() {
     songDbInstance = Hive.box<UserSongs>(songDetailListBoxName);
     userPlaylistNameInstance = Hive.box<UserPlaylistNames>(userPlaylistBoxName);
-    userPlaylistSongsInstance = Hive.box<UserPlaylistSongs>(userPlaylistSongBoxName);
+    userPlaylistSongsInstance =
+        Hive.box<UserPlaylistSongs>(userPlaylistSongBoxName);
     getSongPathsMan();
     super.initState();
   }
 
-  getSongPathsMan(){
-    final pInstance = Provider.of<PlayerCurrespondingItems>(context, listen: false);
-    if(pInstance.allSongsplayList.isEmpty){
+  getSongPathsMan() {
+    final pInstance =
+        Provider.of<PlayerCurrespondingItems>(context, listen: false);
+    if (pInstance.allSongsplayList.isEmpty) {
       for (var element in songDbInstance!.values) {
         songsPaths.add(element.songPath!);
       }
@@ -77,8 +77,10 @@ class _SongsListMainState extends State<SongsListMain> {
     pInstance.showKeys();
     debugPrint("SonglistMain Done");
   }
-  changeModeOfPlay(){
-    final pInstance = Provider.of<PlayerCurrespondingItems>(context, listen: false);
+
+  changeModeOfPlay() {
+    final pInstance =
+        Provider.of<PlayerCurrespondingItems>(context, listen: false);
     pInstance.getAllSongsPaths(songsPaths);
     pInstance.modeOfPlaylist = 1;
   }
@@ -110,12 +112,10 @@ class _SongsListMainState extends State<SongsListMain> {
     );
   }
 
-
-
   // PLAYS WITH DATABASE and Provider also
 
   imageContainer(BuildContext context) {
-    bool addToFavs = false;
+    bool addToFavs = false, addedToPlaylist = false;
     return Consumer<PlayerCurrespondingItems>(
       builder: (_, setSongDetails, child) => ValueListenableBuilder(
         valueListenable: songDbInstance!.listenable(),
@@ -212,24 +212,30 @@ class _SongsListMainState extends State<SongsListMain> {
                                         : Colors.black87),
                               ),
                               PopupMenuButton(
-                                onSelected: (result) {
-                                  if (result == 1) {
-                                    showPlaylistNames(context, key);
-                                  } else if (result == 2) {
-                                    createPlaylist(context, key);
-                                  }
-                                },
-                                itemBuilder: (context) => [
-                                  const PopupMenuItem(
-                                    child: Text("Add to Playlist"),
-                                    value: 1,
-                                  ),
-                                  const PopupMenuItem(
-                                    child: Text("Create Playlist"),
-                                    value: 2,
-                                  ),
-                                ],
-                              ),
+                                  onSelected: (result) {
+                                    if (result == 1) {
+                                      showPlaylistNames(context, key);
+                                    } else if (result == 2) {
+                                      createPlaylist(context, songKey: key);
+                                    }else{
+                                      showPlaylistNameToRemove(context,songDatas.songName);
+                                    }
+                                  },
+                                  itemBuilder: (context) => [
+                                    const PopupMenuItem(
+                                      child: Text("Add to Playlist"),
+                                      value: 1,
+                                    ),
+                                    const PopupMenuItem(
+                                      child: Text("Create New Playlist"),
+                                      value: 2,
+                                    ),
+                                    const PopupMenuItem(
+                                      child: Text("Remove from Playlist"),
+                                      value: 3,
+                                    )
+                                  ]
+                              )
                             ],
                           ),
                         ),
@@ -267,57 +273,83 @@ class _SongsListMainState extends State<SongsListMain> {
     );
   }
 
-  showPlaylistNames(BuildContext context, songKey) {
+  showPlaylistNameToRemove(BuildContext context, songName) {
     return showDialog(
       context: context,
       barrierDismissible: true,
       builder: (BuildContext context) => AlertDialog(
-        title: const Text('Add to...'),
+        title: const Text('Remove from...'),
         content: SizedBox(
           height: 100,
           width: 200,
           child: ValueListenableBuilder(
               valueListenable: userPlaylistNameInstance!.listenable(),
               builder: (context, Box<UserPlaylistNames> songFetcher, _) {
-                List<int> allKeys =
-                    userPlaylistNameInstance!.keys.cast<int>().toList();
-                return ListView.separated(
-                    itemBuilder: (_, index) {
-                      final key = allKeys[index];
-                      final currentPlaylist = songFetcher.get(key);
-                      return GestureDetector(
-                        onTap: () {
-                          debugPrint(
-                              "${currentPlaylist!.playlistNames} Selected");
-                          debugPrint("Key is $key");
-                          final songData = songDbInstance!.get(songKey);
-                          final model = UserPlaylistSongs(
-                              currespondingPlaylistId: key,
-                              songName: songData!.songName,
-                              artistName: songData.artistName,
-                              songPath: songData.songPath,
-                              songImageId: songData.imageId,
-                              songDuration: songData.duration);
-                          userPlaylistSongsInstance!.add(model);
-                          Navigator.of(context).pop();
-                          showPlaylistSnackBar(context: context, isAdded: true);
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  currentPlaylist!.playlistNames.toString(),
+                List<int> allCurrespondingKeys = [];
+                List<int> verumKeys = userPlaylistSongsInstance!.keys.cast<int>().where((key) =>userPlaylistSongsInstance!.get(key)!.songName == songName).toList();
+                for (var element in userPlaylistSongsInstance!.values) {
+                  if (element.songName == songName) {
+                    allCurrespondingKeys
+                        .add(element.currespondingPlaylistId ?? 0);
+                  }
+                }
+
+                int globalKey = 0;
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: ListView.separated(
+                          shrinkWrap: true,
+                          itemBuilder: (_, index) {
+                            final key = allCurrespondingKeys[index];
+                            final currentPlaylist = songFetcher.get(key);
+                            globalKey = key;
+                            return GestureDetector(
+                              onTap: () {
+                                List<int> keys = userPlaylistSongsInstance!.keys.cast<int>().where((key) => userPlaylistSongsInstance!.get(key)!.currespondingPlaylistId == key).toList();
+                                var songFetch = verumKeys[index];
+                                // var songData = songFetch!.get(key);
+                                showPlaylistSnackBar(
+                                    context: context, isAdded: false);
+                                userPlaylistSongsInstance!.delete(songFetch);
+                                Navigator.of(context).pop();
+
+                              },
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 10),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        currentPlaylist!.playlistNames
+                                            .toString(),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ],
-                          ),
+                            );
+                          },
+                          separatorBuilder: (_, index) => const Divider(),
+                          itemCount: allCurrespondingKeys.length),
+                    ),
+                    Expanded(
+                      child: ListTile(
+                        title: const Text("New Playlist"),
+                        trailing: IconButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            createPlaylist(context, songKey: globalKey);
+                          },
+                          icon: const Icon(Icons.add),
                         ),
-                      );
-                    },
-                    separatorBuilder: (_, index) => const Divider(),
-                    itemCount: allKeys.length);
+                      ),
+                    ),
+                  ],
+                );
               }),
         ),
         actions: <Widget>[
@@ -330,7 +362,120 @@ class _SongsListMainState extends State<SongsListMain> {
     );
   }
 
-  createPlaylist(BuildContext context, songKey) {
+  showPlaylistNames(BuildContext context, songKey) {
+    return showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Add to...'),
+        content: SizedBox(
+          height: 100,
+          width: 200,
+          child: ValueListenableBuilder(
+            valueListenable: userPlaylistNameInstance!.listenable(),
+            builder: (context, Box<UserPlaylistNames> songFetcher, _) {
+              List<int> allKeys =
+                  userPlaylistNameInstance!.keys.cast<int>().toList();
+
+              if (userPlaylistNameInstance!.isEmpty) {
+                return SizedBox(
+                  height: 200,
+                  child: Column(
+                    children: [
+                      const ListTile(
+                        title: Text("No Playlists Found"),
+                      ),
+                      Expanded(
+                        child: ListTile(
+                          title: const Text("New Playlist"),
+                          trailing: IconButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              createPlaylist(context);
+                            },
+                            icon: const Icon(Icons.add),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              } else {
+                int globalKey = 0;
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: ListView.separated(
+                          shrinkWrap: true,
+                          itemBuilder: (_, index) {
+                            final key = allKeys[index];
+                            final currentPlaylist = songFetcher.get(key);
+                            globalKey = key;
+                            return GestureDetector(
+                              onTap: () {
+                                final songData = songDbInstance!.get(songKey);
+                                final model = UserPlaylistSongs(
+                                    currespondingPlaylistId: key,
+                                    songName: songData!.songName,
+                                    artistName: songData.artistName,
+                                    songPath: songData.songPath,
+                                    songImageId: songData.imageId,
+                                    songDuration: songData.duration);
+                                userPlaylistSongsInstance!.add(model);
+                                Navigator.of(context).pop();
+                                showPlaylistSnackBar(
+                                    context: context, isAdded: true);
+                              },
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 10),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        currentPlaylist!.playlistNames
+                                            .toString(),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                          separatorBuilder: (_, index) => const Divider(),
+                          itemCount: allKeys.length),
+                    ),
+                    Expanded(
+                      child: ListTile(
+                        title: const Text("New Playlist"),
+                        trailing: IconButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            createPlaylist(context, songKey: globalKey);
+                          },
+                          icon: const Icon(Icons.add),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }
+            },
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'Cancel'),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  createPlaylist(BuildContext context, {songKey}) {
     var playlistName = TextEditingController();
     return showDialog<String>(
       context: context,
@@ -338,8 +483,7 @@ class _SongsListMainState extends State<SongsListMain> {
         title: const Text('Create New Playlist'),
         content: TextFormField(
           controller: playlistName,
-          decoration: const InputDecoration(
-              hintText: "Enter The Name of Your Playlist"),
+          decoration: const InputDecoration(hintText: "Your playlist name"),
         ),
         actions: <Widget>[
           TextButton(
@@ -353,21 +497,61 @@ class _SongsListMainState extends State<SongsListMain> {
                   UserPlaylistNames(playlistNames: playlistNameFromTextField);
               userPlaylistNameInstance!.add(playlistModelVariable);
               final songData = songDbInstance!.get(songKey);
-              final model = UserPlaylistSongs(
-                  currespondingPlaylistId: userPlaylistNameInstance!.keys.last,
-                  songName: songData!.songName,
-                  artistName: songData.artistName,
-                  songImageId: songData.imageId,
-                  songDuration: songData.duration,
-                  songPath: songData.songPath);
-              userPlaylistSongsInstance!.add(model);
-              Navigator.of(context).pop();
-              showPlaylistSnackBar(context: context, isAdded: true);
+            final model = UserPlaylistSongs(
+                currespondingPlaylistId: userPlaylistNameInstance!.keys.last,
+                songName: songData!.songName,
+                artistName: songData.artistName,
+                songImageId: songData.imageId,
+                songDuration: songData.duration,
+                songPath: songData.songPath);
+            userPlaylistSongsInstance!.add(model);
+            Navigator.of(context).pop();
+            showPlaylistSnackBar(context: context, isAdded: true);
             },
-            child: const Text('Add'),
+            child: const Text('create'),
           ),
         ],
       ),
     );
   }
+// createPlaylist(BuildContext context, songKey) {
+//   var playlistName = TextEditingController();
+//   return showDialog<String>(
+//     context: context,
+//     builder: (BuildContext context) => AlertDialog(
+//       title: const Text('Create New Playlist'),
+//       content: TextFormField(
+//         controller: playlistName,
+//         decoration: const InputDecoration(
+//             hintText: "Enter The Name of Your Playlist"),
+//       ),
+//       actions: <Widget>[
+//         TextButton(
+//           onPressed: () => Navigator.pop(context, 'Cancel'),
+//           child: const Text('Cancel'),
+//         ),
+//         TextButton(
+//           onPressed: () {
+//             final playlistNameFromTextField = playlistName.text;
+//             final playlistModelVariable =
+//                 UserPlaylistNames(playlistNames: playlistNameFromTextField);
+//             userPlaylistNameInstance!.add(playlistModelVariable);
+//             final songData = songDbInstance!.get(songKey);
+//             final model = UserPlaylistSongs(
+//                 currespondingPlaylistId: userPlaylistNameInstance!.keys.last,
+//                 songName: songData!.songName,
+//                 artistName: songData.artistName,
+//                 songImageId: songData.imageId,
+//                 songDuration: songData.duration,
+//                 songPath: songData.songPath);
+//             userPlaylistSongsInstance!.add(model);
+//             Navigator.of(context).pop();
+//             showPlaylistSnackBar(context: context, isAdded: true);
+//           },
+//           child: const Text('Add'),
+//         ),
+//       ],
+//     ),
+//   );
+// }
 }

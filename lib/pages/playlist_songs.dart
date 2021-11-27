@@ -165,6 +165,8 @@ class _PlaylistSongsState extends State<PlaylistSongs> {
                                   userPlaylistSongDbInstance!.deleteAll(keys);
                                   playlistNameFetcher.delete(
                                       widget.selectedPlaylistKey);
+                                  var pInstance = Provider.of<PlayerCurrespondingItems>(context,listen: false);
+                                  pInstance.isSelectedOrNot = true;
                                 },
                                 icon: const Icon(Icons.delete),
                                 tooltip: "Delete Playlist",

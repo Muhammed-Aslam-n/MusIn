@@ -436,6 +436,15 @@ class PlayerCurrespondingItems extends ChangeNotifier {
   int alreadyPlayingPlaylistIndex = 0;
   int test =0;
 
+
+  var searchSongName;
+
+  giveSearchSongName(){
+    searchSongName;
+    notifyListeners();
+  }
+
+
   final _assetsAudioPlayer = AssetsAudioPlayer();
   List<Audio> allSongsplayList = <Audio>[];
   List<Audio> favPlaylist = <Audio>[];

@@ -155,48 +155,6 @@ class CommonHeaders extends StatelessWidget {
   }
 }
 
-class SongTileView extends StatefulWidget {
-  String? songName;
-  var songDesc;
-  String? image;
-  double? padding;
-
-  SongTileView({this.songName, this.songDesc, this.image, this.padding});
-
-  @override
-  _SongTileViewState createState() => _SongTileViewState();
-}
-
-class _SongTileViewState extends State<SongTileView> {
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: Padding(
-        padding: EdgeInsets.symmetric(horizontal: widget.padding ?? 20),
-        child: Container(
-          width: 50,
-          height: 50,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            image: DecorationImage(
-              image: ExactAssetImage(
-                widget.image!,
-              ),
-              fit: BoxFit.cover,
-            ),
-          ),
-        ),
-      ),
-      title:
-          commonText(text: widget.songName, size: 15, weight: FontWeight.w600),
-      subtitle: commonText(
-          text: widget.songDesc,
-          size: 12,
-          color: HexColor("#ACB8C2"),
-          weight: FontWeight.w600),
-    );
-  }
-}
 
 // Cunstructor Based Play and Pause
 
@@ -880,7 +838,7 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                   builder: (context, Box<UserPlaylistSongs> songFetcher, _) {
                     List keys = songFetcher.keys.cast<int>().where((key) => songFetcher.get(key)!.currespondingPlaylistId == songDetailsProvider.test).toList();
 
-                    songDetailsProvider.currentSongKey =keys[songDetailsProvider.selectedSongKey??0];
+                    songDetailsProvider.currentSongKey =keys[songDetailsProvider.selectedSongKey!];
                     // songDetailsProvider.selectedSongKey;
 
                     var songData =
@@ -1222,11 +1180,11 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                       children: [
                         ValueListenableBuilder(
                           valueListenable: userPlaylistSongsInstance!.listenable(),
-                          builder:
-                              (context, Box<UserPlaylistSongs> songFetcher, _) {
+                          builder: (context, Box<UserPlaylistSongs> songFetcher, _) {
+                            List keys = songFetcher.keys.cast<int>().where((key) => songFetcher.get(key)!.currespondingPlaylistId == songDetailsProvider.test).toList();
 
-                            songDetailsProvider.currentSongKey =
-                                songDetailsProvider.selectedSongKey;
+                            songDetailsProvider.currentSongKey =keys[songDetailsProvider.selectedSongKey??0];
+                            // songDetailsProvider.selectedSongKey;
 
                             var songData =
                             songFetcher.get(songDetailsProvider.currentSongKey);
@@ -1351,16 +1309,18 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                                             ),
                                           ),
                                           sizedw2,
-                                          IconButton(
-                                            onPressed: () {
-                                              setSongDetails.shuffleSongs();
-                                            },
-                                            icon: Icon(
-                                              Entypo.shuffle,
-                                              size: 22,
-                                              color: setSongDetails.isShuffled
-                                                  ? Colors.blueAccent
-                                                  : HexColor("#656F77"),
+                                          Expanded(
+                                            child: IconButton(
+                                              onPressed: () {
+                                                setSongDetails.shuffleSongs();
+                                              },
+                                              icon: Icon(
+                                                Entypo.shuffle,
+                                                size: 22,
+                                                color: setSongDetails.isShuffled
+                                                    ? Colors.blueAccent
+                                                    : HexColor("#656F77"),
+                                              ),
                                             ),
                                           ),
                                         ],
