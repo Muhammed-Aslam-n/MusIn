@@ -381,6 +381,8 @@
 
 // Changes to accommada
 
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
@@ -438,10 +440,16 @@ class PlayerCurrespondingItems extends ChangeNotifier {
 
 
   var searchSongName;
-
-  giveSearchSongName(){
-    searchSongName;
-    notifyListeners();
+  onSearchChanged(TextEditingController searchQuery){
+    Timer? _debounce;
+    if(_debounce?.isActive??false) _debounce?.cancel();
+      _debounce = Timer(const Duration(milliseconds: 500),()
+    {
+      searchSongName = searchQuery.text;
+      notifyListeners();
+    });
+      debugPrint(searchQuery.text);
+      debugPrint(searchSongName);
   }
 
 

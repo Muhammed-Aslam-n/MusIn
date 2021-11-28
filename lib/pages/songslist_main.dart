@@ -115,7 +115,7 @@ class _SongsListMainState extends State<SongsListMain> {
   // PLAYS WITH DATABASE and Provider also
 
   imageContainer(BuildContext context) {
-    bool addToFavs = false, addedToPlaylist = false;
+    bool addToFavs = false;
     return Consumer<PlayerCurrespondingItems>(
       builder: (_, setSongDetails, child) => ValueListenableBuilder(
         valueListenable: songDbInstance!.listenable(),
@@ -227,7 +227,7 @@ class _SongsListMainState extends State<SongsListMain> {
                                       value: 1,
                                     ),
                                     const PopupMenuItem(
-                                      child: Text("Create New Playlist"),
+                                      child: Text("Add to New Playlist"),
                                       value: 2,
                                     ),
                                     const PopupMenuItem(
