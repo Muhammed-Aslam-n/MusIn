@@ -386,8 +386,6 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
-import 'package:musin/database/database.dart';
 import 'package:musin/materials/colors.dart';
 import 'package:musin/pages/widgets/widgets.dart';
 
@@ -451,6 +449,22 @@ class PlayerCurrespondingItems extends ChangeNotifier {
       debugPrint(searchQuery.text);
       debugPrint(searchSongName);
   }
+
+
+  // AddSongsToPlaylist
+
+  List<bool> checkBoxList = [];
+  int selectedSongsCount = 0;
+
+  generateSampleList(length){
+    checkBoxList = List<bool>.filled(length, false);
+  }
+
+
+
+
+
+
 
 
   final _assetsAudioPlayer = AssetsAudioPlayer();
@@ -608,22 +622,4 @@ class PlayerCurrespondingItems extends ChangeNotifier {
   }
 
 
-// showFavouriteSnackBar(BuildContext context) {
-//   final snack = SnackBar(
-//     content: commonText(
-//         text: "Removed from Favourites",
-//         color: Colors.red,
-//         size: 13,
-//         weight: FontWeight.w500,
-//         isCenter: true),
-//     duration: Duration(seconds: 1),
-//     behavior: SnackBarBehavior.floating,
-//     shape: RoundedRectangleBorder(
-//       borderRadius: BorderRadius.circular(24),
-//     ),
-//     backgroundColor: Colors.white,
-//     width: 250,
-//   );
-//   return ScaffoldMessenger.of(context).showSnackBar(snack);
-// }
 }
