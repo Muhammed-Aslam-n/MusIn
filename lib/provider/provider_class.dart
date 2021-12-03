@@ -460,6 +460,7 @@ class PlayerCurrespondingItems extends ChangeNotifier {
     checkBoxList = List<bool>.filled(length, false);
   }
 
+  bool isAddingSongsToExistingPlaylist  = false;
 
 
 

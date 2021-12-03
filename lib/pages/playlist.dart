@@ -7,6 +7,8 @@ import 'package:musin/materials/colors.dart';
 import 'package:musin/pages/favourites.dart';
 import 'package:musin/pages/playlist_songs.dart';
 import 'package:musin/pages/widgets/widgets.dart';
+import 'package:musin/provider/provider_class.dart';
+import 'package:provider/provider.dart';
 
 import 'addsongtoplaylist.dart';
 
@@ -54,6 +56,8 @@ class _PlayListState extends State<PlayList> {
         appBar: commonAppBar(context),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
+            var pInstance = Provider.of<PlayerCurrespondingItems>(context,listen:false);
+            pInstance.isAddingSongsToExistingPlaylist = false;
             setState(() {
               showAlertDialogue(context);
             });

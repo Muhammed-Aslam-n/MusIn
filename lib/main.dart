@@ -3,17 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:musin/SettingsPages/feedback.dart';
 import 'package:musin/SettingsPages/privacypolicy.dart';
 import 'package:musin/SettingsPages/termsandcondiotion.dart';
-import 'package:musin/pages/addsongtoplaylist.dart';
 import 'package:musin/pages/favourites.dart';
 import 'package:musin/pages/home.dart';
 import 'package:musin/pages/onboarding.dart';
 import 'package:musin/pages/playlist.dart';
 import 'package:musin/pages/playlist_songs.dart';
-import 'package:musin/pages/searchsong.dart';
-import 'package:musin/pages/settings.dart';
 import 'package:musin/pages/songlist.dart';
-import 'package:musin/pages/songplayingpage.dart';
-import 'package:musin/pages/upcoming.dart';
 import 'package:musin/provider/provider_class.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
@@ -60,12 +55,12 @@ class MusinApp extends StatelessWidget {
         initialRoute: '/splashscreen',
         routes: {
           '/splashscreen': (context) => const SplashScreen(),
-          '/onboarding': (context) =>  OnBoarding(),
+          '/onboarding': (context) =>  const OnBoarding(),
           '/home': (context) => const Home(),
           '/songlist': (context) => const SongList(),
           // '/songplayingpage': (context) => SongPlayingPage(),
-          // '/searchSong': (context) => const SearchSong(),
-          '/settings': (context) => const Settings(),
+          // // '/searchSong': (context) => const SearchSong(),
+          // '/settings': (context) => const Settings(),
           '/playlist': (context) => const PlayList(),
           '/playlistsongs': (context) => PlaylistSongs(),
           // '/upcomingsongs': (context) => const UpcomingSongs(),

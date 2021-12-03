@@ -13,7 +13,6 @@ import 'package:musin/pages/widgets/widgets.dart';
 import 'package:animated_splash_screen/animated_splash_screen.dart';
 import 'package:musin/pages/songslist_main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
@@ -73,7 +72,7 @@ class _HomeState extends State<Home> {
                 duration: queriedSongs[i].duration);
             userSong!.add(model);
           }else{
-            break;
+            userSong!.delete(i);
           }
         }
       }

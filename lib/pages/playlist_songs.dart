@@ -6,18 +6,14 @@ import 'package:musin/database/database.dart';
 import 'package:musin/main.dart';
 import 'package:musin/materials/colors.dart';
 import 'package:musin/pages/addsongtoplaylist.dart';
-import 'package:musin/pages/home.dart';
-import 'package:musin/pages/songlist.dart';
-import 'package:musin/pages/songplayingpage.dart';
 import 'package:musin/provider/provider_class.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import '/pages/widgets/widgets.dart';
-import 'package:miniplayer/miniplayer.dart';
-import 'package:fluttericon/font_awesome_icons.dart';
 
 class PlaylistSongs extends StatefulWidget {
   int? selectedPlaylistKey;
+  int totalNumberOfSongs = 0;
 
   PlaylistSongs({this.selectedPlaylistKey});
 
@@ -49,7 +45,6 @@ class _PlaylistSongsState extends State<PlaylistSongs> {
 
   getSongPathsMan(){
     final pInstance = Provider.of<PlayerCurrespondingItems>(context, listen: false);
-    // pInstance.playlistSongsPlaylist.clear();
     debugPrint("\n----------------------------------------------------------------------");
     var data = userPlaylistNameDbInstance!.get(widget.selectedPlaylistKey);
     debugPrint(data!.playlistNames.toString().toUpperCase());
@@ -127,11 +122,6 @@ class _PlaylistSongsState extends State<PlaylistSongs> {
                   valueListenable: userPlaylistNameDbInstance!.listenable(),
                   builder: (context, Box<UserPlaylistNames>playlistNameFetcher,
                       _) {
-                    List<int> keys = userPlaylistSongDbInstance!.keys.cast<int>()
-                        .where((key) =>
-                    userPlaylistSongDbInstance!.get(key)!.currespondingPlaylistId ==
-                        widget.selectedPlaylistKey)
-                        .toList();
                     final songDatas = playlistNameFetcher.get(
                         widget.selectedPlaylistKey);
                     return SizedBox(
@@ -154,22 +144,27 @@ class _PlaylistSongsState extends State<PlaylistSongs> {
                             children: [
                               IconButton(
                                 onPressed: () {
-                                   Navigator.push(context, MaterialPageRoute(builder: (context)=>AddSongstoPlaylist(currentPlaylistName: songDatas!.playlistNames,currentPlaylistKey: widget.selectedPlaylistKey,)));
+                                  var pInstance = Provider.of<PlayerCurrespondingItems>(context,listen: false);
+                                  pInstance.isAddingSongsToExistingPlaylist = true;
+                                  Navigator.push(context, MaterialPageRoute(builder: (context)=>AddSongstoPlaylist(currentPlaylistName: songDatas!.playlistNames,currentPlaylistKey: widget.selectedPlaylistKey,totalPlaylistSongs: widget.totalNumberOfSongs,)));
                                 },
                                 icon: const Icon(Icons.add),
                                 tooltip: "Add More",
                               ),
-                              IconButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                  userPlaylistSongDbInstance!.deleteAll(keys);
-                                  playlistNameFetcher.delete(
-                                      widget.selectedPlaylistKey);
-                                  var pInstance = Provider.of<PlayerCurrespondingItems>(context,listen: false);
-                                  pInstance.isSelectedOrNot = true;
-                                },
-                                icon: const Icon(Icons.delete),
-                                tooltip: "Delete Playlist",
+                              // IconButton(
+                              //   onPressed: () {
+                              //     Navigator.of(context).pop();
+                              //     userPlaylistSongDbInstance!.deleteAll(keys);
+                              //     playlistNameFetcher.delete(
+                              //         widget.selectedPlaylistKey);
+                              //     var pInstance = Provider.of<PlayerCurrespondingItems>(context,listen: false);
+                              //     pInstance.isSelectedOrNot = true;
+                              //   },
+                              //   icon: const Icon(Icons.delete),
+                              //   tooltip: "Delete Playlist",
+                              // )
+                              const SizedBox(
+                                width: 20,
                               )
                             ],
                           )
@@ -184,7 +179,7 @@ class _PlaylistSongsState extends State<PlaylistSongs> {
               playlistSongTileView(context),
             ],
           ),
-          CommonMiniPlayer(),
+          const CommonMiniPlayer(),
         ],
       ),
     );
@@ -200,6 +195,9 @@ class _PlaylistSongsState extends State<PlaylistSongs> {
           songFetcher.get(key)!.currespondingPlaylistId ==
               widget.selectedPlaylistKey)
               .toList();
+
+          widget.totalNumberOfSongs = keys.length;
+
           if (songFetcher.isEmpty) {
             return Column(
               children: const [
@@ -221,7 +219,6 @@ class _PlaylistSongsState extends State<PlaylistSongs> {
                     setSongDetails.isSelectedOrNot = false;
                     setSongDetails.selectedSongKey = index;
                     setSongDetails.opnPlaylist(setSongDetails.selectedSongKey);
-
                     },
                   child: ListTile(
                     leading: Padding(
