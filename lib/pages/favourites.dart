@@ -25,19 +25,21 @@ class _FavouritesState extends State<Favourites> {
   @override
   void initState() {
     userSongDbInstance = Hive.box<UserSongs>(songDetailListBoxName);
+
     getSongPathsMan();
     super.initState();
   }
 
   getSongPathsMan(){
     final pInstance = Provider.of<PlayerCurrespondingItems>(context, listen: false);
-    if(pInstance.favPlaylist.isEmpty){
+    if(pInstance.favPlaylist.isEmpty) {
       for (var element in userSongDbInstance!.values) {
-        if(element.isFavourited == true){
+        if (element.isFavourited == true) {
           songsPaths.add(element.songPath!);
         }
       }
     }
+    pInstance.previousFavouriteLength = songsPaths.length;
     pInstance.showKeys();
     debugPrint("Favourites Done");
   }
@@ -50,7 +52,7 @@ class _FavouritesState extends State<Favourites> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: commonAppBar(context),
+      appBar: const CommonAppBar(),
       body: Stack(
         children: [
           ListView(
@@ -85,91 +87,92 @@ class _FavouritesState extends State<Favourites> {
               ],
             );
           } else {
-            return ListView.builder(
-              itemCount: keys.length,
-              shrinkWrap: true,
-              physics: const ScrollPhysics(),
-              itemBuilder: (context, index) {
-                final key = keys[index];
-                final songDatas = songFetcher.get(key);
-                return GestureDetector(
-                  onTap: () {
-                    // setSongDetails.isFavsAlreadyClicked = true;
-                    changeModeOfPlay();
-                    // setSongDetails.isAllSongsAlreadyClicked = false;
-                    setSongDetails.isSelectedOrNot = false;
-                    setSongDetails.selectedSongKey = index;
-                    setSongDetails.opnPlaylist(setSongDetails.selectedSongKey);
-                  },
-                  child: ListTile(
-                    leading: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: QueryArtworkWidget(
-                          id: songDatas!.imageId!,
-                          type: ArtworkType.AUDIO,
-                          nullArtworkWidget: ClipRRect(
-                              child: Image.asset(
-                                "assets/images/defaultImage.png",
-                                height: 50,
-                                width: 50,
-                                fit: BoxFit.fill,
+            return Column(
+              children: [
+                ListView.builder(
+                itemCount: keys.length,
+                shrinkWrap: true,
+                physics: const ScrollPhysics(),
+                itemBuilder: (context, index) {
+                  final key = keys[index];
+                  final songDatas = songFetcher.get(key);
+                  return GestureDetector(
+                    onTap: () {
+                      changeModeOfPlay();
+                      setSongDetails.isAudioPlayingFromPlaylist = false;
+                      setSongDetails.isSelectedOrNot = false;
+                      setSongDetails.selectedSongKey = index;
+                      debugPrint("\n---------------------");
+                      debugPrint("Selected Song Key in Favourite is $index");
+                      debugPrint("Curresponding  Song Key in Favourite is $key");
+                      debugPrint("\n---------------------");
+                      setSongDetails.startingIndex = setSongDetails.selectedSongKey;
+                      setSongDetails.opnPlaylist();
+                    },
+                    child: ListTile(
+                      leading: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: QueryArtworkWidget(
+                            id: songDatas!.imageId!,
+                            type: ArtworkType.AUDIO,
+                            nullArtworkWidget: ClipRRect(
+                                child: Image.asset(
+                                  "assets/images/playlist_Bg/playlist16.jpg",
+                                  height: 50,
+                                  width: 50,
+                                  fit: BoxFit.fill,
+                                ),
+                                borderRadius: BorderRadius.circular(10)),
+                            artworkHeight: 50,
+                            artworkWidth: 50,
+                            artworkFit: BoxFit.fill,
+                            artworkBorder: BorderRadius.circular(10)),
+                      ),
+                      title: Padding(
+                        padding: const EdgeInsets.only(top: 10),
+                        child: commonText(
+                            text: songDatas.songName,
+                            size: 15,
+                            weight: FontWeight.w600),
+                      ),
+                      subtitle: Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: commonMarquees(
+                            text: songDatas.artistName,
+                            size: 12.0,
+                            color: HexColor("#ACB8C2"),
+                            weight: FontWeight.w600,
+                            hPadding: 0.0,
+                            vPadding: 1.0),
+                      ),
+                      trailing: SizedBox(
+                        width: 80,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: IconButton(
+                                icon: const Icon(
+                                  Icons.remove_circle_outline,
+                                ),
+                                onPressed: () {
+                                  final model = UserSongs(songName: songDatas.songName,artistName: songDatas.artistName,songPath: songDatas.songPath,isFavourited: false,isAddedtoPlaylist: false,imageId: songDatas.imageId,duration: songDatas.duration);
+                                  songFetcher.put(key, model);
+
+                                },
                               ),
-                              borderRadius: BorderRadius.circular(10)),
-                          artworkHeight: 50,
-                          artworkWidth: 50,
-                          artworkFit: BoxFit.fill,
-                          artworkBorder: BorderRadius.circular(10)),
-                    ),
-                    title: Padding(
-                      padding: const EdgeInsets.only(top: 10),
-                      child: commonText(
-                          text: songDatas.songName,
-                          size: 15,
-                          weight: FontWeight.w600),
-                    ),
-                    subtitle: Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: commonMarquees(
-                          text: songDatas.artistName,
-                          size: 12.0,
-                          color: HexColor("#ACB8C2"),
-                          weight: FontWeight.w600,
-                          hPadding: 0.0,
-                          vPadding: 1.0),
-                    ),
-                    trailing: SizedBox(
-                      width: 80,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: IconButton(
-                              icon: const Icon(
-                                Icons.play_arrow,
-                              ),
-                              onPressed: () {
-                                debugPrint("Play Button Clicked");
-                              },
                             ),
-                          ),
-                          Expanded(
-                            child: IconButton(
-                              icon: const Icon(
-                                Icons.remove_circle_outline,
-                              ),
-                              onPressed: () {
-                                final model = UserSongs(songName: songDatas.songName,artistName: songDatas.artistName,songPath: songDatas.songPath,isFavourited: false,isAddedtoPlaylist: false,imageId: songDatas.imageId,duration: songDatas.duration);
-                                songFetcher.put(key, model);
-                                debugPrint("Delete Button Clicked");
-                              },
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
+                const SizedBox(
+                  height: 70,
+                )
+            ]
             );
           }
         },

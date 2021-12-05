@@ -35,7 +35,7 @@ class _SearchSongState extends State<SearchSong> {
         builder: (_, setSongDetails, child) => GestureDetector(
         onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
         child: Scaffold(
-          appBar: commonAppBar(context),
+          appBar: const CommonAppBar(),
           body: ListView(
             shrinkWrap: true,
             children: [

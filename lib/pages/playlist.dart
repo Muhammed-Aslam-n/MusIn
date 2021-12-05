@@ -53,7 +53,7 @@ class _PlayListState extends State<PlayList> {
         FocusManager.instance.primaryFocus?.unfocus();
       },
       child: Scaffold(
-        appBar: commonAppBar(context),
+        appBar: const CommonAppBar(),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
             var pInstance = Provider.of<PlayerCurrespondingItems>(context,listen:false);

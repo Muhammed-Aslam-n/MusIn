@@ -34,41 +34,26 @@ class _PlaylistSongsState extends State<PlaylistSongs> {
         Hive.box<UserPlaylistSongs>(userPlaylistSongBoxName);
     final pInstance = Provider.of<PlayerCurrespondingItems>(context,listen: false);
     getSongPathsMan();
-    debugPrint("Path in AudioPlayer is ");
     pInstance.showKeys();
-    debugPrint("Playlist Songs Done");
-
-
-
     super.initState();
   }
 
   getSongPathsMan(){
     final pInstance = Provider.of<PlayerCurrespondingItems>(context, listen: false);
-    debugPrint("\n----------------------------------------------------------------------");
     var data = userPlaylistNameDbInstance!.get(widget.selectedPlaylistKey);
     debugPrint(data!.playlistNames.toString().toUpperCase());
     if(pInstance.playlistSongsPlaylist.isEmpty){
       for (var element in userPlaylistSongDbInstance!.values) {
        if(widget.selectedPlaylistKey == element.currespondingPlaylistId){
-         debugPrint(element.songName);
+         debugPrint("Path is ${element.songName}");
          songsPaths.add(element.songPath??'');
          pInstance.alreadyPlayingPlaylistIndex = element.currespondingPlaylistId!;
-
-         debugPrint(element.songPath);
-
-         debugPrint("FIrst Key isssss   ----- ${element.currespondingPlaylistId}");
-
        }
       }
-
+      pInstance.previousPlaylistLength = songsPaths.length;
     }else{
          if(pInstance.alreadyPlayingPlaylistIndex != widget.selectedPlaylistKey ){
-           debugPrint("Entered ");
            pInstance.playlistSongsPlaylist.clear();
-           debugPrint("Emptied");
-           debugPrint("AlreadyPlaying Key is ${pInstance.alreadyPlayingPlaylistIndex}");
-           debugPrint("Selected Key is ${widget.selectedPlaylistKey}");
            for (var element in userPlaylistSongDbInstance!.values) {
              if(element.currespondingPlaylistId == widget.selectedPlaylistKey){
                songsPaths.add(element.songPath!);
@@ -76,10 +61,9 @@ class _PlaylistSongsState extends State<PlaylistSongs> {
              }
            }
            pInstance.alreadyPlayingPlaylistIndex = widget.selectedPlaylistKey!;
-           debugPrint("ALreadY Key nOW IS ${pInstance.alreadyPlayingPlaylistIndex}");
          }
+         pInstance.previousPlaylistLength = songsPaths.length;
     }
-    debugPrint("\n----------------------------------------------------------------------");
   }
 
   changePlaylistMode(){
@@ -87,6 +71,10 @@ class _PlaylistSongsState extends State<PlaylistSongs> {
     pInstance.getPlaylistSongsPaths(songsPaths);
     pInstance.test = widget.selectedPlaylistKey!;
     pInstance.modeOfPlaylist = 3;
+    // debugPrint("\n---------------------------------");
+    // debugPrint("The Song Paths if List is  Empty ");
+    // pInstance.showKeys();
+    // debugPrint("\n---------------------------------");
   }
   // getSongPathsMan(){
   //   final pInstance = Provider.of<PlayerCurrespondingItems>(context, listen: false);
@@ -112,7 +100,7 @@ class _PlaylistSongsState extends State<PlaylistSongs> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: commonAppBar(context),
+      appBar: const CommonAppBar(),
       body: Stack(
         children: [
           ListView(
@@ -146,6 +134,7 @@ class _PlaylistSongsState extends State<PlaylistSongs> {
                                 onPressed: () {
                                   var pInstance = Provider.of<PlayerCurrespondingItems>(context,listen: false);
                                   pInstance.isAddingSongsToExistingPlaylist = true;
+                                  pInstance.updatePlaylistAfterAddingSong = true;
                                   Navigator.push(context, MaterialPageRoute(builder: (context)=>AddSongstoPlaylist(currentPlaylistName: songDatas!.playlistNames,currentPlaylistKey: widget.selectedPlaylistKey,totalPlaylistSongs: widget.totalNumberOfSongs,)));
                                 },
                                 icon: const Icon(Icons.add),
@@ -195,8 +184,16 @@ class _PlaylistSongsState extends State<PlaylistSongs> {
           songFetcher.get(key)!.currespondingPlaylistId ==
               widget.selectedPlaylistKey)
               .toList();
-
           widget.totalNumberOfSongs = keys.length;
+         if(setSongDetails.updatePlaylistAfterAddingSong){
+           if(setSongDetails.playlistSongsPlaylist.length != setSongDetails.previousPlaylistLength){
+             getSongPathsMan();
+             setSongDetails.previousPlaylistLength = setSongDetails.playlistSongsPlaylist.length;
+           }
+           setSongDetails.updatePlaylistAfterAddingSong = false;
+
+         }
+
 
           if (songFetcher.isEmpty) {
             return Column(
@@ -218,7 +215,10 @@ class _PlaylistSongsState extends State<PlaylistSongs> {
                     setSongDetails.isAudioPlayingFromPlaylist = true;
                     setSongDetails.isSelectedOrNot = false;
                     setSongDetails.selectedSongKey = index;
-                    setSongDetails.opnPlaylist(setSongDetails.selectedSongKey);
+                    debugPrint("Selected Index in Playlist Song is $index");
+                    debugPrint("Selected Key  in Playlist Song is $key");
+                    setSongDetails.startingIndex = setSongDetails.selectedSongKey;
+                    setSongDetails.opnPlaylist();
                     },
                   child: ListTile(
                     leading: Padding(
@@ -228,7 +228,7 @@ class _PlaylistSongsState extends State<PlaylistSongs> {
                           type: ArtworkType.AUDIO,
                           nullArtworkWidget: ClipRRect(
                               child: Image.asset(
-                                "assets/images/defaultImage.png",
+                                "assets/images/playlist_Bg/playlist16.jpg",
                                 height: 50,
                                 width: 50,
                                 fit: BoxFit.fill,

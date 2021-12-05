@@ -72,7 +72,7 @@ class _HomeState extends State<Home> {
                 duration: queriedSongs[i].duration);
             userSong!.add(model);
           }else{
-            userSong!.delete(i);
+            break;
           }
         }
       }

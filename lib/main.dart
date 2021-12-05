@@ -8,7 +8,6 @@ import 'package:musin/pages/home.dart';
 import 'package:musin/pages/onboarding.dart';
 import 'package:musin/pages/playlist.dart';
 import 'package:musin/pages/playlist_songs.dart';
-import 'package:musin/pages/songlist.dart';
 import 'package:musin/provider/provider_class.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
@@ -57,7 +56,7 @@ class MusinApp extends StatelessWidget {
           '/splashscreen': (context) => const SplashScreen(),
           '/onboarding': (context) =>  const OnBoarding(),
           '/home': (context) => const Home(),
-          '/songlist': (context) => const SongList(),
+          // '/songlist': (context) => const SongList(),
           // '/songplayingpage': (context) => SongPlayingPage(),
           // // '/searchSong': (context) => const SearchSong(),
           // '/settings': (context) => const Settings(),

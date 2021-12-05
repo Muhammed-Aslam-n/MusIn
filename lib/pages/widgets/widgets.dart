@@ -1,4 +1,5 @@
 import 'package:assets_audio_player/assets_audio_player.dart' as aap;
+import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:fluttericon/typicons_icons.dart';
 import 'package:marquee/marquee.dart';
 import 'package:musin/SettingsPages/feedback.dart';
@@ -26,171 +27,194 @@ import '../settings.dart';
 import '../songplayingpage.dart';
 import 'package:path_provider/path_provider.dart';
 
-commonAppBar(BuildContext context) {
-  bool _switchValue = true;
-  return PreferredSize(
-    preferredSize: Size.fromHeight(80),
-    child: Padding(
-      padding: EdgeInsets.only(top: 18),
-      child: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leadingWidth: 55,
-        leading: Container(
-          margin: const EdgeInsets.only(left: 15),
-          child: Image.asset("assets/images/MusInNoBackground.png"),
-        ),
-        title: commonText(text: "MusIn", color: HexColor("#A6adFF")),
-        centerTitle: true,
-        actions: [
-          PopupMenuButton(
-            tooltip: "Settings",
-            color: Colors.white.withOpacity(0.8),
-            icon: const Icon(
-              CupertinoIcons.settings,
-              color: Colors.black87,
-            ),
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text("Notification"),
-                    Transform.scale(
-                      scale: 0.8,
-                      child: CupertinoSwitch(
-                          value: _switchValue,
-                          onChanged: (value) {
-                            _switchValue = value;
-                          }),
-                    )
-                  ],
-                ),
-                value: 1,
-              ),
-              PopupMenuItem(
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const UserFeedback()));
-                  },
-                  child: Row(
-                    children: const [
-                      Icon(
-                        Icons.feedback,
-                        color: Colors.black45,
-                      ),
-                      SizedBox(
-                        width: 10,
-                      ),
-                      Text("Feedback"),
-                    ],
-                  ),
-                ),
-                value: 1,
-              ),
-              PopupMenuItem(
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const PrivacyPolicy()));
-                  },
-                  child: Row(
-                    children: const [
-                      Icon(
-                        Icons.lock,
-                        color: Colors.black45,
-                      ),
-                      SizedBox(
-                        width: 10,
-                      ),
-                      Text("Privacy Policy"),
-                    ],
-                  ),
-                ),
-                value: 1,
-              ),
-              PopupMenuItem(
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const TermsandCondition()));
-                  },
-                  child: Row(
-                    children: const [
-                      Icon(
-                        Typicons.clipboard,
-                        color: Colors.black45,
-                      ),
-                      SizedBox(
-                        width: 10,
-                      ),
-                      Text("Terms and Conditions"),
-                    ],
-                  ),
-                ),
-                value: 1,
-              ),
-              PopupMenuItem(
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    showAbout(context);
-                  },
-                  child: Row(
-                    children: const [
-                      Icon(
-                        Entypo.info,
-                        color: Colors.black45,
-                      ),
-                      SizedBox(
-                        width: 10,
-                      ),
-                      Text("About"),
-                    ],
+class CommonAppBar extends StatefulWidget implements PreferredSizeWidget {
+  const CommonAppBar({Key? key}) : super(key: key);
 
-                  ),
+  @override
+  _CommonAppBarState createState() => _CommonAppBarState();
+
+  @override
+  // TODO: implement preferredSize
+  Size get preferredSize => const Size.fromHeight(80);
+}
+
+class _CommonAppBarState extends State<CommonAppBar> {
+  bool _switchValue = true;
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: PreferredSize(
+        preferredSize: const Size.fromHeight(80),
+        child: Padding(
+          padding: const EdgeInsets.only(top: 18),
+          child: AppBar(
+            backgroundColor: Colors.white,
+            elevation: 0,
+            leadingWidth: 55,
+            leading: Container(
+              margin: const EdgeInsets.only(left: 15),
+              child: Image.asset("assets/images/MusInNoBackground.png"),
+            ),
+            title: commonText(text: "MusIn", color: HexColor("#A6adFF")),
+            centerTitle: true,
+            actions: [
+              PopupMenuButton(
+                tooltip: "Settings",
+                color: Colors.white.withOpacity(0.8),
+                icon: const Icon(
+                  CupertinoIcons.settings,
+                  color: Colors.black87,
                 ),
-                value: 1,
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text("Notification"),
+                        Transform.scale(
+                          scale: 0.8,
+                          child: CupertinoSwitch(
+                              value: _switchValue,
+                              onChanged: (value) {
+                                var pInstance = Provider.of<PlayerCurrespondingItems>(context,listen: false);
+                                pInstance.turnNotificationOn?AssetsAudioPlayer.addNotificationOpenAction((notification) => false):AssetsAudioPlayer.addNotificationOpenAction((notification) => true);
+
+                                pInstance.turnNotificationOn?pInstance.turnNotificationOn = false:pInstance.turnNotificationOn = true;
+
+
+                                _switchValue = value;
+                                Navigator.of(context).pop();
+                              }),
+                        )
+                      ],
+                    ),
+                    value: 1,
+                  ),
+                  PopupMenuItem(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const UserFeedback()));
+                      },
+                      child: Row(
+                        children: const [
+                          Icon(
+                            Icons.feedback,
+                            color: Colors.black45,
+                          ),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Text("Feedback"),
+                        ],
+                      ),
+                    ),
+                    value: 1,
+                  ),
+                  PopupMenuItem(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const PrivacyPolicy()));
+                      },
+                      child: Row(
+                        children: const [
+                          Icon(
+                            Icons.lock,
+                            color: Colors.black45,
+                          ),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Text("Privacy Policy"),
+                        ],
+                      ),
+                    ),
+                    value: 1,
+                  ),
+                  PopupMenuItem(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const TermsandCondition()));
+                      },
+                      child: Row(
+                        children: const [
+                          Icon(
+                            Typicons.clipboard,
+                            color: Colors.black45,
+                          ),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Text("Terms and Conditions"),
+                        ],
+                      ),
+                    ),
+                    value: 1,
+                  ),
+                  PopupMenuItem(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        showAbout(context);
+                      },
+                      child: Row(
+                        children: const [
+                          Icon(
+                            Entypo.info,
+                            color: Colors.black45,
+                          ),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Text("About"),
+                        ],
+
+                      ),
+                    ),
+                    value: 1,
+                  ),
+                ],
               ),
+              sizedw2,
             ],
           ),
-          sizedw2,
-        ],
+        ),
       ),
-    ),
-  );
+    );
+  }
+  showAbout(BuildContext context) {
+    return showAboutDialog(
+        context: (context),
+        applicationIcon: Image.asset(
+          "assets/images/MusInNoBackground.png",
+          height: 45,
+          width: 55,
+          fit: BoxFit.cover,
+        ),
+        applicationName: "MusIn",
+        applicationVersion: "1.0.00.1",
+        children: [
+          commonText(
+              text:
+              "This Application is Developed by CrossRoads Ddevelopment Company\n"
+                  "All Rights Reserved to CrossRoads Pvt.Limited",
+              size: 12,
+              weight: FontWeight.w400)
+        ]);
+  }
 }
 
-showAbout(BuildContext context) {
-  return showAboutDialog(
-      context: (context),
-      applicationIcon: Image.asset(
-        "assets/images/MusInNoBackground.png",
-        height: 45,
-        width: 55,
-        fit: BoxFit.cover,
-      ),
-      applicationName: "MusIn",
-      applicationVersion: "1.0.00.1",
-      children: [
-        commonText(
-            text:
-                "This Application is Developed by CrossRoads Ddevelopment Company\n"
-                "All Rights Reserved to CrossRoads Pvt.Limited",
-            size: 12,
-            weight: FontWeight.w400)
-      ]);
-}
 
 commonText(
     {text,
@@ -253,555 +277,7 @@ class CommonHeaders extends StatelessWidget {
   }
 }
 
-// Cunstructor Based Play and Pause
 
-// class CommonMiniPlayer extends StatefulWidget {
-//   bool isSelected;
-//   final songName, artistName, image, path, type, duration;
-//
-//   CommonMiniPlayer({this.isSelected = true,
-//     this.songName,
-//     this.artistName,
-//     this.image,
-//     this.path,
-//     this.duration,
-//     this.type});
-//   @override
-//   State<CommonMiniPlayer> createState() => _CommonMiniPlayerState();
-// }
-//
-// class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
-//   bool playOrPaused=false,isIconChanged = false;
-//   bool isRepeat=false;
-//
-//   late AssetsAudioPlayer player;
-//   @override
-//   void initState() {
-//     player = AssetsAudioPlayer();
-//     super.initState();
-//   }
-//
-// //-----------------------------------------------
-//
-//
-//   playOrpause() async {
-//     if (playOrPaused==false) {
-//        await playSong(widget.path);
-//        playOrPaused = true;
-//        isIconChanged = true;
-//       setState(() {});
-//     } else if(playOrPaused == true){
-//       await pauseSong();
-//       playOrPaused = false;
-//       isIconChanged = false;
-//       setState(() {});
-//     }
-//   }
-//   playSong(link)async{
-//     try {
-//       await player.open(
-//         Audio(link),autoStart: true,
-//         showNotification: true,
-//       );
-//       getDuration();
-//       totalDuration();
-//       finishedOrNot();
-//     } catch (t) {
-//       //mp3 unreachable
-//     }
-//   }
-//   pauseSong() async {
-//     await player.pause();
-//   }
-//   //------------------------------------------------------------
-//   Duration? currentPosition = Duration(seconds: 0);
-//   Duration? dur=Duration(seconds: 0);
-//
-//   totalDuration()async{
-//    player.current.listen((event) {
-//      dur = event!.audio.duration;
-//      setState(() {
-//
-//      });
-//    });
-//   }
-//
-//   getDuration(){
-//     return StreamBuilder(
-//         stream: player.currentPosition,
-//         builder: (context, asyncSnapshot) {
-//           currentPosition = asyncSnapshot.data as Duration;
-//           return commonText(
-//               text: currentPosition.toString().split(".")[0],
-//               color: HexColor("#656F77"),
-//               weight: FontWeight.w400,
-//               size: 12);
-//         });
-//   }
-//   Widget slider() {
-//     return Slider(
-//       activeColor: HexColor("#656F77"),
-//       inactiveColor: Colors.grey,
-//       value:currentPosition!.inSeconds.toDouble(),
-//       min: 0.0,
-//       max: dur!.inSeconds.toDouble(),
-//       onChanged: (double value) {
-//         setState(() {
-//           changeToSeconds(value.toInt());
-//           value = value;
-//         });
-//       },
-//     );
-//   }
-//   void changeToSeconds(int seconds){
-//     Duration newDuration = Duration(seconds: seconds);
-//     player.seek(newDuration);
-//     setState(() {
-//     });
-//   }
-//
-//   finishedOrNot(){
-//     player.playlistAudioFinished.listen((event) {
-//       playOrPaused = false;
-//       isIconChanged = false;
-//       setState(() {
-//       });
-//     });
-//     }
-//
-//
-//
-//   loopSongs(){
-//     if(isRepeat == false){
-//       player.setLoopMode(LoopMode.single);
-//       isRepeat = true;
-//
-//       isIconChanged = true;
-//       setState(() {
-//
-//       });
-//       debugPrint("False : Loop Mode in If ${player.currentLoopMode}");
-//     }
-//     else if(isRepeat == true){
-//       player.setLoopMode(LoopMode.none);
-//       isRepeat = false;
-//       setState(() {
-//
-//       });
-//       debugPrint(" True: Loop Mode in Else ${player.currentLoopMode}");
-//     }
-//   }
-//
-//
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Offstage(
-//       offstage: widget.isSelected,
-//       child: Miniplayer(
-//         maxHeight: MediaQuery.of(context).size.height,
-//         minHeight: 80,
-//         builder: (height, percentage) {
-//           if (height <= 80) {
-//             return Row(
-//               children: [
-//                 Expanded(
-//                   flex: 2,
-//                   child: ListTile(
-//                     tileColor: Colors.white38,
-//                     isThreeLine: true,
-//                     leading: Container(
-//                       width: 50,
-//                       height: 50,
-//                       decoration: BoxDecoration(
-//                         borderRadius: BorderRadius.circular(8),
-//                         image: DecorationImage(
-//                           image: ExactAssetImage(
-//                             widget.image ?? '',
-//                           ),
-//                           fit: BoxFit.cover,
-//                         ),
-//                       ),
-//                     ),
-//                     title: commonText(text: widget.songName ?? "", size: 13),
-//                     subtitle:
-//                         commonText(text: widget.artistName ?? "", size: 11),
-//                   ),
-//                 ),
-//                 Expanded(
-//                   flex: 1,
-//                   child: Row(
-//                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                     children: [
-//                       Expanded(
-//                         child: IconButton(
-//                           onPressed: () {
-//                             debugPrint("Previous Icon Pressed");
-//                           },
-//                           icon: const Icon(FontAwesome.left_dir),
-//                         ),
-//                       ),
-//                       IconButton(
-//                         onPressed: () {
-//                           playOrpause();
-//                         },
-//                         icon: isIconChanged
-//                             ? const Icon(
-//                                 Icons.pause,
-//                                 size: 32,
-//                               )
-//                             : const Icon(
-//                                 Icons.play_arrow,
-//                                 size: 32,
-//                               ),
-//                       ),
-//                       IconButton(
-//                         onPressed: () {
-//                           debugPrint("Next Icon Pressed");
-//                         },
-//                         icon: const Icon(FontAwesome.right_dir),
-//                       ),
-//                     ],
-//                   ),
-//                 ),
-//               ],
-//             );
-//           } else {
-//             // return SongPlayingPage();
-//             bool? isFavourite = false,
-//                 isLoop = false,
-//                 isShuffle = false,
-//                 isAdded = false;
-//             return Container(
-//               margin: const EdgeInsets.only(top: 20),
-//               width: double.infinity,
-//               height: MediaQuery.of(context).size.height,
-//               decoration: const BoxDecoration(
-//                   color: Colors.white,
-//                   borderRadius: BorderRadius.only(
-//                       topLeft: Radius.circular(24),
-//                       topRight: Radius.circular(24))),
-//               child: ListView(
-//                 children: [
-//                   sizedh2,
-//                   Padding(
-//                       padding: const EdgeInsets.symmetric(horizontal: 30),
-//                       child: Row(
-//                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                         children: [
-//                           commonText(text: "Now Playing", size: 17),
-//                           Row(
-//                             children: [
-//                               IconButton(
-//                                 onPressed: () {
-//                                   isFavourite = !isFavourite!;
-//                                   showFavouriteSnackBar(context, isFavourite);
-//                                   setState(() {});
-//                                 },
-//                                 icon: const Icon(CupertinoIcons.heart),
-//                                 color:
-//                                     isFavourite! ? Colors.red : Colors.black87,
-//                               ),
-//                               IconButton(
-//                                   onPressed: () {
-//                                     isAdded = !isAdded!;
-//                                     showPlaylistSnackBar(context, isAdded);
-//                                     setState(() {});
-//                                   },
-//                                   icon: isAdded!
-//                                       ? const Icon(
-//                                           CupertinoIcons.add,
-//                                         )
-//                                       : const Icon(
-//                                           CupertinoIcons.checkmark_circle,
-//                                           color: Colors.green,
-//                                         )),
-//                             ],
-//                           )
-//                         ],
-//                       )),
-//                   SizedBox(
-//                     height: MediaQuery.of(context).size.height * 0.05,
-//                   ),
-//                   Column(
-//                     children: [
-//                       Container(
-//                         height: 200,
-//                         width: 200,
-//                         decoration: BoxDecoration(
-//                           shape: BoxShape.circle,
-//                           border: Border.all(
-//                             width: 5,
-//                             color: commonColor,
-//                           ),
-//                         ),
-//                         child: Padding(
-//                           padding: const EdgeInsets.all(8.0),
-//                           child: CircleAvatar(
-//                             backgroundImage: AssetImage(widget.image),
-//                           ),
-//                         ),
-//                       ),
-//                       sizedh2,
-//                       commonText(
-//                         text: widget.songName,
-//                         size: 21,
-//                       ),
-//                       commonText(
-//                           text: widget.artistName,
-//                           size: 15,
-//                           color: HexColor("656F77"),
-//                           weight: FontWeight.w400),
-//                       sizedh2,
-//                       sizedh2,
-//                       SizedBox(
-//                         width: MediaQuery.of(context).size.width * 0.8,
-//                         child: Row(
-//                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                           children: [
-//                             IconButton(
-//                               onPressed: () {
-//                                 loopSongs();
-//                                 debugPrint("Loop Clicked");
-//                                 setState(() {
-//
-//                                 });
-//                               },
-//                               icon: Icon(Icons.loop_outlined,
-//                                   size: 26,
-//                                   color: isRepeat
-//                                       ? Colors.blueAccent
-//                                       : HexColor("#656F77")),
-//                             ),
-//                             sizedw1,
-//                             const Icon(
-//                               FontAwesome.left_dir,
-//                               size: 37,
-//                             ),
-//                             sizedw2,
-//                             Container(
-//                               width: 80,
-//                               height: 80,
-//                               decoration: BoxDecoration(
-//                                   shape: BoxShape.circle, color: commonColor),
-//                               child: IconButton(
-//                                 onPressed: () {
-//                                   playOrpause();
-//                                   setState(() {});
-//                                   // setSongDetails.isIconChanged?setSongDetails.playSong(audio,context):songDetailsProvider.pauseSong();
-//                                 },
-//                                 icon: isIconChanged
-//                                     ? const Icon(
-//                                         Icons.pause,
-//                                         size: 60,
-//                                         color: Colors.white,
-//                                       )
-//                                     : const Icon(
-//                                         Icons.play_arrow,
-//                                         size: 60,
-//                                         color: Colors.white,
-//                                       ),
-//                               ),
-//                             ),
-//                             sizedw2,
-//                             IconButton(
-//                               onPressed: () {
-//                                 // setSongDetails.isIconChanged?setSongDetails.playSong(setSongDetails.path, context):setSongDetails.pauseSong();
-//                                 // setSongDetails.duration();
-//                               },
-//                               icon: const Icon(
-//                                 FontAwesome.right_dir,
-//                                 size: 37,
-//                               ),
-//                             ),
-//                             sizedw2,
-//                             IconButton(
-//                               onPressed: () {
-//                                 isShuffle = !isShuffle!;
-//                                 setState(() {});
-//                               },
-//                               icon: Icon(
-//                                 Entypo.shuffle,
-//                                 size: 22,
-//                                 color: isShuffle!
-//                                     ? Colors.blueAccent
-//                                     : HexColor("#656F77"),
-//                               ),
-//                             ),
-//                           ],
-//                         ),
-//                       ),
-//                       sizedh2,
-//                       Padding(
-//                         padding: const EdgeInsets.symmetric(horizontal: 20),
-//                         child: Row(
-//                           mainAxisAlignment: MainAxisAlignment.center,
-//                           children: [
-//                             Expanded(child: getDuration(),),
-//                             Expanded(flex:3,child: slider(),),
-//                             Expanded(
-//                               child: commonText(
-//                                   text: dur.toString().split(".")[0],
-//                                   color: HexColor("#656F77"),
-//                                   weight: FontWeight.w400,
-//                                   size: 12),
-//                             ),
-//                           ],
-//                         ),
-//                       ),
-//                     ],
-//                   ),
-//                 ],
-//               ),
-//             );
-//           }
-//         },
-//       ),
-//     );
-//   }
-//
-//
-//
-//   showPlaylistSnackBar(BuildContext context, isAdded) {
-//     final snack = SnackBar(
-//       content: isAdded!
-//           ? commonText(
-//               text: "Added to Playlist",
-//               color: Colors.green,
-//               size: 13,
-//               weight: FontWeight.w500,
-//               isCenter: true)
-//           : commonText(
-//               text: "Removed from Playlist",
-//               color: Colors.red,
-//               size: 13,
-//               weight: FontWeight.w500,
-//               isCenter: true),
-//       duration: Duration(seconds: 1),
-//       behavior: SnackBarBehavior.floating,
-//       shape: RoundedRectangleBorder(
-//         borderRadius: BorderRadius.circular(24),
-//       ),
-//       backgroundColor: Colors.white,
-//       width: 250,
-//     );
-//     return ScaffoldMessenger.of(context).showSnackBar(snack);
-//   }
-//
-//   showFavouriteSnackBar(BuildContext context, isFavourite) {
-//     final snack = SnackBar(
-//       content: isFavourite!
-//           ? commonText(
-//               text: "Added to Favourites",
-//               color: Colors.green,
-//               size: 13,
-//               weight: FontWeight.w500,
-//               isCenter: true)
-//           : commonText(
-//               text: "Removed from Favourites",
-//               color: Colors.red,
-//               size: 13,
-//               weight: FontWeight.w500,
-//               isCenter: true),
-//       duration: Duration(seconds: 1),
-//       behavior: SnackBarBehavior.floating,
-//       shape: RoundedRectangleBorder(
-//         borderRadius: BorderRadius.circular(24),
-//       ),
-//       backgroundColor: Colors.white,
-//       width: 250,
-//     );
-//     return ScaffoldMessenger.of(context).showSnackBar(snack);
-//   }
-// }
-
-//
-// class DrawerAll extends StatefulWidget {
-//   const DrawerAll({Key? key}) : super(key: key);
-//
-//   @override
-//   _DrawerAllState createState() => _DrawerAllState();
-// }
-//
-// class _DrawerAllState extends State<DrawerAll> {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Drawer(
-//       child: ListView(
-//         children: [
-//           Container(
-//             width: double.infinity,
-//             padding: EdgeInsets.only(top: 50, left: 30),
-//             height: 150,
-//             decoration: BoxDecoration(
-//               color: HexColor("#A6B9FF"),
-//               borderRadius: BorderRadius.only(
-//                   bottomLeft: Radius.circular(30),
-//                   bottomRight: Radius.circular(30)),
-//             ),
-//             child: Column(
-//               crossAxisAlignment: CrossAxisAlignment.start,
-//               children: [
-//                 Row(
-//                   children: [
-//                     Image.asset(
-//                       "assets/images/MusInNoBackground.png",
-//                       height: 34,
-//                       width: 45,
-//                     ),
-//                     commonText(
-//                         text: "MusIn", color: HexColor("#1814E4"), size: 27),
-//                   ],
-//                 ),
-//                 commonText(
-//                     text: "\tHear The Best",
-//                     size: 12,
-//                     color: HexColor("#656F77"))
-//               ],
-//             ),
-//           ),
-//           const SizedBox(
-//             height: 40,
-//           ),
-//           sizedh2,
-//           Container(
-//             margin: EdgeInsets.symmetric(horizontal: 35),
-//             child: Column(
-//               children: [
-//                 drawerItems(itemName: "Favourites", routName: "/favourites"),
-//                 sizedh2,
-//                 drawerItems(itemName: "Playlist", routName: "/playlist"),
-//                 // sizedh2,
-//                 // drawerItems(itemName: "Search",routName: "/searchSong"),
-//                 sizedh2,
-//                 drawerItems(itemName: "Settings", routName: "/settings"),
-//               ],
-//             ),
-//           )
-//         ],
-//       ),
-//     );
-//   }
-//
-//   drawerItems({required itemName, size, required routName}) {
-//     return GestureDetector(
-//       child: Row(
-//         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//         children: [
-//           commonText(text: itemName, size: size ?? 17),
-//           Icon(
-//             Icons.arrow_forward_ios_rounded,
-//             size: 15,
-//           ),
-//         ],
-//       ),
-//       onTap: () {
-//         Navigator.of(context).pop();
-//         Navigator.pushNamed(context, routName);
-//       },
-//     );
-//   }
-// }
 
 // Provider Integrated Working Player database
 
@@ -809,8 +285,6 @@ class CommonMiniPlayer extends StatefulWidget {
   const CommonMiniPlayer({
     Key? key,
   }) : super(key: key);
-
-  // var songName,artistName,image,path,type;
 
   @override
   State<CommonMiniPlayer> createState() => _CommonMiniPlayerState();
@@ -820,6 +294,7 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
   Box<UserSongs>? songDetailsBox;
   Box<UserPlaylistNames>? userPlaylistNameInstance;
   Box<UserPlaylistSongs>? userPlaylistSongsInstance;
+  bool addToFavs = false;
 
   @override
   void initState() {
@@ -848,17 +323,24 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                       List keys = [];
                       if (songDetailsProvider.modeOfPlaylist == 1) {
                         keys = songDetailsBox!.keys.cast<int>().toList();
-                      } else if (songDetailsProvider.modeOfPlaylist == 2) {
+                      } else if (songDetailsProvider.modeOfPlaylist == 2){
                         keys = songFetcher.keys
                             .cast<int>()
                             .where((key) =>
                                 songFetcher.get(key)!.isFavourited == true)
                             .toList();
                       }
+
                       if (keys.isNotEmpty) {
-                        songDetailsProvider.currentSongKey =
-                            keys[songDetailsProvider.selectedSongKey ?? 0];
+                        debugPrint("\n---------------------");
+                        debugPrint("The Keys in Key According to the Mode is ");
+                        keys.forEach((element) {
+                          debugPrint(element.toString() );
+                        });
+                        debugPrint("\n---------------------");
+                        songDetailsProvider.currentSongKey =keys[songDetailsProvider.selectedSongKey??0];
                       }
+
                       var songData =
                           songFetcher.get(songDetailsProvider.currentSongKey);
 
@@ -877,8 +359,11 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                                 leading: QueryArtworkWidget(
                                   id: songData?.imageId ?? 0,
                                   type: ArtworkType.AUDIO,
-                                  nullArtworkWidget: Image.asset(
-                                      "assets/images/defaultImage.png"),
+                                  nullArtworkWidget: ClipRRect( 
+                                    borderRadius: BorderRadius.circular(100),
+                                    child: Image.asset(
+                                        "assets/images/playlist_Bg/playlist16.jpg",fit: BoxFit.cover,height: 50,width: 50,),
+                                  ),
                                   // artworkWidth: 200,
                                 ),
                                 title: commonMarquees(
@@ -938,6 +423,7 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                     },
                   );
                 } else {
+                  // MiniPlayer For Playlist is Here !!!!
                   return ValueListenableBuilder(
                     valueListenable: userPlaylistSongsInstance!.listenable(),
                     builder: (context, Box<UserPlaylistSongs> songFetcher, _) {
@@ -948,8 +434,17 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                               songDetailsProvider.test)
                           .toList();
 
-                      songDetailsProvider.currentSongKey =
-                          keys[songDetailsProvider.selectedSongKey!];
+                      if (keys.isNotEmpty) {
+                        debugPrint("\n---------------------");
+                        debugPrint("The Keys in Key According to the Playlist Mode is ");
+                        keys.forEach((element) {
+                          debugPrint(element.toString() );
+                        });
+                        debugPrint("\n---------------------");
+                        songDetailsProvider.currentSongKey =keys[songDetailsProvider.selectedSongKey??0];
+                      }
+                      // songDetailsProvider.currentSongKey =
+                      //     keys[songDetailsProvider.selectedSongKey??0];
                       // songDetailsProvider.selectedSongKey;
 
                       var songData =
@@ -970,8 +465,11 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                                 leading: QueryArtworkWidget(
                                   id: songData!.songImageId!,
                                   type: ArtworkType.AUDIO,
-                                  nullArtworkWidget: Image.asset(
-                                      "assets/images/defaultImage.png"),
+                                  nullArtworkWidget: ClipRRect(
+                                    borderRadius: BorderRadius.circular(100),
+                                    child: Image.asset(
+                                        "assets/images/playlist_Bg/playlist16.jpg",height: 50,width: 50,),
+                                  ),
                                   // artworkWidth: 200,
                                 ),
                                 title: commonMarquees(
@@ -1032,7 +530,6 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                   );
                 }
               } else {
-                bool addToFavs = false;
                 if (songDetailsProvider.isAudioPlayingFromPlaylist == false) {
                   return Consumer<PlayerCurrespondingItems>(
                     builder: (_, setSongDetails, child) => Container(
@@ -1086,25 +583,7 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                                                       } else {
                                                         addToFavs = true;
                                                       }
-                                                      final model = UserSongs(
-                                                          songName:
-                                                              songData.songName,
-                                                          artistName: songData
-                                                              .artistName,
-                                                          duration:
-                                                              songData.duration,
-                                                          songPath:
-                                                              songData.songPath,
-                                                          imageId:
-                                                              songData.imageId,
-                                                          isAddedtoPlaylist:
-                                                              false,
-                                                          isFavourited:
-                                                              addToFavs);
-                                                      songFetcher.putAt(
-                                                          songDetailsProvider
-                                                              .currentSongKey!,
-                                                          model);
+                                                      addToFavourites(songFetcher: songFetcher,songDatas: songData,key: songDetailsProvider.currentSongKey);
                                                       debugPrint(
                                                           "Added to Favourites $addToFavs");
                                                       showFavouriteSnackBar(
@@ -1123,33 +602,28 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                                                     onSelected: (result) {
                                                       if (result == 1) {
                                                         showPlaylistNames(
-                                                            context,
-                                                            songDetailsProvider
-                                                                .currentSongKey);
-                                                      } else if (result == 2) {
-                                                        createPlaylist(
-                                                            context,
-                                                            songDetailsProvider
-                                                                .currentSongKey);
+                                                            context, setSongDetails.currentSongKey,songData.songName);
+                                                      } else {
+                                                        showPlaylistNameToRemove(
+                                                            context, songData.songName);
                                                       }
                                                     },
                                                     itemBuilder: (context) => [
                                                       const PopupMenuItem(
-                                                        child: Text(
-                                                            "Add to Playlist"),
+                                                        child: Text("Add to Playlist"),
                                                         value: 1,
                                                       ),
                                                       const PopupMenuItem(
-                                                        child: Text(
-                                                            "Create Playlist"),
+                                                        child: Text("Remove from Playlist"),
                                                         value: 2,
-                                                      ),
+                                                      )
                                                     ],
                                                   ),
                                                 ],
                                               )
                                             ],
-                                          )),
+                                          ),
+                                      ),
                                       SizedBox(
                                         height:
                                             MediaQuery.of(context).size.height *
@@ -1178,7 +652,8 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                                                   const BorderRadius.all(
                                                       Radius.circular(100)),
                                               child: Image.asset(
-                                                "assets/images/defaultImage.png",
+                                                "assets/images/playlist_Bg/playlist16.jpg",
+                                                height: 100,fit: BoxFit.cover,
                                               ),
                                             ),
                                             // artworkWidth: 200,
@@ -1227,11 +702,6 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                                                           Icons.loop_outlined,
                                                           size: 26,
                                                         ),
-                                              // icon: Icon(Icons.loop_outlined,
-                                              //     size: 26,
-                                              //     color: setSongDetails.isRepeat
-                                              //         ? Colors.blueAccent
-                                              //         : HexColor("#656F77")),
                                             ),
                                             sizedw1,
                                             IconButton(
@@ -1309,7 +779,7 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                                             ),
                                             Expanded(
                                               flex: 3,
-                                              child: setSongDetails.slider(),
+                                              child: setSongDetails.giveProgressBar(),
                                             ),
                                             Expanded(
                                               child: setSongDetails
@@ -1329,6 +799,7 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                     ),
                   );
                 } else {
+                  // MiniPlayer For Playlist is Here !!!!
                   return Consumer<PlayerCurrespondingItems>(
                     builder: (_, setSongDetails, child) => Container(
                       margin: const EdgeInsets.only(top: 20),
@@ -1358,6 +829,7 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
 
                               songDetailsProvider.currentSongKey = keys[
                                   songDetailsProvider.selectedSongKey ?? 0];
+
                               // songDetailsProvider.selectedSongKey;
 
                               var songData = songFetcher
@@ -1406,7 +878,7 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                                                   const BorderRadius.all(
                                                       Radius.circular(100)),
                                               child: Image.asset(
-                                                "assets/images/defaultImage.png",
+                                                "assets/images/playlist_Bg/playlist16.jpg",
                                               ),
                                             ),
                                             // artworkWidth: 200,
@@ -1535,7 +1007,7 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                                             ),
                                             Expanded(
                                               flex: 3,
-                                              child: setSongDetails.slider(),
+                                              child: setSongDetails.giveProgressBar(),
                                             ),
                                             Expanded(
                                               child: setSongDetails
@@ -1561,9 +1033,180 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
         );
       },
     );
+
   }
 
-  showPlaylistNames(BuildContext context, songKey) {
+  addToFavourites({required Box songFetcher, UserSongs? songDatas, key}) {
+    if (songDatas?.isFavourited == true) {
+      addToFavs = false;
+    } else {
+      addToFavs = true;
+    }
+    final model = UserSongs(
+        songName: songDatas?.songName,
+        artistName: songDatas?.artistName,
+        duration: songDatas?.duration,
+        songPath: songDatas?.songPath,
+        imageId: songDatas?.imageId,
+        isAddedtoPlaylist: false,
+        isFavourited: addToFavs);
+    songFetcher.putAt(key, model);
+    showFavouriteSnackBar(context: context, isFavourite: addToFavs);
+  }
+
+  showPlaylistNameToRemove(BuildContext context, songName) {
+    return showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Remove from...'),
+        content: SizedBox(
+          height: 100,
+          width: 200,
+          child: ValueListenableBuilder(
+              valueListenable: userPlaylistNameInstance!.listenable(),
+              builder: (context, Box<UserPlaylistNames> songFetcher, _) {
+                List<int> allCurrespondingKeys = [];
+                List<int> verumKeys = userPlaylistSongsInstance!.keys
+                    .cast<int>()
+                    .where((key) =>
+                userPlaylistSongsInstance!.get(key)!.songName ==
+                    songName)
+                    .toList();
+                for (var element in userPlaylistSongsInstance!.values) {
+                  if (element.songName == songName) {
+                    allCurrespondingKeys
+                        .add(element.currespondingPlaylistId ?? 0);
+                  }
+                }
+
+                int globalKey = 0;
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: ListView.separated(
+                          shrinkWrap: true,
+                          itemBuilder: (_, index) {
+                            final key = allCurrespondingKeys[index];
+                            final currentPlaylist = songFetcher.get(key);
+                            globalKey = key;
+                            return GestureDetector(
+                              onTap: () {
+                                List<int> keys = userPlaylistSongsInstance!.keys
+                                    .cast<int>()
+                                    .where((key) =>
+                                userPlaylistSongsInstance!
+                                    .get(key)!
+                                    .currespondingPlaylistId ==
+                                    key)
+                                    .toList();
+                                var songFetch = verumKeys[index];
+                                // var songData = songFetch!.get(key);
+                                showPlaylistSnackBar(
+                                    context: context, isAdded: false);
+                                userPlaylistSongsInstance!.delete(songFetch);
+                                Navigator.of(context).pop();
+                              },
+                              child: Padding(
+                                padding:
+                                const EdgeInsets.symmetric(horizontal: 10),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        currentPlaylist!.playlistNames
+                                            .toString(),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                          separatorBuilder: (_, index) => const Divider(),
+                          itemCount: allCurrespondingKeys.length),
+                    ),
+                    Expanded(
+                      child: ListTile(
+                        title: const Text("New Playlist"),
+                        trailing: IconButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            createPlaylistAndAdd(context, songKey: globalKey);
+                          },
+                          icon: const Icon(Icons.add),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'Cancel'),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  createPlaylistAndAdd(BuildContext context, {songKey}) {
+    var playlistName = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Create New Playlist'),
+        content: TextFormField(
+          controller: playlistName,
+          decoration: const InputDecoration(hintText: "Your playlist name"),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'Cancel'),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              createPlaylistSub(playlistName);
+              final songData = songDetailsBox!.get(songKey);
+              addToCreatedPlaylist(songData);
+            },
+            child: const Text('create'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  createPlaylistSub(playlistName) {
+    final playlistNameFromTextField = playlistName.text;
+    final playlistModelVariable =
+    UserPlaylistNames(playlistNames: playlistNameFromTextField);
+    userPlaylistNameInstance!.add(playlistModelVariable);
+  }
+
+  addToCreatedPlaylist(
+      UserSongs? songData,
+      ) {
+    final model = UserPlaylistSongs(
+        currespondingPlaylistId: userPlaylistNameInstance!.keys.last,
+        songName: songData!.songName,
+        artistName: songData.artistName,
+        songImageId: songData.imageId,
+        songDuration: songData.duration,
+        songPath: songData.songPath);
+    userPlaylistSongsInstance!.add(model);
+    Navigator.of(context).pop();
+    showPlaylistSnackBar(context: context, isAdded: true);
+  }
+
+  showPlaylistNames(BuildContext context, songKey, songName) {
+    bool alreadyExists = false;
+    int? curr = 0;
     return showDialog(
       context: context,
       barrierDismissible: true,
@@ -1573,49 +1216,132 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
           height: 100,
           width: 200,
           child: ValueListenableBuilder(
-              valueListenable: userPlaylistNameInstance!.listenable(),
-              builder: (context, Box<UserPlaylistNames> songFetcher, _) {
-                List<int> allKeys =
+            valueListenable: userPlaylistNameInstance!.listenable(),
+            builder: (context, Box<UserPlaylistNames> songFetcher, _) {
+              List songNonRepeatingPlaylistKey =
+              userPlaylistNameInstance!.keys.cast<int>().toList();
+
+              for (var element in userPlaylistSongsInstance!.values) {
+                if (element.songName == songName) {
+                  alreadyExists = true;
+                }
+              }
+
+              if (alreadyExists) {
+                for (var element in userPlaylistSongsInstance!.values) {
+                  if (element.songName == songName) {
+                    curr = element.currespondingPlaylistId;
+                  }
+                  for (var i = 0; i < songNonRepeatingPlaylistKey.length; i++) {
+                    if (songNonRepeatingPlaylistKey[i] == curr) {
+                      songNonRepeatingPlaylistKey.remove(curr);
+                    }
+                  }
+                }
+              } else if (alreadyExists == false) {
+                songNonRepeatingPlaylistKey =
                     userPlaylistNameInstance!.keys.cast<int>().toList();
-                return ListView.separated(
-                    itemBuilder: (_, index) {
-                      final key = allKeys[index];
-                      final currentPlaylist = songFetcher.get(key);
-                      return GestureDetector(
-                        onTap: () {
-                          debugPrint(
-                              "${currentPlaylist!.playlistNames} Selected");
-                          debugPrint("Key is $key");
-                          final songData = songDetailsBox!.get(songKey);
-                          final model = UserPlaylistSongs(
-                              currespondingPlaylistId: key,
-                              songName: songData!.songName,
-                              artistName: songData.artistName,
-                              songPath: songData.songPath,
-                              songImageId: songData.imageId,
-                              songDuration: songData.duration);
-                          userPlaylistSongsInstance!.add(model);
-                          Navigator.of(context).pop();
-                          showPlaylistSnackBar(context: context, isAdded: true);
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
-                          child: Row(
-                            // crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  currentPlaylist!.playlistNames.toString(),
-                                ),
-                              ),
-                            ],
+              }
+
+              if (userPlaylistNameInstance!.isEmpty) {
+                return SizedBox(
+                  height: 200,
+                  child: Column(
+                    children: [
+                      const ListTile(
+                        title: Text("No Playlists Found"),
+                      ),
+                      Expanded(
+                        child: ListTile(
+                          title: Text(
+                            "Create & Add",
+                            style: TextStyle(color: HexColor("#A6B9FF")),
+                          ),
+                          trailing: IconButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              createPlaylistAndAdd(context, songKey: songKey);
+                            },
+                            icon: Icon(Icons.add, color: HexColor("#A6B9FF")),
                           ),
                         ),
-                      );
-                    },
-                    separatorBuilder: (_, index) => const Divider(),
-                    itemCount: allKeys.length);
-              }),
+                      ),
+                    ],
+                  ),
+                );
+              } else {
+                if (songNonRepeatingPlaylistKey.isEmpty) {
+                  return Text(
+                    "This Song has been added to your Playlists",
+                    style: TextStyle(color: HexColor("#A6B9FF")),
+                  );
+                } else {
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          itemBuilder: (_, index) {
+                            final key = songNonRepeatingPlaylistKey[index];
+                            final currentPlaylist = songFetcher.get(key);
+                            return GestureDetector(
+                              onTap: () {
+                                final songData = songDetailsBox!.get(songKey);
+                                final model = UserPlaylistSongs(
+                                    currespondingPlaylistId: key,
+                                    songName: songData!.songName,
+                                    artistName: songData.artistName,
+                                    songPath: songData.songPath,
+                                    songImageId: songData.imageId,
+                                    songDuration: songData.duration);
+                                userPlaylistSongsInstance!.add(model);
+                                Navigator.of(context).pop();
+                                showPlaylistSnackBar(
+                                    context: context, isAdded: true);
+                              },
+                              child: Padding(
+                                padding:
+                                const EdgeInsets.symmetric(horizontal: 10),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        currentPlaylist!.playlistNames
+                                            .toString(),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                          separatorBuilder: (_, index) => const Divider(),
+                          itemCount: songNonRepeatingPlaylistKey.length,
+                        ),
+                      ),
+                      Expanded(
+                        child: ListTile(
+                          title: Text(
+                            "Create & Add",
+                            style: TextStyle(color: HexColor("#A6B9FF")),
+                          ),
+                          trailing: IconButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              createPlaylistAndAdd(context, songKey: songKey);
+                            },
+                            icon: Icon(Icons.add, color: HexColor("#A6B9FF")),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                }
+              }
+            },
+          ),
         ),
         actions: <Widget>[
           TextButton(
@@ -1758,114 +1484,8 @@ commonMarquees(
   );
 }
 
-//
-// class DrawerAll extends StatefulWidget {
-//   const DrawerAll({Key? key}) : super(key: key);
-//
-//   @override
-//   _DrawerAllState createState() => _DrawerAllState();
-// }
-//
-// class _DrawerAllState extends State<DrawerAll> {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Drawer(
-//       child: ListView(
-//         children: [
-//           Container(
-//             width: double.infinity,
-//             padding: EdgeInsets.only(top: 50, left: 30),
-//             height: 150,
-//             decoration: BoxDecoration(
-//               color: HexColor("#A6B9FF"),
-//               borderRadius: BorderRadius.only(
-//                   bottomLeft: Radius.circular(30),
-//                   bottomRight: Radius.circular(30)),
-//             ),
-//             child: Column(
-//               crossAxisAlignment: CrossAxisAlignment.start,
-//               children: [
-//                 Row(
-//                   children: [
-//                     Image.asset(
-//                       "assets/images/MusInNoBackground.png",
-//                       height: 34,
-//                       width: 45,
-//                     ),
-//                     commonText(
-//                         text: "MusIn", color: HexColor("#1814E4"), size: 27),
-//                   ],
-//                 ),
-//                 commonText(
-//                     text: "\tHear The Best",
-//                     size: 12,
-//                     color: HexColor("#656F77"))
-//               ],
-//             ),
-//           ),
-//           const SizedBox(
-//             height: 40,
-//           ),
-//           sizedh2,
-//           Container(
-//             margin: EdgeInsets.symmetric(horizontal: 35),
-//             child: Column(
-//               children: [
-//                 drawerItems(itemName: "Favourites", routName: "/favourites"),
-//                 sizedh2,
-//                 drawerItems(itemName: "Playlist", routName: "/playlist"),
-//                 // sizedh2,
-//                 // drawerItems(itemName: "Search",routName: "/searchSong"),
-//                 sizedh2,
-//                 drawerItems(itemName: "Settings", routName: "/settings"),
-//               ],
-//             ),
-//           )
-//         ],
-//       ),
-//     );
-//   }
-//
-//   drawerItems({required itemName, size, required routName}) {
-//     return GestureDetector(
-//       child: Row(
-//         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//         children: [
-//           commonText(text: itemName, size: size ?? 17),
-//           Icon(
-//             Icons.arrow_forward_ios_rounded,
-//             size: 15,
-//           ),
-//         ],
-//       ),
-//       onTap: () {
-//         Navigator.of(context).pop();
-//         Navigator.pushNamed(context, routName);
-//       },
-//     );
-//   }
-// }
-//
-// class FavouriteSongs extends StatefulWidget {
-//   @override
-//   _FavouriteSongsState createState() => _FavouriteSongsState();
-// }
-//
-// class _FavouriteSongsState extends State<FavouriteSongs> {
-//   Box<UserSongs>? userSongDbInstance;
-//
-//   @override
-//   void initState() {
-//     userSongDbInstance = Hive.box<UserSongs>(songDetailListBoxName);
-//     super.initState();
-//   }
-//   @override
-//   Widget build(BuildContext context) {
-//
-//   }
-// }
+var screenHeight,screenWidth;
 
-var screenHeight, screenWidth;
 var sizedh1 = const SizedBox(
   height: 10,
 );

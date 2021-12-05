@@ -217,7 +217,7 @@ class _AddSongstoPlaylistState extends State<AddSongstoPlaylist> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: commonAppBar(context),
+      appBar: CommonAppBar(),
       body: Consumer<PlayerCurrespondingItems>(
         builder: (_, setSongDetails, child) => ListView(
           shrinkWrap: true,

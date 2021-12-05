@@ -625,7 +625,7 @@ class SongListViewHolder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: commonAppBar(context),
+      appBar: const CommonAppBar(),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(10),
         child: Column(
@@ -723,7 +723,9 @@ class _SongsListMainState extends State<SongsListMain> {
                     setSongDetails.selectedSongKey = key;
                     setSongDetails.currentSongDuration =
                         songDatas?.duration.toString();
-                    setSongDetails.opnPlaylist(setSongDetails.selectedSongKey);
+                    setSongDetails.startingIndex = setSongDetails.selectedSongKey;
+                    setSongDetails.opnPlaylist();
+
                   },
                   child: Container(
                     decoration: BoxDecoration(
@@ -739,7 +741,8 @@ class _SongsListMainState extends State<SongsListMain> {
                           nullArtworkWidget: ClipRRect(
                             child: Image.asset(
                               "assets/images/playlist_Bg/playlist8.jpg",
-                              height: MediaQuery.of(context).size.height * 0.196,
+                              height:
+                                  MediaQuery.of(context).size.height * 0.196,
                               width: double.infinity,
                               fit: BoxFit.fill,
                             ),
@@ -769,25 +772,26 @@ class _SongsListMainState extends State<SongsListMain> {
                                         : Colors.black87),
                               ),
                               PopupMenuButton(
-                                  onSelected: (result) {
-                                    if (result == 1) {
-                                      showPlaylistNames(
-                                          context, key, songDatas.songName);
-                                    } else {
-                                      showPlaylistNameToRemove(
-                                          context, songDatas.songName);
-                                    }
-                                  },
-                                  itemBuilder: (context) => [
-                                        const PopupMenuItem(
-                                          child: Text("Add to Playlist"),
-                                          value: 1,
-                                        ),
-                                        const PopupMenuItem(
-                                          child: Text("Remove from Playlist"),
-                                          value: 2,
-                                        )
-                                      ])
+                                onSelected: (result) {
+                                  if (result == 1) {
+                                    showPlaylistNames(
+                                        context, key, songDatas.songName);
+                                  } else {
+                                    showPlaylistNameToRemove(
+                                        context, songDatas.songName);
+                                  }
+                                },
+                                itemBuilder: (context) => [
+                                  const PopupMenuItem(
+                                    child: Text("Add to Playlist"),
+                                    value: 1,
+                                  ),
+                                  const PopupMenuItem(
+                                    child: Text("Remove from Playlist"),
+                                    value: 2,
+                                  )
+                                ],
+                              ),
                             ],
                           ),
                         ),
@@ -957,7 +961,8 @@ class _SongsListMainState extends State<SongsListMain> {
           child: ValueListenableBuilder(
             valueListenable: userPlaylistNameInstance!.listenable(),
             builder: (context, Box<UserPlaylistNames> songFetcher, _) {
-              List songNonRepeatingPlaylistKey = userPlaylistNameInstance!.keys.cast<int>().toList();
+              List songNonRepeatingPlaylistKey =
+                  userPlaylistNameInstance!.keys.cast<int>().toList();
 
               for (var element in userPlaylistSongsInstance!.values) {
                 if (element.songName == songName) {
@@ -970,8 +975,8 @@ class _SongsListMainState extends State<SongsListMain> {
                   if (element.songName == songName) {
                     curr = element.currespondingPlaylistId;
                   }
-                  for(var i=0;i<songNonRepeatingPlaylistKey.length;i++){
-                    if(songNonRepeatingPlaylistKey[i] == curr){
+                  for (var i = 0; i < songNonRepeatingPlaylistKey.length; i++) {
+                    if (songNonRepeatingPlaylistKey[i] == curr) {
                       songNonRepeatingPlaylistKey.remove(curr);
                     }
                   }
@@ -1008,9 +1013,12 @@ class _SongsListMainState extends State<SongsListMain> {
                   ),
                 );
               } else {
-                if(songNonRepeatingPlaylistKey.isEmpty){
-                  return Text("This Song has been added to your Playlists",style: TextStyle(color: HexColor("#A6B9FF")),);
-                }else {
+                if (songNonRepeatingPlaylistKey.isEmpty) {
+                  return Text(
+                    "This Song has been added to your Playlists",
+                    style: TextStyle(color: HexColor("#A6B9FF")),
+                  );
+                } else {
                   return Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -1038,7 +1046,7 @@ class _SongsListMainState extends State<SongsListMain> {
                               },
                               child: Padding(
                                 padding:
-                                const EdgeInsets.symmetric(horizontal: 10),
+                                    const EdgeInsets.symmetric(horizontal: 10),
                                 child: Row(
                                   children: [
                                     Expanded(
@@ -1137,45 +1145,4 @@ class _SongsListMainState extends State<SongsListMain> {
     Navigator.of(context).pop();
     showPlaylistSnackBar(context: context, isAdded: true);
   }
-
-// createPlaylist(BuildContext context, songKey) {
-//   var playlistName = TextEditingController();
-//   return showDialog<String>(
-//     context: context,
-//     builder: (BuildContext context) => AlertDialog(
-//       title: const Text('Create New Playlist'),
-//       content: TextFormField(
-//         controller: playlistName,
-//         decoration: const InputDecoration(
-//             hintText: "Enter The Name of Your Playlist"),
-//       ),
-//       actions: <Widget>[
-//         TextButton(
-//           onPressed: () => Navigator.pop(context, 'Cancel'),
-//           child: const Text('Cancel'),
-//         ),
-//         TextButton(
-//           onPressed: () {
-//             final playlistNameFromTextField = playlistName.text;
-//             final playlistModelVariable =
-//                 UserPlaylistNames(playlistNames: playlistNameFromTextField);
-//             userPlaylistNameInstance!.add(playlistModelVariable);
-//             final songData = songDbInstance!.get(songKey);
-//             final model = UserPlaylistSongs(
-//                 currespondingPlaylistId: userPlaylistNameInstance!.keys.last,
-//                 songName: songData!.songName,
-//                 artistName: songData.artistName,
-//                 songImageId: songData.imageId,
-//                 songDuration: songData.duration,
-//                 songPath: songData.songPath);
-//             userPlaylistSongsInstance!.add(model);
-//             Navigator.of(context).pop();
-//             showPlaylistSnackBar(context: context, isAdded: true);
-//           },
-//           child: const Text('Add'),
-//         ),
-//       ],
-//     ),
-//   );
-// }
 }

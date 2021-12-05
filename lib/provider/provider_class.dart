@@ -382,14 +382,13 @@
 // Changes to accommada
 
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:musin/materials/colors.dart';
 import 'package:musin/pages/widgets/widgets.dart';
-
-import '../main.dart';
 
 class PlayerCurrespondingItems extends ChangeNotifier {
 
@@ -422,7 +421,11 @@ class PlayerCurrespondingItems extends ChangeNotifier {
 
   bool isSelectedOrNot = true;
   int? currentSongKey = 0;
+
   bool isNotificationOn=true;
+  bool turnNotificationOn = true;
+
+
   String? currentSongDuration;
   int? selectedSongKey;
   bool isIconChanged = false;
@@ -437,6 +440,10 @@ class PlayerCurrespondingItems extends ChangeNotifier {
   int test =0;
 
 
+
+
+
+
   var searchSongName;
   onSearchChanged(TextEditingController searchQuery){
     Timer? _debounce;
@@ -446,8 +453,6 @@ class PlayerCurrespondingItems extends ChangeNotifier {
       searchSongName = searchQuery.text;
       notifyListeners();
     });
-      debugPrint(searchQuery.text);
-      debugPrint(searchSongName);
   }
 
 
@@ -461,7 +466,11 @@ class PlayerCurrespondingItems extends ChangeNotifier {
   }
 
   bool isAddingSongsToExistingPlaylist  = false;
-
+  bool updatePlaylistAfterAddingSong = false;
+  bool updateFavouitesAfterAddingSong = false;
+  int? previousPlaylistLength;
+  int? previousFavouriteLength;
+  int? previousFavouriteSongPosition;
 
 
 
@@ -472,7 +481,9 @@ class PlayerCurrespondingItems extends ChangeNotifier {
   List<Audio> allSongsplayList = <Audio>[];
   List<Audio> favPlaylist = <Audio>[];
   List<Audio> playlistSongsPlaylist = <Audio>[];
+  int? startingIndex = 0;
   int modeOfPlaylist = 1;
+  int playlistLength = 0;
   selectModeOfPlaylist(){
     if(modeOfPlaylist == 1){
       return allSongsplayList;
@@ -483,7 +494,7 @@ class PlayerCurrespondingItems extends ChangeNotifier {
     }
   }
 
- opnPlaylist(startingIndex) async{
+ opnPlaylist() async{
    listenEverything();
    change();
     try{
@@ -514,14 +525,28 @@ class PlayerCurrespondingItems extends ChangeNotifier {
   }
   listenEverything(){
    _assetsAudioPlayer.current.listen((event) {
-     selectedSongKey = _assetsAudioPlayer.current.value!.index;
+     selectedSongKey = _assetsAudioPlayer.current.value?.index;
+     // debugPrint("\n-----------------");
+     // debugPrint("Now Playing Song is $selectedSongKey");
+     // debugPrint("Now Playing Song Name : ${_assetsAudioPlayer.getCurrentAudioTitle}");
+     // debugPrint("\n-----------------");
    });
+
   }
+
   bool isShuffled=false;
   shuffleSongs(){
     _assetsAudioPlayer.toggleShuffle();
-    _assetsAudioPlayer.shuffle?isShuffled = false:isShuffled=true;
-    notifyListeners();
+    _assetsAudioPlayer.isShuffling.listen((event) {
+      debugPrint("Index inside iSShuffle is ${_assetsAudioPlayer.current.value!.index}");
+    });
+    if(_assetsAudioPlayer.isShuffling.value){
+      isShuffled = true;
+      notifyListeners();
+    }else{
+      isShuffled = false;
+      notifyListeners();
+    }
   }
   next(){
    _assetsAudioPlayer.next();
@@ -546,6 +571,22 @@ class PlayerCurrespondingItems extends ChangeNotifier {
   playOrpause(){
     _assetsAudioPlayer.playOrPause();
   }
+
+  stop(){
+    _assetsAudioPlayer.stop();
+  }
+
+  showFavPlaylist(){
+    favPlaylist.forEach((element) {
+      debugPrint("Path : $element");
+    });
+  }
+
+  removePathAt(index){
+    _assetsAudioPlayer.playlist?.remove(favPlaylist[index]);
+    debugPrint(_assetsAudioPlayer.playlist?.audios.toString());
+  }
+
   int? loopIcon=0;
   loopSongs(){
    _assetsAudioPlayer.toggleLoop();
@@ -567,7 +608,6 @@ class PlayerCurrespondingItems extends ChangeNotifier {
   totalDuration() {
     _assetsAudioPlayer.current.listen((event) {
       dur = event!.audio.duration;
-
     });
     return commonText(
         text: dur.toString().split(".")[0],
@@ -575,8 +615,6 @@ class PlayerCurrespondingItems extends ChangeNotifier {
         weight: FontWeight.w400,
         size: 12);
   }
-
-
   getDuration() {
     return StreamBuilder(
         stream: _assetsAudioPlayer.currentPosition,
@@ -601,7 +639,24 @@ class PlayerCurrespondingItems extends ChangeNotifier {
     curr = currentPosition!.inSeconds.toDouble();
     notifyListeners();
   }
-
+  giveProgressBar(){
+    return StreamBuilder(
+      stream: _assetsAudioPlayer.currentPosition,
+        builder: (context,asyncSnapshot){
+        return Slider(
+          activeColor: HexColor("#656F77"),
+          inactiveColor: Colors.grey,
+          min: 0.0,
+          max: dur!.inSeconds.toDouble(),
+          value: currentPosition?.inSeconds.toDouble()??0,
+          onChanged: (double value) {
+            changeToSeconds(curr!.toInt());
+            curr = value;
+            notifyListeners();
+          },
+        );
+    });
+  }
   Widget slider() {
     return Slider(
       activeColor: HexColor("#656F77"),
