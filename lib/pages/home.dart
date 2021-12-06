@@ -163,9 +163,8 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   void initState() {
-    super.initState();
-    debugPrint("isLaunched Value in SplashScreen Init is $isLaunched");
     getSharedPreference();
+    super.initState();
   }
 
   @override
@@ -182,8 +181,8 @@ class _SplashScreenState extends State<SplashScreen> {
               fit: BoxFit.contain,
             ),
           ),
-          Expanded(
-            child: const Text(
+          const Expanded(
+            child: Text(
               "MusIn",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
             ),
@@ -200,7 +199,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> getSharedPreference() async {
     final sharedPref = await SharedPreferences.getInstance();
-    isLaunched = await sharedPref.getBool('a') ?? false;
-    debugPrint("The IsLaunched Value in Future of SplitScreen is $isLaunched");
+    isLaunched = await sharedPref.getBool('launchSharedData') ?? false;
+    debugPrint("SharedPreference in SplashScreen is : $isLaunched");
   }
 }

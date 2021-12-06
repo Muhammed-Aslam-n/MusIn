@@ -720,7 +720,7 @@ class _SongsListMainState extends State<SongsListMain> {
                     changeModeOfPlay();
                     setSongDetails.isFavsAlreadyClicked = false;
                     setSongDetails.isSelectedOrNot = false;
-                    setSongDetails.selectedSongKey = key;
+                    setSongDetails.selectedSongKey = index;
                     setSongDetails.currentSongDuration =
                         songDatas?.duration.toString();
                     setSongDetails.startingIndex = setSongDetails.selectedSongKey;

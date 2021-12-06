@@ -26,9 +26,9 @@ class _OnBoardingState extends State<OnBoarding> {
 
   @override
   void initState() {
-    super.initState();
-    saveDataToStorage();
     initial();
+    saveDataToStorage();
+    super.initState();
   }
 
   void initial() async {
@@ -87,10 +87,10 @@ class _OnBoardingState extends State<OnBoarding> {
                       "assets/images/onBoardBgSplash.png",
                     ),
                     fit: BoxFit.fitHeight,
-                  )),
+                  ),),
                   child: GestureDetector(
                     onTap: () {
-                      isLaunched.setBool('a', true);
+                      isLaunched.setBool('launchSharedData', true);
 
                       Navigator.pushReplacementNamed(context, '/home');
                     },
@@ -115,9 +115,9 @@ class _OnBoardingState extends State<OnBoarding> {
                             const Icon(Icons.arrow_right),
                           ],
                         ),
-                        SizedBox(
+                        const SizedBox(
                           height: 20,
-                        )
+                        ),
                       ],
                     ),
                   ),
@@ -131,7 +131,7 @@ class _OnBoardingState extends State<OnBoarding> {
   }
 Future<void>saveDataToStorage() async{
   final sharedPref = await SharedPreferences.getInstance();
-  await sharedPref.setBool('isLaunched', true);
+  await sharedPref.setBool('launchSharedData', true);
   debugPrint("Value of isLauched in Onboarding is $isLaunched");
 }
 }

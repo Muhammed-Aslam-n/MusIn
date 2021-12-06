@@ -294,6 +294,7 @@ class _PlayListState extends State<PlayList> {
 
   bool didFound = false;
   createNewPlaylist() {
+    var pInstance = Provider.of<PlayerCurrespondingItems>(context,listen: false);
     if (formKey.currentState!.validate()) {
      for (var element in userPlaylistNames) {
        if(element == newPlaylistName.text){
@@ -305,12 +306,14 @@ class _PlayListState extends State<PlayList> {
        final model = UserPlaylistNames(playlistNames: newlyCreatedPlalistName);
        userPlaylistNameDbInstance!.add(model);
        Navigator.pop(context);
+       pInstance.currentPlaylistKey = userPlaylistNameDbInstance!.keys.last;
+       pInstance. currentPlaylistName = newlyCreatedPlalistName;
        Navigator.push(
          context,
          MaterialPageRoute(
-           builder: (context) => AddSongstoPlaylist(
-             currentPlaylistKey: userPlaylistNameDbInstance!.keys.last,
-             currentPlaylistName: newlyCreatedPlalistName,
+           builder: (context) => const AddToPlaylistHolder(
+             // pInstance.currentPlaylistKey: userPlaylistNameDbInstance!.keys.last,
+             // currentPlaylistName: newlyCreatedPlalistName,
            ),
          ),
        );

@@ -38,9 +38,9 @@ class _PlaylistSongsState extends State<PlaylistSongs> {
     super.initState();
   }
 
-  getSongPathsMan(){
-    final pInstance = Provider.of<PlayerCurrespondingItems>(context, listen: false);
-    var data = userPlaylistNameDbInstance!.get(widget.selectedPlaylistKey);
+  Future<void>getSongPathsMan()async{
+    final pInstance =  Provider.of<PlayerCurrespondingItems>(context, listen: false);
+    var data = await userPlaylistNameDbInstance!.get(widget.selectedPlaylistKey);
     debugPrint(data!.playlistNames.toString().toUpperCase());
     if(pInstance.playlistSongsPlaylist.isEmpty){
       for (var element in userPlaylistSongDbInstance!.values) {
@@ -66,7 +66,7 @@ class _PlaylistSongsState extends State<PlaylistSongs> {
     }
   }
 
-  changePlaylistMode(){
+  Future<void>changePlaylistMode() async{
     final pInstance = Provider.of<PlayerCurrespondingItems>(context,listen: false);
     pInstance.getPlaylistSongsPaths(songsPaths);
     pInstance.test = widget.selectedPlaylistKey!;
@@ -135,7 +135,10 @@ class _PlaylistSongsState extends State<PlaylistSongs> {
                                   var pInstance = Provider.of<PlayerCurrespondingItems>(context,listen: false);
                                   pInstance.isAddingSongsToExistingPlaylist = true;
                                   pInstance.updatePlaylistAfterAddingSong = true;
-                                  Navigator.push(context, MaterialPageRoute(builder: (context)=>AddSongstoPlaylist(currentPlaylistName: songDatas!.playlistNames,currentPlaylistKey: widget.selectedPlaylistKey,totalPlaylistSongs: widget.totalNumberOfSongs,)));
+                                  pInstance.currentPlaylistName = songDatas!.playlistNames;
+                                  pInstance.currentPlaylistKey = widget.selectedPlaylistKey;
+                                  pInstance.totalPlaylistSongs = widget.totalNumberOfSongs;
+                                  Navigator.push(context, MaterialPageRoute(builder: (context)=>const AddToPlaylistHolder()));
                                 },
                                 icon: const Icon(Icons.add),
                                 tooltip: "Add More",
@@ -210,8 +213,8 @@ class _PlaylistSongsState extends State<PlaylistSongs> {
                 final key = keys[index];
                 final songDatas = songFetcher.get(key);
                 return GestureDetector(
-                  onTap: () {
-                    changePlaylistMode();
+                  onTap: () async{
+                    await changePlaylistMode();
                     setSongDetails.isAudioPlayingFromPlaylist = true;
                     setSongDetails.isSelectedOrNot = false;
                     setSongDetails.selectedSongKey = index;

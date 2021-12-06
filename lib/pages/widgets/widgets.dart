@@ -22,6 +22,7 @@ import 'package:musin/provider/provider_class.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/src/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sleek_circular_slider/sleek_circular_slider.dart';
 import '../settings.dart';
 import '../songplayingpage.dart';
@@ -39,9 +40,44 @@ class CommonAppBar extends StatefulWidget implements PreferredSizeWidget {
 }
 
 class _CommonAppBarState extends State<CommonAppBar> {
-  bool _switchValue = true;
+  late SharedPreferences changeNotificationSettings;
+  bool turnNotificationOn = true;
+
+  @override
+  void initState() {
+    initializeNotificationShared();
+    getSharedPreference();
+    // makeNotificationOnOrOff();
+    super.initState();
+  }
+
+  initializeNotificationShared() async {
+    changeNotificationSettings = await SharedPreferences.getInstance();
+  }
+
+  Future<void> getSharedPreference() async {
+    var pInstance =
+        Provider.of<PlayerCurrespondingItems>(context, listen: false);
+    final sharedPref = await SharedPreferences.getInstance();
+    turnNotificationOn = sharedPref.getBool('changeNotificationMode') ?? true;
+    turnNotificationOn
+        ? pInstance.disableNotification()
+        : pInstance.enableNotification;
+    pInstance.turnNotificationOn = turnNotificationOn;
+    debugPrint(
+        "The NotificationValue in Getting in Future of Provider is $turnNotificationOn");
+    debugPrint("The Notification Value is $turnNotificationOn");
+  }
+
+  // switchNotificationSettings(){
+  //   changeNotificationSettings.setBool('changeNotificationMode', turnNotificationOn);
+  //   debugPrint("Notification Value Setting is $turnNotificationOn");
+  // }
+
   @override
   Widget build(BuildContext context) {
+    var pInstance =
+        Provider.of<PlayerCurrespondingItems>(context, listen: false);
     return Scaffold(
       body: PreferredSize(
         preferredSize: const Size.fromHeight(80),
@@ -74,17 +110,26 @@ class _CommonAppBarState extends State<CommonAppBar> {
                         Transform.scale(
                           scale: 0.8,
                           child: CupertinoSwitch(
-                              value: _switchValue,
-                              onChanged: (value) {
-                                var pInstance = Provider.of<PlayerCurrespondingItems>(context,listen: false);
-                                pInstance.turnNotificationOn?AssetsAudioPlayer.addNotificationOpenAction((notification) => false):AssetsAudioPlayer.addNotificationOpenAction((notification) => true);
-
-                                pInstance.turnNotificationOn?pInstance.turnNotificationOn = false:pInstance.turnNotificationOn = true;
-
-
-                                _switchValue = value;
-                                Navigator.of(context).pop();
-                              }),
+                            value: turnNotificationOn,
+                            onChanged: (value) {
+                              debugPrint("Value in Each Click is $value");
+                              turnNotificationOn = value;
+                              var pInstance =
+                                  Provider.of<PlayerCurrespondingItems>(context,
+                                      listen: false);
+                              debugPrint(
+                                  "The Notification Value is $turnNotificationOn");
+                              turnNotificationOn
+                                  ? pInstance.enableNotification()
+                                  : pInstance.disableNotification();
+                              pInstance.turnNotificationOn = turnNotificationOn;
+                              changeNotificationSettings.setBool(
+                                  'changeNotificationMode', turnNotificationOn);
+                              setState(() {});
+                              // changeNotificationSettings.clear();
+                              // Navigator.of(context).pop();
+                            },
+                          ),
                         )
                       ],
                     ),
@@ -145,7 +190,8 @@ class _CommonAppBarState extends State<CommonAppBar> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => const TermsandCondition()));
+                                builder: (context) =>
+                                    const TermsandCondition()));
                       },
                       child: Row(
                         children: const [
@@ -179,7 +225,6 @@ class _CommonAppBarState extends State<CommonAppBar> {
                           ),
                           Text("About"),
                         ],
-
                       ),
                     ),
                     value: 1,
@@ -193,6 +238,7 @@ class _CommonAppBarState extends State<CommonAppBar> {
       ),
     );
   }
+
   showAbout(BuildContext context) {
     return showAboutDialog(
         context: (context),
@@ -207,14 +253,13 @@ class _CommonAppBarState extends State<CommonAppBar> {
         children: [
           commonText(
               text:
-              "This Application is Developed by CrossRoads Ddevelopment Company\n"
+                  "This Application is Developed by CrossRoads Ddevelopment Company\n"
                   "All Rights Reserved to CrossRoads Pvt.Limited",
               size: 12,
               weight: FontWeight.w400)
         ]);
   }
 }
-
 
 commonText(
     {text,
@@ -277,8 +322,6 @@ class CommonHeaders extends StatelessWidget {
   }
 }
 
-
-
 // Provider Integrated Working Player database
 
 class CommonMiniPlayer extends StatefulWidget {
@@ -323,7 +366,7 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                       List keys = [];
                       if (songDetailsProvider.modeOfPlaylist == 1) {
                         keys = songDetailsBox!.keys.cast<int>().toList();
-                      } else if (songDetailsProvider.modeOfPlaylist == 2){
+                      } else if (songDetailsProvider.modeOfPlaylist == 2) {
                         keys = songFetcher.keys
                             .cast<int>()
                             .where((key) =>
@@ -335,10 +378,11 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                         debugPrint("\n---------------------");
                         debugPrint("The Keys in Key According to the Mode is ");
                         keys.forEach((element) {
-                          debugPrint(element.toString() );
+                          debugPrint(element.toString());
                         });
                         debugPrint("\n---------------------");
-                        songDetailsProvider.currentSongKey =keys[songDetailsProvider.selectedSongKey??0];
+                        songDetailsProvider.currentSongKey =
+                            keys[songDetailsProvider.selectedSongKey ?? 0];
                       }
 
                       var songData =
@@ -359,10 +403,14 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                                 leading: QueryArtworkWidget(
                                   id: songData?.imageId ?? 0,
                                   type: ArtworkType.AUDIO,
-                                  nullArtworkWidget: ClipRRect( 
+                                  nullArtworkWidget: ClipRRect(
                                     borderRadius: BorderRadius.circular(100),
                                     child: Image.asset(
-                                        "assets/images/playlist_Bg/playlist16.jpg",fit: BoxFit.cover,height: 50,width: 50,),
+                                      "assets/images/playlist_Bg/playlist16.jpg",
+                                      fit: BoxFit.cover,
+                                      height: 50,
+                                      width: 50,
+                                    ),
                                   ),
                                   // artworkWidth: 200,
                                 ),
@@ -436,12 +484,14 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
 
                       if (keys.isNotEmpty) {
                         debugPrint("\n---------------------");
-                        debugPrint("The Keys in Key According to the Playlist Mode is ");
+                        debugPrint(
+                            "The Keys in Key According to the Playlist Mode is ");
                         keys.forEach((element) {
-                          debugPrint(element.toString() );
+                          debugPrint(element.toString());
                         });
                         debugPrint("\n---------------------");
-                        songDetailsProvider.currentSongKey =keys[songDetailsProvider.selectedSongKey??0];
+                        songDetailsProvider.currentSongKey =
+                            keys[songDetailsProvider.selectedSongKey ?? 0];
                       }
                       // songDetailsProvider.currentSongKey =
                       //     keys[songDetailsProvider.selectedSongKey??0];
@@ -468,7 +518,10 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                                   nullArtworkWidget: ClipRRect(
                                     borderRadius: BorderRadius.circular(100),
                                     child: Image.asset(
-                                        "assets/images/playlist_Bg/playlist16.jpg",height: 50,width: 50,),
+                                      "assets/images/playlist_Bg/playlist16.jpg",
+                                      height: 50,
+                                      width: 50,
+                                    ),
                                   ),
                                   // artworkWidth: 200,
                                 ),
@@ -547,11 +600,40 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                           ValueListenableBuilder(
                             valueListenable: songDetailsBox!.listenable(),
                             builder: (context, Box<UserSongs> songFetcher, _) {
-                              songDetailsProvider.currentSongKey =
-                                  songDetailsProvider.selectedSongKey;
+                              List keys = [];
+                              if (songDetailsProvider.modeOfPlaylist == 1) {
+                                keys =
+                                    songDetailsBox!.keys.cast<int>().toList();
+                              } else if (songDetailsProvider.modeOfPlaylist ==
+                                  2) {
+                                keys = songFetcher.keys
+                                    .cast<int>()
+                                    .where((key) =>
+                                        songFetcher.get(key)!.isFavourited ==
+                                        true)
+                                    .toList();
+                              }
+
+                              if (keys.isNotEmpty) {
+                                debugPrint("\n---------------------");
+                                debugPrint(
+                                    "The Keys in Key According to the Mode is ");
+                                keys.forEach((element) {
+                                  debugPrint(element.toString());
+                                });
+                                debugPrint("\n---------------------");
+                                songDetailsProvider.currentSongKey = keys[
+                                    songDetailsProvider.selectedSongKey ?? 0];
+                              }
 
                               var songData = songFetcher
                                   .get(songDetailsProvider.currentSongKey);
+
+                              // songDetailsProvider.currentSongKey =
+                              //     songDetailsProvider.selectedSongKey;
+                              //
+                              // var songData = songFetcher
+                              //     .get(songDetailsProvider.currentSongKey);
 
                               if (songFetcher.isEmpty) {
                                 return const Center(
@@ -563,66 +645,74 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                                     children: [
                                       sizedh2,
                                       Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 30),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              commonText(
-                                                  text: "Now Playing",
-                                                  size: 17),
-                                              Row(
-                                                children: [
-                                                  IconButton(
-                                                    onPressed: () {
-                                                      if (songData!
-                                                              .isFavourited ==
-                                                          true) {
-                                                        addToFavs = false;
-                                                      } else {
-                                                        addToFavs = true;
-                                                      }
-                                                      addToFavourites(songFetcher: songFetcher,songDatas: songData,key: songDetailsProvider.currentSongKey);
-                                                      debugPrint(
-                                                          "Added to Favourites $addToFavs");
-                                                      showFavouriteSnackBar(
-                                                          context: context,
-                                                          isFavourite:
-                                                              addToFavs);
-                                                    },
-                                                    icon: const Icon(
-                                                        CupertinoIcons.heart),
-                                                    color:
-                                                        songData!.isFavourited
-                                                            ? Colors.red
-                                                            : Colors.black87,
-                                                  ),
-                                                  PopupMenuButton(
-                                                    onSelected: (result) {
-                                                      if (result == 1) {
-                                                        showPlaylistNames(
-                                                            context, setSongDetails.currentSongKey,songData.songName);
-                                                      } else {
-                                                        showPlaylistNameToRemove(
-                                                            context, songData.songName);
-                                                      }
-                                                    },
-                                                    itemBuilder: (context) => [
-                                                      const PopupMenuItem(
-                                                        child: Text("Add to Playlist"),
-                                                        value: 1,
-                                                      ),
-                                                      const PopupMenuItem(
-                                                        child: Text("Remove from Playlist"),
-                                                        value: 2,
-                                                      )
-                                                    ],
-                                                  ),
-                                                ],
-                                              )
-                                            ],
-                                          ),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 30),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            commonText(
+                                                text: "Now Playing", size: 17),
+                                            Row(
+                                              children: [
+                                                IconButton(
+                                                  onPressed: () {
+                                                    if (songData!
+                                                            .isFavourited ==
+                                                        true) {
+                                                      addToFavs = false;
+                                                    } else {
+                                                      addToFavs = true;
+                                                    }
+                                                    addToFavourites(
+                                                        songFetcher:
+                                                            songFetcher,
+                                                        songDatas: songData,
+                                                        key: songDetailsProvider
+                                                            .currentSongKey);
+                                                    debugPrint(
+                                                        "Added to Favourites $addToFavs");
+                                                    showFavouriteSnackBar(
+                                                        context: context,
+                                                        isFavourite: addToFavs);
+                                                  },
+                                                  icon: const Icon(
+                                                      CupertinoIcons.heart),
+                                                  color: songData!.isFavourited
+                                                      ? Colors.red
+                                                      : Colors.black87,
+                                                ),
+                                                PopupMenuButton(
+                                                  onSelected: (result) {
+                                                    if (result == 1) {
+                                                      showPlaylistNames(
+                                                          context,
+                                                          setSongDetails
+                                                              .currentSongKey,
+                                                          songData.songName);
+                                                    } else {
+                                                      showPlaylistNameToRemove(
+                                                          context,
+                                                          songData.songName);
+                                                    }
+                                                  },
+                                                  itemBuilder: (context) => [
+                                                    const PopupMenuItem(
+                                                      child: Text(
+                                                          "Add to Playlist"),
+                                                      value: 1,
+                                                    ),
+                                                    const PopupMenuItem(
+                                                      child: Text(
+                                                          "Remove from Playlist"),
+                                                      value: 2,
+                                                    )
+                                                  ],
+                                                ),
+                                              ],
+                                            )
+                                          ],
+                                        ),
                                       ),
                                       SizedBox(
                                         height:
@@ -653,7 +743,8 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                                                       Radius.circular(100)),
                                               child: Image.asset(
                                                 "assets/images/playlist_Bg/playlist16.jpg",
-                                                height: 100,fit: BoxFit.cover,
+                                                height: 100,
+                                                fit: BoxFit.cover,
                                               ),
                                             ),
                                             // artworkWidth: 200,
@@ -779,7 +870,8 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                                             ),
                                             Expanded(
                                               flex: 3,
-                                              child: setSongDetails.giveProgressBar(),
+                                              child: setSongDetails
+                                                  .giveProgressBar(),
                                             ),
                                             Expanded(
                                               child: setSongDetails
@@ -1007,7 +1099,8 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                                             ),
                                             Expanded(
                                               flex: 3,
-                                              child: setSongDetails.giveProgressBar(),
+                                              child: setSongDetails
+                                                  .giveProgressBar(),
                                             ),
                                             Expanded(
                                               child: setSongDetails
@@ -1033,7 +1126,6 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
         );
       },
     );
-
   }
 
   addToFavourites({required Box songFetcher, UserSongs? songDatas, key}) {
@@ -1070,8 +1162,8 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                 List<int> verumKeys = userPlaylistSongsInstance!.keys
                     .cast<int>()
                     .where((key) =>
-                userPlaylistSongsInstance!.get(key)!.songName ==
-                    songName)
+                        userPlaylistSongsInstance!.get(key)!.songName ==
+                        songName)
                     .toList();
                 for (var element in userPlaylistSongsInstance!.values) {
                   if (element.songName == songName) {
@@ -1097,10 +1189,10 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                                 List<int> keys = userPlaylistSongsInstance!.keys
                                     .cast<int>()
                                     .where((key) =>
-                                userPlaylistSongsInstance!
-                                    .get(key)!
-                                    .currespondingPlaylistId ==
-                                    key)
+                                        userPlaylistSongsInstance!
+                                            .get(key)!
+                                            .currespondingPlaylistId ==
+                                        key)
                                     .toList();
                                 var songFetch = verumKeys[index];
                                 // var songData = songFetch!.get(key);
@@ -1111,7 +1203,7 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                               },
                               child: Padding(
                                 padding:
-                                const EdgeInsets.symmetric(horizontal: 10),
+                                    const EdgeInsets.symmetric(horizontal: 10),
                                 child: Row(
                                   children: [
                                     Expanded(
@@ -1185,13 +1277,13 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
   createPlaylistSub(playlistName) {
     final playlistNameFromTextField = playlistName.text;
     final playlistModelVariable =
-    UserPlaylistNames(playlistNames: playlistNameFromTextField);
+        UserPlaylistNames(playlistNames: playlistNameFromTextField);
     userPlaylistNameInstance!.add(playlistModelVariable);
   }
 
   addToCreatedPlaylist(
-      UserSongs? songData,
-      ) {
+    UserSongs? songData,
+  ) {
     final model = UserPlaylistSongs(
         currespondingPlaylistId: userPlaylistNameInstance!.keys.last,
         songName: songData!.songName,
@@ -1219,7 +1311,7 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
             valueListenable: userPlaylistNameInstance!.listenable(),
             builder: (context, Box<UserPlaylistNames> songFetcher, _) {
               List songNonRepeatingPlaylistKey =
-              userPlaylistNameInstance!.keys.cast<int>().toList();
+                  userPlaylistNameInstance!.keys.cast<int>().toList();
 
               for (var element in userPlaylistSongsInstance!.values) {
                 if (element.songName == songName) {
@@ -1303,7 +1395,7 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
                               },
                               child: Padding(
                                 padding:
-                                const EdgeInsets.symmetric(horizontal: 10),
+                                    const EdgeInsets.symmetric(horizontal: 10),
                                 child: Row(
                                   children: [
                                     Expanded(
@@ -1484,7 +1576,7 @@ commonMarquees(
   );
 }
 
-var screenHeight,screenWidth;
+var screenHeight, screenWidth;
 
 var sizedh1 = const SizedBox(
   height: 10,

@@ -382,7 +382,6 @@
 // Changes to accommada
 
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:assets_audio_player/assets_audio_player.dart';
@@ -390,28 +389,30 @@ import 'package:flutter/material.dart';
 import 'package:musin/materials/colors.dart';
 import 'package:musin/pages/widgets/widgets.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 class PlayerCurrespondingItems extends ChangeNotifier {
 
   List<String> songsPathList = [];
 
   List<String> sampleKeys =[];
-  getAllSongsPaths(List<String> songPathList){
+  Future<void>getAllSongsPaths(List<String> songPathList)async{
     songPathList.forEach((element) {
       final audio = Audio.file(element);
       allSongsplayList.add(audio);
     });
   }
-  getFavSongsPaths(List<String> songPathList){
-    songPathList.forEach((element) {
-      final audio = Audio.file(element);
+  Future<void>getFavSongsPaths(List<String> songPathList)async{
+    songPathList.forEach((element)async {
+      final audio = await Audio.file(element);
       favPlaylist.add(audio);
     });
   }
   bool didUserClickedANewPlaylst = false;
 
-  getPlaylistSongsPaths(List<String> songPathList){
-    songPathList.forEach((element) {
-      final audio = Audio.file(element);
+  Future<void>getPlaylistSongsPaths(List<String> songPathList)async{
+    songPathList.forEach((element) async {
+      final audio = await Audio.file(element);
       playlistSongsPlaylist.add(audio);
     });
   }
@@ -423,7 +424,49 @@ class PlayerCurrespondingItems extends ChangeNotifier {
   int? currentSongKey = 0;
 
   bool isNotificationOn=true;
-  bool turnNotificationOn = true;
+  bool  turnNotificationOn = false;
+
+ disableNotification(){
+   _assetsAudioPlayer.showNotification = false;
+ }
+  enableNotification(){
+    _assetsAudioPlayer.showNotification = true;
+  }
+
+  //   Disable/Enable Notification ------------------------------------------------
+  // late SharedPreferences changeNotificationSettings;
+  //
+  // initializeNotificationShared() async{
+  //   changeNotificationSettings = await SharedPreferences.getInstance();
+  // }
+  //
+  // Future<void> getSharedPreference() async {
+  //   final sharedPref = await SharedPreferences.getInstance();
+  //   turnNotificationOn = await sharedPref.getBool('changeNotificationMode') ?? false;
+  //   debugPrint("The NotificationValue in Getting in Future of Provider is $turnNotificationOn");
+  // }
+  //
+  // makeNotificationOnOrOff(){
+  //   debugPrint("The Notification Value is $turnNotificationOn");
+  //   turnNotificationOn?_assetsAudioPlayer.showNotification = false:_assetsAudioPlayer.showNotification = true;
+  // }
+  //
+  // // switchNotificationSettings(){
+  // //   changeNotificationSettings.setBool('changeNotificationMode', turnNotificationOn);
+  // //   debugPrint("Notification Value Setting is $turnNotificationOn");
+  // // }
+
+
+  // Variables to Store Playlist Details
+
+
+  String? currentPlaylistName;
+  int? currentPlaylistKey;
+  int? totalPlaylistSongs;
+  int selectedSongCount = 0;
+
+  //////////////////////////////////
+
 
 
   String? currentSongDuration;
@@ -499,7 +542,7 @@ class PlayerCurrespondingItems extends ChangeNotifier {
    change();
     try{
       await _assetsAudioPlayer.open(
-       Playlist(audios: selectModeOfPlaylist(),startIndex: startingIndex!),autoStart: true,loopMode: LoopMode.playlist,showNotification: true,
+       Playlist(audios: selectModeOfPlaylist(),startIndex: startingIndex!),autoStart: true,loopMode: LoopMode.playlist,showNotification: turnNotificationOn,
         notificationSettings: NotificationSettings(
           customPlayPauseAction: (handle){
              playOrpause();
@@ -605,8 +648,8 @@ class PlayerCurrespondingItems extends ChangeNotifier {
   Duration? dur = const Duration(seconds: 0);
   double? curr = 0;
 
-  totalDuration() {
-    _assetsAudioPlayer.current.listen((event) {
+  totalDuration()  {
+    _assetsAudioPlayer.current.listen((event)   {
       dur = event!.audio.duration;
     });
     return commonText(
@@ -615,7 +658,7 @@ class PlayerCurrespondingItems extends ChangeNotifier {
         weight: FontWeight.w400,
         size: 12);
   }
-  getDuration() {
+  getDuration()  {
     return StreamBuilder(
         stream: _assetsAudioPlayer.currentPosition,
         builder: (context, asyncSnapshot) {
@@ -639,7 +682,7 @@ class PlayerCurrespondingItems extends ChangeNotifier {
     curr = currentPosition!.inSeconds.toDouble();
     notifyListeners();
   }
-  giveProgressBar(){
+  giveProgressBar()  {
     return StreamBuilder(
       stream: _assetsAudioPlayer.currentPosition,
         builder: (context,asyncSnapshot){
@@ -657,7 +700,7 @@ class PlayerCurrespondingItems extends ChangeNotifier {
         );
     });
   }
-  Widget slider() {
+  Future<Widget> slider() async {
     return Slider(
       activeColor: HexColor("#656F77"),
       inactiveColor: Colors.grey,
@@ -671,7 +714,7 @@ class PlayerCurrespondingItems extends ChangeNotifier {
       },
     );
   }
-  void changeToSeconds(int seconds) {
+  Future<void> changeToSeconds(int seconds) async {
     Duration newDuration = Duration(seconds: seconds);
     _assetsAudioPlayer.seek(newDuration);
     notifyListeners();
