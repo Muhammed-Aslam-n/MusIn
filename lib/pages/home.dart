@@ -189,7 +189,7 @@ class _SplashScreenState extends State<SplashScreen> {
           )
         ],
       ),
-      nextScreen: isLaunched ? Home() : OnBoarding(),
+      nextScreen: isLaunched ? const Home() : const OnBoarding(),
       splashTransition: SplashTransition.fadeTransition,
       // animationDuration: Duration(milliseconds: 1),
     );

@@ -6,6 +6,7 @@ import 'package:musin/database/database.dart';
 import 'package:musin/main.dart';
 import 'package:musin/materials/colors.dart';
 import 'package:musin/pages/addsongtoplaylist.dart';
+import 'package:musin/pages/widgets/commonminiplayer.dart';
 import 'package:musin/provider/provider_class.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
@@ -188,14 +189,14 @@ class _PlaylistSongsState extends State<PlaylistSongs> {
               widget.selectedPlaylistKey)
               .toList();
           widget.totalNumberOfSongs = keys.length;
-         if(setSongDetails.updatePlaylistAfterAddingSong){
-           if(setSongDetails.playlistSongsPlaylist.length != setSongDetails.previousPlaylistLength){
-             getSongPathsMan();
-             setSongDetails.previousPlaylistLength = setSongDetails.playlistSongsPlaylist.length;
-           }
-           setSongDetails.updatePlaylistAfterAddingSong = false;
-
-         }
+         // if(setSongDetails.updatePlaylistAfterAddingSong){
+         //   if(setSongDetails.playlistSongsPlaylist.length != setSongDetails.previousPlaylistLength){
+         //     getSongPathsMan();
+         //     setSongDetails.previousPlaylistLength = setSongDetails.playlistSongsPlaylist.length;
+         //   }
+         //   setSongDetails.updatePlaylistAfterAddingSong = false;
+         //
+         // }
 
 
           if (songFetcher.isEmpty) {
@@ -220,8 +221,7 @@ class _PlaylistSongsState extends State<PlaylistSongs> {
                     setSongDetails.selectedSongKey = index;
                     debugPrint("Selected Index in Playlist Song is $index");
                     debugPrint("Selected Key  in Playlist Song is $key");
-                    setSongDetails.startingIndex = setSongDetails.selectedSongKey;
-                    setSongDetails.opnPlaylist();
+                    setSongDetails.opnPlaylist(setSongDetails.selectedSongKey);
                     },
                   child: ListTile(
                     leading: Padding(

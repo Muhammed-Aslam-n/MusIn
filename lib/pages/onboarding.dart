@@ -27,7 +27,6 @@ class _OnBoardingState extends State<OnBoarding> {
   @override
   void initState() {
     initial();
-    saveDataToStorage();
     super.initState();
   }
 
@@ -91,7 +90,6 @@ class _OnBoardingState extends State<OnBoarding> {
                   child: GestureDetector(
                     onTap: () {
                       isLaunched.setBool('launchSharedData', true);
-
                       Navigator.pushReplacementNamed(context, '/home');
                     },
                     child: Column(
@@ -129,9 +127,4 @@ class _OnBoardingState extends State<OnBoarding> {
       ),
     );
   }
-Future<void>saveDataToStorage() async{
-  final sharedPref = await SharedPreferences.getInstance();
-  await sharedPref.setBool('launchSharedData', true);
-  debugPrint("Value of isLauched in Onboarding is $isLaunched");
-}
 }

@@ -1,385 +1,3 @@
-// Provider not using Database only using based on the Data passed
-//
-// import 'package:flutter/material.dart';
-
-// class IconChanger with ChangeNotifier{
-//   bool isIconChanged = true;
-//   bool get isIconChangedgetter => isIconChanged;
-//   void changeIcon(){
-//     isIconChanged? isIconChanged=false:isIconChanged=true;
-//     notifyListeners();
-//   }
-// }
-
-//
-// import 'package:flutter/cupertino.dart';
-// import 'package:assets_audio_player/assets_audio_player.dart';
-// import 'package:flutter/material.dart';
-// import 'package:musin/materials/colors.dart';
-// import 'package:musin/pages/widgets/widgets.dart';
-// import 'package:on_audio_query/on_audio_query.dart';
-//
-// class PlayerCurrespondingItems extends ChangeNotifier {
-//   final OnAudioQuery _audioQuery = OnAudioQuery();
-//   final player = AssetsAudioPlayer();
-//   // showFavouriteSnackBar(BuildContext context) {
-//   //   final snack = SnackBar(
-//   //     content: commonText(text: "Removed from Favourites",
-//   //         color: Colors.red,
-//   //         size: 13,
-//   //         weight: FontWeight.w500,
-//   //         isCenter: true),
-//   //     duration: Duration(seconds: 1),
-//   //     behavior: SnackBarBehavior.floating,
-//   //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24),),
-//   //     backgroundColor: Colors.white,
-//   //     width: 250,
-//   //   );
-//   //   return ScaffoldMessenger.of(context).showSnackBar(snack);
-//   // }
-//
-//   var isSelectedOrNot = true;
-//   var isIconChanged = false;
-//   var isNotificationOn = true;
-//   bool isRepeat = false;
-//   var songName, artistName, path, image, type,duration;
-//
-//   bool get isIconSelectedgetter => isSelectedOrNot;
-//
-//   getSongDetails(
-//       {nameOfSong, nameOfArtist, songPath, artistImage, artistType,totalDuration}) {
-//     songName = nameOfSong;
-//     artistName = nameOfArtist;
-//     path = songPath;
-//     image = artistImage;
-//     type = artistType;
-//     duration = totalDuration;
-//     notifyListeners();
-//   }
-//   void changeIcon() {
-//     finishedOrNot();
-//     isIconChanged ? isIconChanged = false : isIconChanged = true;
-//     if(isIconChanged){
-//       playSong(path);
-//       getDuration();
-//       totalDuration();
-//     }else{
-//       pauseSong();
-//     }
-//     notifyListeners();
-//   }
-//   playSong(link) async {
-//     try {
-//       await player.open(
-//         Audio(link),
-//         showNotification: isNotificationOn,notificationSettings: NotificationSettings(
-//         customPlayPauseAction: (player){
-//           changeIcon();
-//         }
-//       )
-//       );
-//     } catch (t) {
-//       //mp3 unreachable
-//       debugPrint("Cannot Play Song");
-//       // showFavouriteSnackBar(context);
-//     }
-//   }
-//   pauseSong()async{
-//     await player.pause();
-//     isRepeat = false;   // to Disable the Looping when user clicks the Button
-//   }
-//
-//
-// //------------------------Finished Or Not -------------
-//
-//   finishedOrNot(){
-//       player.playlistAudioFinished.listen((event) {
-//         debugPrint("Current Loop Mode is ${player.currentLoopMode!.index}");
-//         if(player.currentLoopMode!.index == 0){
-//         isIconChanged = false;
-//         debugPrint("Entered inside loop ${player.currentLoopMode}");
-//         notifyListeners();
-//       }else if(player.currentLoopMode!.index == 1){
-//           isIconChanged = true;
-//           notifyListeners();
-//         }
-//     });
-//     notifyListeners();
-//   }
-//
-//   //----------------------------------------Loop Songs Area-----------------
-//   loopSongs(){
-//     if(isRepeat == false && isIconChanged == true){
-//       player.setLoopMode(LoopMode.single);
-//       isRepeat = true;
-//       debugPrint("False : Loop Mode in If ${player.currentLoopMode}");
-//       notifyListeners();
-//     }
-//     else if(isRepeat == true){
-//       player.setLoopMode(LoopMode.none);
-//       isRepeat = false;
-//
-//       debugPrint(" True: Loop Mode in Else ${player.currentLoopMode}");
-//       notifyListeners();
-//     }
-//   }
-//
-//
-//   // ------------------------------Duration/Slider Area------------------
-//   Duration? currentPosition = Duration(seconds: 0);
-//   Duration? dur=Duration(seconds: 0);
-//   double curr=0;
-//
-//   totalDuration(){
-//     player.current.listen((event) {
-//       dur = event!.audio.duration;
-//     });
-//     return commonText(
-//         text: dur.toString().split(".")[0],
-//         color: HexColor("#656F77"),
-//         weight: FontWeight.w400,
-//         size: 12);
-//   }
-//   getDuration(){
-//     return StreamBuilder(
-//         stream: player.currentPosition,
-//         builder: (context, asyncSnapshot) {
-//           currentPosition = asyncSnapshot.data as Duration;
-//           return commonText(
-//               text: currentPosition.toString().split(".")[0],
-//               color: HexColor("#656F77"),
-//               weight: FontWeight.w400,
-//               size: 12);
-//         });
-//   }
-//   current(){
-//     curr = currentPosition!.inSeconds.toDouble();
-//     notifyListeners();
-//   }
-//   Widget slider() {
-//     return Slider(
-//       activeColor: HexColor("#656F77"),
-//       inactiveColor: Colors.grey,
-//       value:curr.toDouble(),
-//       min: 0.0,
-//       max: dur!.inSeconds.toDouble(),
-//       onChanged: (double newValue) {
-//         changeToSeconds(curr.toInt());
-//         curr = newValue;
-//         notifyListeners();
-//       },
-//     );
-//   }
-//   void changeToSeconds(int seconds){
-//     Duration newDuration = Duration(seconds: seconds);
-//     player.seek(newDuration);
-//     debugPrint("\n---------------------------Seconds in Function is $seconds\n-----------------------\n"
-//         "Duration in Function is $newDuration");
-//     notifyListeners();
-//   }
-//
-// // Getting Album Images
-// var songImage;
-// albumImage(){
-//     songImage = player.getCurrentAudioAlbum.toString();
-// }
-//
-// }
-
-
-//
-// import 'package:flutter/cupertino.dart';
-// import 'package:assets_audio_player/assets_audio_player.dart';
-// import 'package:flutter/material.dart';
-// import 'package:hive/hive.dart';
-// import 'package:musin/database/database.dart';
-// import 'package:musin/materials/colors.dart';
-// import 'package:musin/pages/widgets/widgets.dart';
-// import 'package:on_audio_query/on_audio_query.dart';
-//
-// import '../main.dart';
-//
-// class PlayerCurrespondingItems extends ChangeNotifier {
-//   // final OnAudioQuery _audioQuery = OnAudioQuery();
-//   final player = AssetsAudioPlayer();
-//
-//   // Getting Song key using Function
-//   var songKeyCurrent = 0;
-//   int nextKey=0;
-//   var songName, artistName, path, image, type, duration;
-//   var songKey;
-//   var currentPos;
-//
-//   getSongKey({currentSongKey}) {
-//     songKeyCurrent = currentSongKey;
-//     notifyListeners();
-//   }
-//   // int? prevKey;
-//
-//
-//
-//
-//   // Player Console Functions Starts
-//     var isSelectedOrNot = true;
-//   var isIconChanged = false;
-//   var isNotificationOn = true;
-//   bool isRepeat = false;
-//
-//   bool get isIconSelectedgetter => isSelectedOrNot;
-//
-//   // Listen if Player Clicked Play
-//   void playOrpause(path) {
-//     finishedOrNot();
-//     isIconChanged ? isIconChanged = false : isIconChanged = true;
-//     if (isSelectedOrNot) {
-//       playSong(path);
-//       getDuration();
-//       // totalDuration();
-//     } else {
-//       pauseSong();
-//     }
-//     notifyListeners();
-//   }
-//
-//   playSong(String link) async {
-//     try {
-//       debugPrint("\n--------------------------Path in Audio Player is ${link.replaceAll(' ', '')} \n----------------------------");
-//       await player.open(Audio.file(link), showNotification: isNotificationOn,
-//           notificationSettings:
-//               NotificationSettings(customPlayPauseAction: (player) {
-//         playOrpause(link);
-//       }));
-//     } catch (t) {
-//       //mp3 unreachable
-//       debugPrint("Cannot Play Song");
-//       // showFavouriteSnackBar(context);
-//     }
-//   }
-//
-//   pauseSong() async {
-//     await player.pause();
-//     isRepeat = false; // to Disable the Looping when user clicks the Button
-//   }
-//
-// //------------------------Finished Or Not -------------
-//
-//   finishedOrNot() {
-//     player.playlistAudioFinished.listen((event) {
-//       debugPrint("Current Loop Mode is ${player.currentLoopMode!.index}");
-//       if (player.currentLoopMode!.index == 0) {
-//         isIconChanged = false;
-//         debugPrint("Entered inside loop ${player.currentLoopMode}");
-//         notifyListeners();
-//       } else if (player.currentLoopMode!.index == 1) {
-//         isIconChanged = true;
-//         notifyListeners();
-//       }
-//     });
-//     notifyListeners();
-//   }
-//
-//   //----------------------------------------Loop Songs Area-----------------
-//   loopSongs() {
-//     if (isRepeat == false && isIconChanged == true) {
-//       playeoopMode(LoopMode.single);
-//       isRepeat = true;
-//       debugPrint("False : Loop Mode in If ${player.currentLoopMode}");
-//       notifyListeners();
-//     } else if (isRepeat == true) {
-//       player.setLoopMode(LoopMode.none);
-//       isRepeat = false;
-//
-//       debugPrint(" True: Loop Mode in Else ${player.currentLoopMode}");
-//       notifyListeners();
-//     }
-//   }
-//
-//   // ------------------------------Duration/Slider Area------------------
-//   Duration? currentPosition = Duration(seconds: 0);
-//   Duration? dur = Duration(seconds: 0);
-//   double curr = 0;
-//
-//   // totalDuration() {
-//   //   player.current.listen((event) {
-//   //     dur = event!.audio.duration;
-//   //   });
-//   //   return commonText(
-//   //       text: dur.toString().split(".")[0],
-//   //       color: HexColor("#656F77"),
-//   //       weight: FontWeight.w400,
-//   //       size: 12);
-//   // }
-//
-//   var songDur;
-//
-//   getDuration() {
-//     return StreamBuilder(
-//         stream: player.currentPosition,
-//         builder: (context, asyncSnapshot) {
-//           currentPosition = asyncSnapshot.data as Duration;
-//           return commonText(
-//               text: currentPosition.toString().split(".")[0],
-//               color: HexColor("#656F77"),
-//               weight: FontWeight.w400,
-//               size: 12);
-//         });
-//   }
-//   current() {
-//     curr = currentPosition!.inSeconds.toDouble();
-//     notifyListeners();
-//   }
-//
-//   Widget slider() {
-//     return Slider(
-//       activeColor: HexColor("#656F77"),
-//       inactiveColor: Colors.grey,
-//       value: curr.toDouble(),
-//       min: 0.0,
-//       max: dur!.inSeconds.toDouble(),
-//       onChanged: (double newValue) {
-//         changeToSeconds(curr.toInt());
-//         curr = newValue;
-//         notifyListeners();
-//       },
-//     );
-//   }
-//
-//   void changeToSeconds(int seconds) {
-//     Duration newDuration = Duration(seconds: seconds);
-//     player.seek(newDuration);
-//     notifyListeners();
-//   }
-//
-// // Getting Album Images
-//   var songImage;
-//
-//   albumImage() {
-//     songImage = player.getCurrentAudioAlbum.toString();
-//   }
-//
-//   // showFavouriteSnackBar(BuildContext context) {
-//   //   final snack = SnackBar(
-//   //     content: commonText(
-//   //         text: "Removed from Favourites",
-//   //         color: Colors.red,
-//   //         size: 13,
-//   //         weight: FontWeight.w500,
-//   //         isCenter: true),
-//   //     duration: Duration(seconds: 1),
-//   //     behavior: SnackBarBehavior.floating,
-//   //     shape: RoundedRectangleBorder(
-//   //       borderRadius: BorderRadius.circular(24),
-//   //     ),
-//   //     backgroundColor: Colors.white,
-//   //     width: 250,
-//   //   );
-//   //   return ScaffoldMessenger.of(context).showSnackBar(snack);
-//   // }
-// }
-
-
-
-// Changes to accommada
 
 import 'dart:async';
 
@@ -388,8 +6,6 @@ import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:musin/materials/colors.dart';
 import 'package:musin/pages/widgets/widgets.dart';
-
-import 'package:shared_preferences/shared_preferences.dart';
 
 class PlayerCurrespondingItems extends ChangeNotifier {
 
@@ -433,30 +49,6 @@ class PlayerCurrespondingItems extends ChangeNotifier {
     _assetsAudioPlayer.showNotification = true;
   }
 
-  //   Disable/Enable Notification ------------------------------------------------
-  // late SharedPreferences changeNotificationSettings;
-  //
-  // initializeNotificationShared() async{
-  //   changeNotificationSettings = await SharedPreferences.getInstance();
-  // }
-  //
-  // Future<void> getSharedPreference() async {
-  //   final sharedPref = await SharedPreferences.getInstance();
-  //   turnNotificationOn = await sharedPref.getBool('changeNotificationMode') ?? false;
-  //   debugPrint("The NotificationValue in Getting in Future of Provider is $turnNotificationOn");
-  // }
-  //
-  // makeNotificationOnOrOff(){
-  //   debugPrint("The Notification Value is $turnNotificationOn");
-  //   turnNotificationOn?_assetsAudioPlayer.showNotification = false:_assetsAudioPlayer.showNotification = true;
-  // }
-  //
-  // // switchNotificationSettings(){
-  // //   changeNotificationSettings.setBool('changeNotificationMode', turnNotificationOn);
-  // //   debugPrint("Notification Value Setting is $turnNotificationOn");
-  // // }
-
-
   // Variables to Store Playlist Details
 
 
@@ -474,8 +66,6 @@ class PlayerCurrespondingItems extends ChangeNotifier {
   bool isIconChanged = false;
   bool isRepeat = false;
 
-  bool isAllSongsAlreadyClicked = false;
-  bool isFavsAlreadyClicked = false;
 
   bool isAudioPlayingFromPlaylist = false;
   bool isPlaylistSongAlreadyPlaying = false;
@@ -524,7 +114,6 @@ class PlayerCurrespondingItems extends ChangeNotifier {
   List<Audio> allSongsplayList = <Audio>[];
   List<Audio> favPlaylist = <Audio>[];
   List<Audio> playlistSongsPlaylist = <Audio>[];
-  int? startingIndex = 0;
   int modeOfPlaylist = 1;
   int playlistLength = 0;
   selectModeOfPlaylist(){
@@ -537,12 +126,12 @@ class PlayerCurrespondingItems extends ChangeNotifier {
     }
   }
 
- opnPlaylist() async{
+ opnPlaylist(selectedSongKey) async{
    listenEverything();
    change();
     try{
       await _assetsAudioPlayer.open(
-       Playlist(audios: selectModeOfPlaylist(),startIndex: startingIndex!),autoStart: true,loopMode: LoopMode.playlist,showNotification: turnNotificationOn,
+       Playlist(audios: selectModeOfPlaylist(),startIndex: selectedSongKey??0),autoStart: true,loopMode: LoopMode.playlist,showNotification: turnNotificationOn,
         notificationSettings: NotificationSettings(
           customPlayPauseAction: (handle){
              playOrpause();
@@ -563,6 +152,7 @@ class PlayerCurrespondingItems extends ChangeNotifier {
     }catch(e){
       debugPrint("Can't Play Songs");
       notifyListeners();
+
     }
     notifyListeners();
   }
@@ -570,7 +160,7 @@ class PlayerCurrespondingItems extends ChangeNotifier {
    _assetsAudioPlayer.current.listen((event) {
      selectedSongKey = _assetsAudioPlayer.current.value?.index;
      // debugPrint("\n-----------------");
-     // debugPrint("Now Playing Song is $selectedSongKey");
+     debugPrint("Now Playing Song is $selectedSongKey");
      // debugPrint("Now Playing Song Name : ${_assetsAudioPlayer.getCurrentAudioTitle}");
      // debugPrint("\n-----------------");
    });
