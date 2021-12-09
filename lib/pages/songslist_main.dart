@@ -105,7 +105,8 @@ class _SongsListMainState extends State<SongsListMain> {
         songsPaths.add(element.songPath!);
       }
     }
-    pInstance.showKeys();
+    // pInstance.showKeys();
+    pInstance.playlistLength = songsPaths.length;
     debugPrint("SonglistMain Done");
   }
 
@@ -127,9 +128,12 @@ class _SongsListMainState extends State<SongsListMain> {
           List<int> keys = songFetcher.keys.cast<int>().toList();
           if (songFetcher.isEmpty) {
             return Column(
-              children:  [
-                const Text("No Songs So Far..."),
-                showRestartToast(context: context),
+              children:  const [
+                Text("No Songs So Far..."),
+                SizedBox(
+                  height: 20,
+                ),
+                Text("Please Restart the Application")
               ],
             );
           } else {
@@ -351,18 +355,6 @@ class _SongsListMainState extends State<SongsListMain> {
                           separatorBuilder: (_, index) => const Divider(),
                           itemCount: allCurrespondingKeys.length),
                     ),
-                    Expanded(
-                      child: ListTile(
-                        title: const Text("New Playlist"),
-                        trailing: IconButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                            createPlaylistAndAdd(context, songKey: globalKey);
-                          },
-                          icon: const Icon(Icons.add),
-                        ),
-                      ),
-                    ),
                   ],
                 );
               }),
@@ -576,24 +568,6 @@ class _SongsListMainState extends State<SongsListMain> {
     showPlaylistSnackBar(context: context, isAdded: true);
   }
 
-  showRestartToast({required BuildContext context}) {
-    final snack = SnackBar(
-      content:  commonText(
-          text: "Please Restart Application",
-          color: Colors.green,
-          size: 13,
-          weight: FontWeight.w500,
-          isCenter: true),
-      duration: const Duration(seconds:10),
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
-      ),
-      backgroundColor: Colors.white,
-      width: 250,
-    );
-    return ScaffoldMessenger.of(context).showSnackBar(snack);
-  }
 
 
 

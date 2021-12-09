@@ -203,6 +203,7 @@ class _AddToPlaylistHeaderState extends State<AddToPlaylistHeader> {
     userPlaylistSongsDbInstane =
         Hive.box<UserPlaylistSongs>(userPlaylistSongBoxName);
     userSongsDbInstance = Hive.box<UserSongs>(songDetailListBoxName);
+    super.initState();
   }
 
   @override

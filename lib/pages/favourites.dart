@@ -1,3 +1,4 @@
+import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -59,18 +60,18 @@ class _FavouriteSongListState extends State<FavouriteSongList> {
 
   getSongPathsMan(){
     final pInstance = Provider.of<PlayerCurrespondingItems>(context, listen: false);
-    pInstance.favPlaylist.clear();
-    debugPrint("\n---------------------------");
-    debugPrint("Fav Playlistinte Akathulla Value");
+    // pInstance.favPlaylist.clear();
+    // debugPrint("\n---------------------------");
+    // debugPrint("INITIL - FAV SONGLIST Playlistinte Akathulla Value");
       for (var element in userSongDbInstance!.values) {
         if (element.isFavourited == true) {
           songsPaths.add(element.songPath!);
-          debugPrint(element.songName?.split(" ")[0]);
+          // debugPrint(element.songName?.split(" ")[0]);
         }
       }
-    debugPrint("\n---------------------------");
+    // debugPrint("\n---------------------------");
     pInstance.showKeys();
-    debugPrint("Favourites Done");
+    // debugPrint("Favourites Done");
   }
   changeModeOfPlay(){
     final pInstance = Provider.of<PlayerCurrespondingItems>(context, listen: false);
@@ -87,6 +88,47 @@ class _FavouriteSongListState extends State<FavouriteSongList> {
         builder: (context, Box<UserSongs> songFetcher, _) {
           List<int> keys = songFetcher.keys.cast<int>().where((key) => songFetcher.get(key)!.isFavourited == true).toList();
 
+
+          // debugPrint("\n---------------------------");
+          // debugPrint("Length of SongsPath Before Adding is ${songsPaths.length}");
+          // debugPrint("Length of FavsPath Before Adding is ${setSongDetails.favPlaylist.length}");
+          // debugPrint("\n---------------------------");
+          if(setSongDetails.favPlaylist.isNotEmpty){
+            // debugPrint("ENTERED INTO UPDATING FUNCTION 1");
+            if(songsPaths.length != setSongDetails.favPlaylist.length ){
+              // debugPrint("ENTERED INTO UPDATING FUNCTION 2");
+              songsPaths.clear();
+              for (var element in userSongDbInstance!.values) {
+                if (element.isFavourited == true) {
+                  // debugPrint("Veendum Updating SOngsPaths");
+                  songsPaths.add(element.songPath!);
+                  debugPrint(element.songName?.split(" ")[0]);
+                }
+              }
+
+              // debugPrint("CURRENTLY PLAYING SONG PATH IS "+setSongDetails.currentlyPlayingSongPath.toString());
+              setSongDetails.favPlaylist.clear();
+              for(var i = 0; i<songsPaths.length;i++){
+                setSongDetails.favPlaylist.add(Audio.file(songsPaths[i]));
+                if(setSongDetails.currentlyPlayingSongPath == songsPaths[i]){
+                  // debugPrint("NEW INDEX IS $i");
+                  setSongDetails.selectedSongKey = i;
+                }
+              }
+              setSongDetails.isPlaylistUpdatedAnyWay = true;
+            }
+            // debugPrint("\n---------------------------");
+            // debugPrint("UPDATIL - FAV SONGSPATHS Playlistinte Akathulla Value");
+            for (var element in songsPaths) {
+              debugPrint(element.toString());
+            }
+            // debugPrint("\n---------------------------");
+            // debugPrint("UPDATIL - FAV PLAYLIST Playlistinte Akathulla Value");
+             for (var element in setSongDetails.favPlaylist) {
+               debugPrint(element.path.split(" ")[0].toString());
+             }
+          }
+          // debugPrint("\n---------------------------");
           if (songFetcher.isEmpty) {
             return Column(
               children: const [
@@ -107,12 +149,8 @@ class _FavouriteSongListState extends State<FavouriteSongList> {
                         onTap: () async{
                           setSongDetails.isAudioPlayingFromPlaylist = false;
                           changeModeOfPlay();
-                          setSongDetails.selectedSongKey = index;
                           setSongDetails.isSelectedOrNot = false;
-                          debugPrint("\n---------------------");
-                          debugPrint("Selected Song Key in Favourite is $index");
-                          debugPrint("Curresponding  Song Key in Favourite is $key");
-                          debugPrint("\n---------------------");
+                          setSongDetails.selectedSongKey = index;
                           setSongDetails.opnPlaylist(setSongDetails.selectedSongKey);
                         },
                         child: ListTile(
@@ -164,7 +202,20 @@ class _FavouriteSongListState extends State<FavouriteSongList> {
                                     onPressed: () {
                                       final model = UserSongs(songName: songDatas.songName,artistName: songDatas.artistName,songPath: songDatas.songPath,isFavourited: false,isAddedtoPlaylist: false,imageId: songDatas.imageId,duration: songDatas.duration);
                                       songFetcher.put(key, model);
+                                      debugPrint("INDEX IS $index");
+                                      if(index == songsPaths.length - 1 || songsPaths.length == index){
+                                        setSongDetails.isSelectedOrNot = true;
+                                        songsPaths.removeAt(index);
+                                        setSongDetails.stop();
+                                        setState(() {
 
+                                        });
+                                      }else{
+                                        songsPaths.removeAt(index);
+                                        setState(() {
+
+                                        });
+                                      }
                                     },
                                   ),
                                 ),

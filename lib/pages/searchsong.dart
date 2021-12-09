@@ -88,18 +88,10 @@ class _SearchSongState extends State<SearchSong> {
           builder: (_, setSongDetails, child) => ValueListenableBuilder(
           valueListenable: userSongsInstance!.listenable(),
           builder: (context, Box<UserSongs> songFetcher, _) {
-
-            // List<int> allKeys = songFetcher.keys
-            //     .cast<int>()
-            //     .where((key) =>
-            //         songFetcher.get(key)!.songName!.contains(pInstance.searchSongName))
-            //     .toList();
-                    // songFetcher.
-
             var results = searchController.text.isEmpty
                 ? songFetcher.values.toList() // whole list
                 : songFetcher.values
-                .where((c) => c.songName!.toLowerCase().contains(setSongDetails.searchSongName))
+                .where((c) => c.songName!.toLowerCase().contains(setSongDetails.searchSongName??''))
                 .toList();
 
             debugPrint("Value of Provider inside ValueListenableBuilder is ${setSongDetails.searchSongName}");

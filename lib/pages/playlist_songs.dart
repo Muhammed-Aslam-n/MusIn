@@ -1,3 +1,4 @@
+import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
@@ -33,28 +34,28 @@ class _PlaylistSongsState extends State<PlaylistSongs> {
         Hive.box<UserPlaylistNames>(userPlaylistBoxName);
     userPlaylistSongDbInstance =
         Hive.box<UserPlaylistSongs>(userPlaylistSongBoxName);
-    final pInstance = Provider.of<PlayerCurrespondingItems>(context,listen: false);
     getSongPathsMan();
-    pInstance.showKeys();
+    debugPrint("Inited");
     super.initState();
   }
 
   Future<void>getSongPathsMan()async{
     final pInstance =  Provider.of<PlayerCurrespondingItems>(context, listen: false);
-    var data = await userPlaylistNameDbInstance!.get(widget.selectedPlaylistKey);
-    debugPrint(data!.playlistNames.toString().toUpperCase());
     if(pInstance.playlistSongsPlaylist.isEmpty){
+      debugPrint("\n---------------------------");
+      debugPrint("INITIL - Playlistinte Akathulla Value");
       for (var element in userPlaylistSongDbInstance!.values) {
        if(widget.selectedPlaylistKey == element.currespondingPlaylistId){
-         debugPrint("Path is ${element.songName}");
          songsPaths.add(element.songPath??'');
          pInstance.alreadyPlayingPlaylistIndex = element.currespondingPlaylistId!;
        }
       }
-      pInstance.previousPlaylistLength = songsPaths.length;
+      debugPrint("\n---------------------------");
     }else{
          if(pInstance.alreadyPlayingPlaylistIndex != widget.selectedPlaylistKey ){
            pInstance.playlistSongsPlaylist.clear();
+           debugPrint("\n---------------------------");
+           debugPrint("INITIL - PLAYLIST SONGLIST Playlistinte Akathulla Value");
            for (var element in userPlaylistSongDbInstance!.values) {
              if(element.currespondingPlaylistId == widget.selectedPlaylistKey){
                songsPaths.add(element.songPath!);
@@ -63,7 +64,8 @@ class _PlaylistSongsState extends State<PlaylistSongs> {
            }
            pInstance.alreadyPlayingPlaylistIndex = widget.selectedPlaylistKey!;
          }
-         pInstance.previousPlaylistLength = songsPaths.length;
+
+         debugPrint("\n---------------------------");
     }
   }
 
@@ -72,32 +74,7 @@ class _PlaylistSongsState extends State<PlaylistSongs> {
     pInstance.getPlaylistSongsPaths(songsPaths);
     pInstance.test = widget.selectedPlaylistKey!;
     pInstance.modeOfPlaylist = 3;
-    // debugPrint("\n---------------------------------");
-    // debugPrint("The Song Paths if List is  Empty ");
-    // pInstance.showKeys();
-    // debugPrint("\n---------------------------------");
   }
-  // getSongPathsMan(){
-  //   final pInstance = Provider.of<PlayerCurrespondingItems>(context, listen: false);
-  //   userPlaylistSongDbInstance!.values.forEach((element) {
-  //     if(!pInstance.didUserClickedANewPlaylst){
-  //       if(element.currespondingPlaylistId == widget.selectedPlaylistKey){
-  //         songsPaths.add(element.songPath!);
-  //       }
-  //     }else{
-  //       pInstance.playlistSongsPlaylist.clear();
-  //       if(element.currespondingPlaylistId == widget.selectedPlaylistKey){
-  //         songsPaths.add(element.songPath!);
-  //       }
-  //     }
-  //
-  //   });
-  //   pInstance.getPlaylistSongsPaths(songsPaths);
-  //   pInstance.modeOfPlaylist = 3;
-  //   pInstance.showKeys();
-  // }
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -144,18 +121,6 @@ class _PlaylistSongsState extends State<PlaylistSongs> {
                                 icon: const Icon(Icons.add),
                                 tooltip: "Add More",
                               ),
-                              // IconButton(
-                              //   onPressed: () {
-                              //     Navigator.of(context).pop();
-                              //     userPlaylistSongDbInstance!.deleteAll(keys);
-                              //     playlistNameFetcher.delete(
-                              //         widget.selectedPlaylistKey);
-                              //     var pInstance = Provider.of<PlayerCurrespondingItems>(context,listen: false);
-                              //     pInstance.isSelectedOrNot = true;
-                              //   },
-                              //   icon: const Icon(Icons.delete),
-                              //   tooltip: "Delete Playlist",
-                              // )
                               const SizedBox(
                                 width: 20,
                               )
@@ -179,6 +144,7 @@ class _PlaylistSongsState extends State<PlaylistSongs> {
   }
 
   playlistSongTileView(BuildContext context) {
+    List tempList = [];
     return Consumer<PlayerCurrespondingItems>(
         builder: (_, setSongDetails, child) =>ValueListenableBuilder(
         valueListenable: userPlaylistSongDbInstance!.listenable(),
@@ -189,14 +155,42 @@ class _PlaylistSongsState extends State<PlaylistSongs> {
               widget.selectedPlaylistKey)
               .toList();
           widget.totalNumberOfSongs = keys.length;
-         // if(setSongDetails.updatePlaylistAfterAddingSong){
-         //   if(setSongDetails.playlistSongsPlaylist.length != setSongDetails.previousPlaylistLength){
-         //     getSongPathsMan();
-         //     setSongDetails.previousPlaylistLength = setSongDetails.playlistSongsPlaylist.length;
-         //   }
-         //   setSongDetails.updatePlaylistAfterAddingSong = false;
-         //
-         // }
+
+
+          // debugPrint("\n---------------------------");
+          // debugPrint("Length of SongsPath Before Adding is ${songsPaths.length}");
+          // debugPrint("Length of FavsPath Before Adding is ${setSongDetails.playlistSongsPlaylist.length}");
+          // debugPrint("\n---------------------------");
+
+          if(setSongDetails.playlistSongsPlaylist.isNotEmpty){
+            debugPrint("ENTERED INTO UPDATING FUNCTION 1");
+            tempList.clear();
+            for (var element in userPlaylistSongDbInstance!.values) {
+              if(element.currespondingPlaylistId == setSongDetails.alreadyPlayingPlaylistIndex){
+                tempList.add(element.songPath);
+              }
+            }
+            debugPrint("\n---------------------------");
+            debugPrint("Value in TempList is ");
+            for (var element in tempList) {
+              debugPrint(element.toString());
+            }
+            debugPrint("\n---------------------------");
+
+            if(tempList.length != setSongDetails.playlistSongsPlaylist.length ){
+              debugPrint("ENTERED INTO UPDATING FUNCTION 2");
+              setSongDetails.playlistSongsPlaylist.clear();
+              for(var i = 0; i<tempList.length;i++){
+                setSongDetails.playlistSongsPlaylist.add(Audio.file(tempList[i]));
+                if(setSongDetails.currentlyPlayingSongPath == tempList[i]){
+                  setSongDetails.selectedSongKey = i;
+                }
+              }
+              setSongDetails.isPlaylistUpdatedAnyWay = true;
+            }
+
+
+          }
 
 
           if (songFetcher.isEmpty) {
@@ -272,6 +266,18 @@ class _PlaylistSongsState extends State<PlaylistSongs> {
                               onPressed: () {
                                 debugPrint("Delete Item Key is $key");
                                 songFetcher.delete(key);
+                                if(index == tempList.length - 1 || tempList.length == index){
+                                  setSongDetails.isSelectedOrNot = true;
+                                  tempList.removeAt(index);
+                                  setSongDetails.stop();
+                                  setState(() {
+
+                                  });
+                                }else{
+                                  setState(() {
+                                    tempList.removeAt(index);
+                                  });
+                                }
                                 debugPrint("Delete Button Clicked");
                               },
                             ),

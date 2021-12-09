@@ -1,6 +1,4 @@
-
 import 'dart:async';
-
 import 'package:flutter/cupertino.dart';
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
@@ -19,16 +17,16 @@ class PlayerCurrespondingItems extends ChangeNotifier {
     });
   }
   Future<void>getFavSongsPaths(List<String> songPathList)async{
-    songPathList.forEach((element)async {
-      final audio = await Audio.file(element);
+    songPathList.forEach((element) {
+      final audio = Audio.file(element);
       favPlaylist.add(audio);
     });
   }
   bool didUserClickedANewPlaylst = false;
 
   Future<void>getPlaylistSongsPaths(List<String> songPathList)async{
-    songPathList.forEach((element) async {
-      final audio = await Audio.file(element);
+    songPathList.forEach((element)  {
+      final audio = Audio.file(element);
       playlistSongsPlaylist.add(audio);
     });
   }
@@ -42,9 +40,9 @@ class PlayerCurrespondingItems extends ChangeNotifier {
   bool isNotificationOn=true;
   bool  turnNotificationOn = false;
 
- disableNotification(){
-   _assetsAudioPlayer.showNotification = false;
- }
+  disableNotification(){
+    _assetsAudioPlayer.showNotification = false;
+  }
   enableNotification(){
     _assetsAudioPlayer.showNotification = true;
   }
@@ -58,7 +56,6 @@ class PlayerCurrespondingItems extends ChangeNotifier {
   int selectedSongCount = 0;
 
   //////////////////////////////////
-
 
 
   String? currentSongDuration;
@@ -77,16 +74,33 @@ class PlayerCurrespondingItems extends ChangeNotifier {
 
 
 
-  var searchSongName;
+  String? searchSongName;
   onSearchChanged(TextEditingController searchQuery){
     Timer? _debounce;
     if(_debounce?.isActive??false) _debounce?.cancel();
-      _debounce = Timer(const Duration(milliseconds: 500),()
+    _debounce = Timer(const Duration(milliseconds: 500),()
     {
       searchSongName = searchQuery.text;
       notifyListeners();
     });
   }
+
+
+
+
+
+
+  // Deletion Handling Section
+  String? currentlyPlayingSongPath;  // Important which Stores the Currently Opened Song from Playlist
+  bool isPlaylistUpdatedAnyWay = false; // Important , this stores the bool value as if the playlists get update anyway
+
+  // for Favourites
+  int? favouriteLengthBeforeUpdate;
+  String? favouriteSongPathBeforeUpdate;
+
+  // for Playlist
+  int? playlistLengthBeforeUpdate;
+  String? playlistSongPathBeforeUpdate;
 
 
   // AddSongsToPlaylist
@@ -100,11 +114,6 @@ class PlayerCurrespondingItems extends ChangeNotifier {
 
   bool isAddingSongsToExistingPlaylist  = false;
   bool updatePlaylistAfterAddingSong = false;
-  bool updateFavouitesAfterAddingSong = false;
-  int? previousPlaylistLength;
-  int? previousFavouriteLength;
-  int? previousFavouriteSongPosition;
-
 
 
 
@@ -126,29 +135,29 @@ class PlayerCurrespondingItems extends ChangeNotifier {
     }
   }
 
- opnPlaylist(selectedSongKey) async{
-   listenEverything();
-   change();
+  opnPlaylist(selectedSongKey) async{
+    listenEverything();
+    change();
     try{
       await _assetsAudioPlayer.open(
-       Playlist(audios: selectModeOfPlaylist(),startIndex: selectedSongKey??0),autoStart: true,loopMode: LoopMode.playlist,showNotification: turnNotificationOn,
-        notificationSettings: NotificationSettings(
-          customPlayPauseAction: (handle){
-             playOrpause();
-          },
-          customNextAction: (handle){
-            next();
-          },
-          customPrevAction: (handle){
-            prev();
-          },
-          customStopAction: (handle){
-            _assetsAudioPlayer.stop();
-          },
+          Playlist(audios: selectModeOfPlaylist(),startIndex: selectedSongKey??0),autoStart: true,loopMode: LoopMode.playlist,showNotification: turnNotificationOn,
+          notificationSettings: NotificationSettings(
+            customPlayPauseAction: (handle){
+              playOrpause();
+            },
+            customNextAction: (handle){
+              next();
+            },
+            customPrevAction: (handle){
+              prev();
+            },
+            customStopAction: (handle){
+              _assetsAudioPlayer.stop();
+            },
 
-        )
-     );
-     notifyListeners();
+          )
+      );
+      notifyListeners();
     }catch(e){
       debugPrint("Can't Play Songs");
       notifyListeners();
@@ -157,13 +166,11 @@ class PlayerCurrespondingItems extends ChangeNotifier {
     notifyListeners();
   }
   listenEverything(){
-   _assetsAudioPlayer.current.listen((event) {
-     selectedSongKey = _assetsAudioPlayer.current.value?.index;
-     // debugPrint("\n-----------------");
-     debugPrint("Now Playing Song is $selectedSongKey");
-     // debugPrint("Now Playing Song Name : ${_assetsAudioPlayer.getCurrentAudioTitle}");
-     // debugPrint("\n-----------------");
-   });
+    _assetsAudioPlayer.current.listen((event) {
+      selectedSongKey = _assetsAudioPlayer.current.value?.index;
+      currentlyPlayingSongPath = _assetsAudioPlayer.current.value?.audio.audio.path;
+      debugPrint("Now Playing Song is $selectedSongKey");
+    });
 
   }
 
@@ -182,10 +189,20 @@ class PlayerCurrespondingItems extends ChangeNotifier {
     }
   }
   next(){
-   _assetsAudioPlayer.next();
+    if(isPlaylistUpdatedAnyWay){
+      opnPlaylist(selectedSongKey!+1);
+      isPlaylistUpdatedAnyWay = false;
+    }else{
+      _assetsAudioPlayer.next();
+    }
   }
   prev(){
-   _assetsAudioPlayer.previous();
+    if(isPlaylistUpdatedAnyWay){
+      opnPlaylist(selectedSongKey!-1);
+      isPlaylistUpdatedAnyWay = false;
+    }else{
+      _assetsAudioPlayer.previous();
+    }
   }
 
   change(){
@@ -222,7 +239,7 @@ class PlayerCurrespondingItems extends ChangeNotifier {
 
   int? loopIcon=0;
   loopSongs(){
-   _assetsAudioPlayer.toggleLoop();
+    _assetsAudioPlayer.toggleLoop();
     if(_assetsAudioPlayer.currentLoopMode!.index == 1){
       loopIcon = 1;
     }else if(_assetsAudioPlayer.currentLoopMode!.index == 2){
@@ -262,10 +279,10 @@ class PlayerCurrespondingItems extends ChangeNotifier {
           currentPosition = asyncSnapshot.data;
           return
             commonText(
-              text: currentPosition.toString().split(".")[0],
-              color: HexColor("#656F77"),
-              weight: FontWeight.w400,
-              size: 12);
+                text: currentPosition.toString().split(".")[0],
+                color: HexColor("#656F77"),
+                weight: FontWeight.w400,
+                size: 12);
         });
   }
   current() {
@@ -274,21 +291,21 @@ class PlayerCurrespondingItems extends ChangeNotifier {
   }
   giveProgressBar()  {
     return StreamBuilder(
-      stream: _assetsAudioPlayer.currentPosition,
+        stream: _assetsAudioPlayer.currentPosition,
         builder: (context,asyncSnapshot){
-        return Slider(
-          activeColor: HexColor("#656F77"),
-          inactiveColor: Colors.grey,
-          min: 0.0,
-          max: dur!.inSeconds.toDouble(),
-          value: currentPosition?.inSeconds.toDouble()??0,
-          onChanged: (double value) {
-            changeToSeconds(curr!.toInt());
-            curr = value;
-            notifyListeners();
-          },
-        );
-    });
+          return Slider(
+            activeColor: HexColor("#656F77"),
+            inactiveColor: Colors.grey,
+            min: 0.0,
+            max: dur!.inSeconds.toDouble(),
+            value: currentPosition?.inSeconds.toDouble()??0,
+            onChanged: (double value) {
+              changeToSeconds(curr!.toInt());
+              curr = value;
+              notifyListeners();
+            },
+          );
+        });
   }
   Future<Widget> slider() async {
     return Slider(

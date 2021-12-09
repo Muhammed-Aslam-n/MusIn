@@ -108,20 +108,21 @@ class _MiniPlayerForAllSongsAndFavouritesState
             }
 
             if (keys.isNotEmpty) {
-              debugPrint("\n---------------------");
-              songDetailsProvider.modeOfPlaylist == 1
-                  ? debugPrint("The Keys in Key According to the AllSongs is ")
-                  : debugPrint(
-                      "The Keys in Key According to the Favourite is ");
-              for (var element in keys) {
-                var songData = songFetcher.get(element);
-                debugPrint(
-                    "Song Name : ${songData?.songName?.split(" ")[0]} || Song's Key " +
-                        element.toString());
-              }
-              debugPrint("\n---------------------");
+              // debugPrint("\n---------------------");
+              // songDetailsProvider.modeOfPlaylist == 1
+              //     ? debugPrint("The Keys in Key According to the AllSongs is ")
+              //     : debugPrint(
+              //         "The Keys in Key According to the Favourite is ");
+              // for (var element in keys) {
+              //   var songData = songFetcher.get(element);
+              //   debugPrint(
+              //       "Song Name : ${songData?.songName?.split(" ")[0]} || Song's Key " +
+              //           element.toString());
+              // }
+              // debugPrint("\n---------------------");
               songDetailsProvider.currentSongKey =
                   keys[songDetailsProvider.selectedSongKey ?? 0];
+              debugPrint('GETTING CURRENT KEY IS ${songDetailsProvider.selectedSongKey}');
             }
 
             var songData = songFetcher.get(songDetailsProvider.currentSongKey);
@@ -246,14 +247,14 @@ class _MiniPlayerForPlaylistState extends State<MiniPlayerForPlaylist> {
               .toList();
 
           if (keys.isNotEmpty) {
-            debugPrint("\n---------------------");
-            debugPrint("The Keys in Key According to the Playlist Mode is ");
-            for (var element in keys) {
-              var songData = songFetcher.get(element);
-              debugPrint("Song Name : ${songData?.songName} || Song's Key " +
-                  element.toString());
-            }
-            debugPrint("\n---------------------");
+            // debugPrint("\n---------------------");
+            // debugPrint("The Keys in Key According to the Playlist Mode is ");
+            // for (var element in keys) {
+            //   var songData = songFetcher.get(element);
+            //   debugPrint("Song Name : ${songData?.songName} || Song's Key " +
+            //       element.toString());
+            // }
+            // debugPrint("\n---------------------");
             songDetailsProvider.currentSongKey =
                 keys[songDetailsProvider.selectedSongKey ?? 0];
           }
@@ -391,6 +392,16 @@ class _MainSongForAllSongsAndFavouritesState
               builder: (context, Box<UserSongs> songFetcher, _) {
                 List keys = [];
                 if (setSongDetails.modeOfPlaylist == 1) {
+                  if(setSongDetails.isShuffled){
+                    //
+                    // debugPrint("Is the List is Shuffling Aslam ? ${setSongDetails.isShuffled}");
+                    //
+                    // debugPrint("Then The Songs List after Shuffling is ");
+                    // setSongDetails.showKeys();
+                  }
+
+
+
                   keys = songDetailsBox!.keys.cast<int>().toList();
                 } else if (setSongDetails.modeOfPlaylist == 2) {
                   keys = songFetcher.keys
@@ -401,12 +412,12 @@ class _MainSongForAllSongsAndFavouritesState
                 }
 
                 if (keys.isNotEmpty) {
-                  debugPrint("\n---------------------");
-                  debugPrint("The Keys in Key According to the Mode is ");
-                  for (var element in keys) {
-                    debugPrint(element.toString());
-                  }
-                  debugPrint("\n---------------------");
+                  // debugPrint("\n---------------------");
+                  // debugPrint("The Keys in Key According to the Mode is ");
+                  // for (var element in keys) {
+                  //   debugPrint(element.toString());
+                  // }
+                  // debugPrint("\n---------------------");
                   setSongDetails.currentSongKey =
                       keys[setSongDetails.selectedSongKey ?? 0];
                 }
