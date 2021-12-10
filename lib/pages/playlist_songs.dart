@@ -17,7 +17,7 @@ class PlaylistSongs extends StatefulWidget {
   int? selectedPlaylistKey;
   int totalNumberOfSongs = 0;
 
-  PlaylistSongs({this.selectedPlaylistKey});
+  PlaylistSongs({Key? key, this.selectedPlaylistKey}) : super(key: key);
 
   @override
   _PlaylistSongsState createState() => _PlaylistSongsState();

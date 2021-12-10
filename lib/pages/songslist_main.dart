@@ -105,9 +105,7 @@ class _SongsListMainState extends State<SongsListMain> {
         songsPaths.add(element.songPath!);
       }
     }
-    // pInstance.showKeys();
     pInstance.playlistLength = songsPaths.length;
-    debugPrint("SonglistMain Done");
   }
 
   changeModeOfPlay() {
@@ -321,16 +319,7 @@ class _SongsListMainState extends State<SongsListMain> {
                             globalKey = key;
                             return GestureDetector(
                               onTap: () {
-                                List<int> keys = userPlaylistSongsInstance!.keys
-                                    .cast<int>()
-                                    .where((key) =>
-                                        userPlaylistSongsInstance!
-                                            .get(key)!
-                                            .currespondingPlaylistId ==
-                                        key)
-                                    .toList();
                                 var songFetch = verumKeys[index];
-                                // var songData = songFetch!.get(key);
                                 showPlaylistSnackBar(
                                     context: context, isAdded: false);
                                 userPlaylistSongsInstance!.delete(songFetch);
@@ -567,8 +556,4 @@ class _SongsListMainState extends State<SongsListMain> {
     Navigator.of(context).pop();
     showPlaylistSnackBar(context: context, isAdded: true);
   }
-
-
-
-
 }

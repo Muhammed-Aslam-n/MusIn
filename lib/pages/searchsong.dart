@@ -1,13 +1,9 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:musin/database/database.dart';
 import 'package:musin/main.dart';
 import 'package:musin/materials/colors.dart';
-import 'package:musin/pages/home.dart';
-import 'package:musin/pages/songlist.dart';
 import 'package:musin/pages/widgets/widgets.dart';
 import 'package:musin/provider/provider_class.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -39,7 +35,7 @@ class _SearchSongState extends State<SearchSong> {
           body: ListView(
             shrinkWrap: true,
             children: [
-              CommonHeaders(
+              const CommonHeaders(
                 title: "Search",
                 subtitle: "Find your songs",
               ),

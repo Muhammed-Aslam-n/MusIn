@@ -134,7 +134,7 @@ class _HomeState extends State<Home> {
         onTap: (index) {
           setState(() {
             currentIndex = index;
-            _pageController.animateToPage(index, duration: Duration(milliseconds: 500), curve: Curves.ease);
+            _pageController.animateToPage(index, duration: const Duration(milliseconds: 500), curve: Curves.ease);
           });
         },
       ),
@@ -143,10 +143,10 @@ class _HomeState extends State<Home> {
   }
 
   final tabs = [
-    SongListMainHolder(),
-    SearchSong(),
-    Favourites(),
-    PlayList(),
+    const SongListMainHolder(),
+    const SearchSong(),
+    const Favourites(),
+    const PlayList(),
   ];
 }
 
@@ -199,7 +199,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> getSharedPreference() async {
     final sharedPref = await SharedPreferences.getInstance();
-    isLaunched = await sharedPref.getBool('launchSharedData') ?? false;
+    isLaunched = sharedPref.getBool('launchSharedData') ?? false;
     debugPrint("SharedPreference in SplashScreen is : $isLaunched");
   }
 }

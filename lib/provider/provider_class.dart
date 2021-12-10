@@ -11,24 +11,24 @@ class PlayerCurrespondingItems extends ChangeNotifier {
 
   List<String> sampleKeys =[];
   Future<void>getAllSongsPaths(List<String> songPathList)async{
-    songPathList.forEach((element) {
+    for (var element in songPathList) {
       final audio = Audio.file(element);
       allSongsplayList.add(audio);
-    });
+    }
   }
   Future<void>getFavSongsPaths(List<String> songPathList)async{
-    songPathList.forEach((element) {
+    for (var element in songPathList) {
       final audio = Audio.file(element);
       favPlaylist.add(audio);
-    });
+    }
   }
   bool didUserClickedANewPlaylst = false;
 
   Future<void>getPlaylistSongsPaths(List<String> songPathList)async{
-    songPathList.forEach((element)  {
+    for (var element in songPathList) {
       final audio = Audio.file(element);
       playlistSongsPlaylist.add(audio);
-    });
+    }
   }
   showKeys(){
     selectModeOfPlaylist().forEach((element) {debugPrint(element.path);});
@@ -227,9 +227,9 @@ class PlayerCurrespondingItems extends ChangeNotifier {
   }
 
   showFavPlaylist(){
-    favPlaylist.forEach((element) {
+    for (var element in favPlaylist) {
       debugPrint("Path : $element");
-    });
+    }
   }
 
   removePathAt(index){

@@ -6,19 +6,12 @@ import 'package:musin/SettingsPages/termsandcondiotion.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttericon/entypo_icons.dart';
-import 'package:hive/hive.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'package:musin/database/database.dart';
-import 'package:musin/main.dart';
 import 'package:musin/materials/colors.dart';
-import 'package:musin/pages/home.dart';
-import 'package:fluttericon/font_awesome_icons.dart';
-import 'package:miniplayer/miniplayer.dart';
 import 'package:musin/provider/provider_class.dart';
-import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/src/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:share/share.dart';
 
 class CommonAppBar extends StatefulWidget implements PreferredSizeWidget {
   const CommonAppBar({Key? key}) : super(key: key);
@@ -134,7 +127,7 @@ class _CommonAppBarState extends State<CommonAppBar> {
                         ],
                       ),
                     ),
-                    value: 1,
+                    value: 2,
                   ),
                   PopupMenuItem(
                     child: GestureDetector(
@@ -158,7 +151,7 @@ class _CommonAppBarState extends State<CommonAppBar> {
                         ],
                       ),
                     ),
-                    value: 1,
+                    value: 3,
                   ),
                   PopupMenuItem(
                     child: GestureDetector(
@@ -183,7 +176,48 @@ class _CommonAppBarState extends State<CommonAppBar> {
                         ],
                       ),
                     ),
-                    value: 1,
+                    value: 4,
+                  ),
+                  PopupMenuItem(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: Row(
+                        children: const [
+                          Icon(
+                            Entypo.star,
+                            color: Colors.black45,
+                          ),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Text("Rate App"),
+                        ],
+                      ),
+                    ),
+                    value: 5,
+                  ),
+                  PopupMenuItem(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        // Share.share('text')
+                      },
+                      child: Row(
+                        children: const [
+                          Icon(
+                            Entypo.share,
+                            color: Colors.black45,
+                          ),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Text("Share"),
+                        ],
+                      ),
+                    ),
+                    value: 6,
                   ),
                   PopupMenuItem(
                     child: GestureDetector(
@@ -204,7 +238,7 @@ class _CommonAppBarState extends State<CommonAppBar> {
                         ],
                       ),
                     ),
-                    value: 1,
+                    value: 7,
                   ),
                 ],
               ),
@@ -230,7 +264,7 @@ class _CommonAppBarState extends State<CommonAppBar> {
         children: [
           commonText(
               text:
-                  "This Application is Developed by CrossRoads Ddevelopment Company\n"
+                  "This Application is Developed by CrossRoads Development Company\n"
                   "All Rights Reserved to CrossRoads Pvt.Limited",
               size: 12,
               weight: FontWeight.w400)
@@ -262,9 +296,9 @@ style({color, size, family, weight}) {
 }
 
 class CommonHeaders extends StatelessWidget {
-  final title, subtitle;
+  final title, subtitle,pLeft,pTop;
 
-  const CommonHeaders({Key? key, this.title, this.subtitle}) : super(key: key);
+  const CommonHeaders({Key? key, this.title, this.subtitle, this.pLeft, this.pTop}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -277,18 +311,18 @@ class CommonHeaders extends StatelessWidget {
               bottomLeft: Radius.circular(24),
               bottomRight: Radius.circular(24))),
       child: Padding(
-        padding: const EdgeInsets.only(left: 32, top: 25),
+        padding:  EdgeInsets.only(left: pLeft??32, top: pTop??25),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             commonText(
-              text: this.title,
+              text: title,
             ),
             const SizedBox(
               height: 5,
             ),
             commonText(
-              text: this.subtitle,
+              text: subtitle,
               size: 14,
               color: HexColor("#656F77"),
             ),

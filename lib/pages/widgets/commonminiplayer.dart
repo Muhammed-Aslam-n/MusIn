@@ -255,8 +255,12 @@ class _MiniPlayerForPlaylistState extends State<MiniPlayerForPlaylist> {
             //       element.toString());
             // }
             // debugPrint("\n---------------------");
-            songDetailsProvider.currentSongKey =
-                keys[songDetailsProvider.selectedSongKey ?? 0];
+            try{
+              songDetailsProvider.currentSongKey =
+              keys[songDetailsProvider.selectedSongKey ?? 0];
+            }catch(e){
+              debugPrint("Range Error Handled");
+            }
           }
 
           var songData = songFetcher.get(songDetailsProvider.currentSongKey);

@@ -73,7 +73,7 @@ class _PlayListState extends State<PlayList> {
         body: ListView(
           shrinkWrap: true,
           children: [
-            CommonHeaders(
+            const CommonHeaders(
               title: "Playlist",
               subtitle: "Pick your Playlist",
             ),
@@ -85,7 +85,7 @@ class _PlayListState extends State<PlayList> {
                 GestureDetector(
                   onTap: () {
                     Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => Favourites()));
+                        MaterialPageRoute(builder: (context) => const Favourites()));
                     debugPrint("Navigator to Playlist Clicked");
                   },
                   child: Container(

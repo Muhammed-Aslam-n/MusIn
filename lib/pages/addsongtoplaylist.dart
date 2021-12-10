@@ -180,7 +180,7 @@ class AddToPlaylistHolder extends StatelessWidget {
         children: [
           const AddToPlaylistHeader(),
           sizedh1,
-          AddSongstoPlaylist(),
+          const AddSongstoPlaylist(),
         ],
       ),
     );

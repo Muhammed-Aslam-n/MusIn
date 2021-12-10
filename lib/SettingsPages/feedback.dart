@@ -1,8 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:musin/materials/colors.dart';
-import 'package:musin/pages/home.dart';
-import 'package:musin/pages/songlist.dart';
 import 'package:musin/pages/widgets/widgets.dart';
 
 class UserFeedback extends StatefulWidget {
@@ -19,12 +17,12 @@ class _UserFeedbackState extends State<UserFeedback> {
       appBar: AppBar(
         backgroundColor: HexColor("#A6B9FF"),
         elevation: 0,
-        iconTheme: IconThemeData(color: Colors.black),
+        iconTheme: const IconThemeData(color: Colors.black),
         leading: IconButton(
           onPressed: () {
             Navigator.of(context).pop();
           },
-          icon: Icon(
+          icon: const Icon(
             Icons.chevron_left_outlined,
             size: 30,
           ),
@@ -33,15 +31,15 @@ class _UserFeedbackState extends State<UserFeedback> {
       body: ListView(
         shrinkWrap: true,
         children: [
-          CommonHeaders(
+          const CommonHeaders(
             title: "Feedback",
             subtitle: "Let us know what you think...",
           ),
-          SizedBox(
+          const SizedBox(
             height: 30,
           ),
           Padding(
-            padding: EdgeInsets.symmetric(
+            padding: const EdgeInsets.symmetric(
               horizontal: 30,
             ),
             child: Column(
@@ -50,7 +48,7 @@ class _UserFeedbackState extends State<UserFeedback> {
                 commonText(text: "Email"),
                 sizedh2,
                 TextFormField(
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     hintText: "sample@mail.com",
                   ),
                 ),
@@ -69,7 +67,7 @@ class _UserFeedbackState extends State<UserFeedback> {
                         horizontal: 20, vertical: 20),
                     child: TextFormField(
                       maxLines: 40,
-                      decoration: InputDecoration.collapsed(
+                      decoration: const InputDecoration.collapsed(
                         hintText: "Enter your comments",
                       ),
                     ),

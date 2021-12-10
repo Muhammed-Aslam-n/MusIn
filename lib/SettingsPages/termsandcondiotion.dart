@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:musin/materials/colors.dart';
-import 'package:musin/pages/home.dart';
-import 'package:musin/pages/songlist.dart';
 import 'package:musin/pages/widgets/widgets.dart';
 
 class TermsandCondition extends StatelessWidget {
