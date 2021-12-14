@@ -9,7 +9,6 @@ import 'package:musin/pages/widgets/widgets.dart';
 import 'package:musin/provider/provider_class.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
-
 import '../main.dart';
 
 class Favourites extends StatelessWidget {
@@ -40,7 +39,6 @@ class Favourites extends StatelessWidget {
   }
 }
 
-
 class FavouriteSongList extends StatefulWidget {
   const FavouriteSongList({Key? key}) : super(key: key);
 
@@ -50,7 +48,8 @@ class FavouriteSongList extends StatefulWidget {
 
 class _FavouriteSongListState extends State<FavouriteSongList> {
   Box<UserSongs>? userSongDbInstance;
-  List<String> songsPaths =[];
+  List<String> songsPaths = [];
+
   @override
   void initState() {
     userSongDbInstance = Hive.box<UserSongs>(songDetailListBoxName);
@@ -58,27 +57,29 @@ class _FavouriteSongListState extends State<FavouriteSongList> {
     super.initState();
   }
 
-  getSongPathsMan(){
-    final pInstance = Provider.of<PlayerCurrespondingItems>(context, listen: false);
+  getSongPathsMan() {
+    final pInstance =
+        Provider.of<PlayerCurrespondingItems>(context, listen: false);
     // pInstance.favPlaylist.clear();
     // debugPrint("\n---------------------------");
     // debugPrint("INITIL - FAV SONGLIST Playlistinte Akathulla Value");
-      for (var element in userSongDbInstance!.values) {
-        if (element.isFavourited == true) {
-          songsPaths.add(element.songPath!);
-          // debugPrint(element.songName?.split(" ")[0]);
-        }
+    for (var element in userSongDbInstance!.values) {
+      if (element.isFavourited == true) {
+        songsPaths.add(element.songPath!);
+        // debugPrint(element.songName?.split(" ")[0]);
       }
+    }
     // debugPrint("\n---------------------------");
     pInstance.showKeys();
     // debugPrint("Favourites Done");
   }
-  changeModeOfPlay(){
-    final pInstance = Provider.of<PlayerCurrespondingItems>(context, listen: false);
+
+  changeModeOfPlay() {
+    final pInstance =
+        Provider.of<PlayerCurrespondingItems>(context, listen: false);
     pInstance.getFavSongsPaths(songsPaths);
     pInstance.modeOfPlaylist = 2;
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -86,16 +87,18 @@ class _FavouriteSongListState extends State<FavouriteSongList> {
       builder: (_, setSongDetails, child) => ValueListenableBuilder(
         valueListenable: userSongDbInstance!.listenable(),
         builder: (context, Box<UserSongs> songFetcher, _) {
-          List<int> keys = songFetcher.keys.cast<int>().where((key) => songFetcher.get(key)!.isFavourited == true).toList();
-
+          List<int> keys = songFetcher.keys
+              .cast<int>()
+              .where((key) => songFetcher.get(key)!.isFavourited == true)
+              .toList();
 
           // debugPrint("\n---------------------------");
           // debugPrint("Length of SongsPath Before Adding is ${songsPaths.length}");
           // debugPrint("Length of FavsPath Before Adding is ${setSongDetails.favPlaylist.length}");
           // debugPrint("\n---------------------------");
-          if(setSongDetails.favPlaylist.isNotEmpty){
+          if (setSongDetails.favPlaylist.isNotEmpty) {
             // debugPrint("ENTERED INTO UPDATING FUNCTION 1");
-            if(songsPaths.length != setSongDetails.favPlaylist.length ){
+            if (songsPaths.length != setSongDetails.favPlaylist.length) {
               // debugPrint("ENTERED INTO UPDATING FUNCTION 2");
               songsPaths.clear();
               for (var element in userSongDbInstance!.values) {
@@ -108,9 +111,9 @@ class _FavouriteSongListState extends State<FavouriteSongList> {
 
               // debugPrint("CURRENTLY PLAYING SONG PATH IS "+setSongDetails.currentlyPlayingSongPath.toString());
               setSongDetails.favPlaylist.clear();
-              for(var i = 0; i<songsPaths.length;i++){
+              for (var i = 0; i < songsPaths.length; i++) {
                 setSongDetails.favPlaylist.add(Audio.file(songsPaths[i]));
-                if(setSongDetails.currentlyPlayingSongPath == songsPaths[i]){
+                if (setSongDetails.currentlyPlayingSongPath == songsPaths[i]) {
                   // debugPrint("NEW INDEX IS $i");
                   setSongDetails.selectedSongKey = i;
                 }
@@ -124,9 +127,9 @@ class _FavouriteSongListState extends State<FavouriteSongList> {
             }
             // debugPrint("\n---------------------------");
             // debugPrint("UPDATIL - FAV PLAYLIST Playlistinte Akathulla Value");
-             for (var element in setSongDetails.favPlaylist) {
-               debugPrint(element.path.split(" ")[0].toString());
-             }
+            for (var element in setSongDetails.favPlaylist) {
+              debugPrint(element.path.split(" ")[0].toString());
+            }
           }
           // debugPrint("\n---------------------------");
           if (songFetcher.isEmpty) {
@@ -136,101 +139,105 @@ class _FavouriteSongListState extends State<FavouriteSongList> {
               ],
             );
           } else {
-            return Column(
-                children: [
-                  ListView.builder(
-                    itemCount: keys.length,
-                    shrinkWrap: true,
-                    physics: const ScrollPhysics(),
-                    itemBuilder: (context, index) {
-                      final key = keys[index];
-                      final songDatas = songFetcher.get(key);
-                      return GestureDetector(
-                        onTap: () async{
-                          setSongDetails.isAudioPlayingFromPlaylist = false;
-                          changeModeOfPlay();
-                          setSongDetails.isSelectedOrNot = false;
-                          setSongDetails.selectedSongKey = index;
-                          setSongDetails.opnPlaylist(setSongDetails.selectedSongKey);
-                        },
-                        child: ListTile(
-                          leading: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: QueryArtworkWidget(
-                                id: songDatas!.imageId!,
-                                type: ArtworkType.AUDIO,
-                                nullArtworkWidget: ClipRRect(
-                                    child: Image.asset(
-                                      "assets/images/playlist_Bg/playlist16.jpg",
-                                      height: 50,
-                                      width: 50,
-                                      fit: BoxFit.fill,
-                                    ),
-                                    borderRadius: BorderRadius.circular(10)),
-                                artworkHeight: 50,
-                                artworkWidth: 50,
-                                artworkFit: BoxFit.fill,
-                                artworkBorder: BorderRadius.circular(10)),
-                          ),
-                          title: Padding(
-                            padding: const EdgeInsets.only(top: 10),
-                            child: commonText(
-                                text: songDatas.songName,
-                                size: 15,
-                                weight: FontWeight.w600),
-                          ),
-                          subtitle: Padding(
-                            padding: const EdgeInsets.only(bottom: 10),
-                            child: commonMarquees(
-                                text: songDatas.artistName,
-                                size: 12.0,
-                                color: HexColor("#ACB8C2"),
-                                weight: FontWeight.w600,
-                                hPadding: 0.0,
-                                vPadding: 1.0),
-                          ),
-                          trailing: SizedBox(
-                            width: 80,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: IconButton(
-                                    icon: const Icon(
-                                      Icons.remove_circle_outline,
-                                    ),
-                                    onPressed: () {
-                                      final model = UserSongs(songName: songDatas.songName,artistName: songDatas.artistName,songPath: songDatas.songPath,isFavourited: false,isAddedtoPlaylist: false,imageId: songDatas.imageId,duration: songDatas.duration);
-                                      songFetcher.put(key, model);
-                                      debugPrint("INDEX IS $index");
-                                      if(index == songsPaths.length - 1 || songsPaths.length == index){
-                                        setSongDetails.isSelectedOrNot = true;
-                                        songsPaths.removeAt(index);
-                                        setSongDetails.stop();
-                                        setState(() {
-
-                                        });
-                                      }else{
-                                        songsPaths.removeAt(index);
-                                        setState(() {
-
-                                        });
-                                      }
-                                    },
-                                  ),
+            return Column(children: [
+              ListView.builder(
+                itemCount: keys.length,
+                shrinkWrap: true,
+                physics: const ScrollPhysics(),
+                itemBuilder: (context, index) {
+                  final key = keys[index];
+                  final songDatas = songFetcher.get(key);
+                  return GestureDetector(
+                    onTap: () async {
+                      setSongDetails.isAudioPlayingFromPlaylist = false;
+                      changeModeOfPlay();
+                      setSongDetails.isSelectedOrNot = false;
+                      setSongDetails.selectedSongKey = index;
+                      setSongDetails
+                          .opnPlaylist(setSongDetails.selectedSongKey);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: ListTile(
+                        leading: QueryArtworkWidget(
+                            id: songDatas!.imageId!,
+                            type: ArtworkType.AUDIO,
+                            nullArtworkWidget: ClipRRect(
+                                child: Image.asset(
+                                  "assets/images/playlist_Bg/playlist16.jpg",
+                                  height: 50,
+                                  width: 50,
+                                  fit: BoxFit.fill,
                                 ),
-                              ],
-                            ),
+                                borderRadius: BorderRadius.circular(10)),
+                            artworkHeight: 80,
+                            artworkWidth: 50,
+                            artworkFit: BoxFit.fill,
+                            artworkBorder: BorderRadius.circular(10)),
+                        title: Padding(
+                          padding: const EdgeInsets.only(top: 10),
+                          child: commonMarquees(
+                              text: songDatas.songName,
+                              size: 13.0,
+                              color: Colors.black,
+                              weight: FontWeight.w600,
+                              hPadding: 0.0,
+                              vPadding: 1.0,
+                              height: 25.0),
+                        ),
+                        subtitle: commonMarquees(
+                            text: songDatas.artistName,
+                            size: 12.0,
+                            color: HexColor("#ACB8C2"),
+                            weight: FontWeight.w600,
+                            hPadding: 0.0,
+                            vPadding: 1.0),
+                        trailing: SizedBox(
+                          width: 80,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: IconButton(
+                                  icon: const Icon(
+                                    Icons.remove_circle_outline,
+                                  ),
+                                  onPressed: () {
+                                    final model = UserSongs(
+                                        songName: songDatas.songName,
+                                        artistName: songDatas.artistName,
+                                        songPath: songDatas.songPath,
+                                        isFavourited: false,
+                                        isAddedtoPlaylist: false,
+                                        imageId: songDatas.imageId,
+                                        duration: songDatas.duration);
+                                    songFetcher.put(key, model);
+                                    debugPrint("INDEX IS $index");
+                                    if (index == songsPaths.length - 1 ||
+                                        songsPaths.length == index) {
+                                      setSongDetails.isSelectedOrNot = true;
+                                      songsPaths.removeAt(index);
+                                      setSongDetails.stop();
+                                      setState(() {});
+                                    } else {
+                                      songsPaths.removeAt(index);
+                                      setState(() {});
+                                    }
+                                  },
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      );
-                    },
-                  ),
-                  const SizedBox(
-                    height: 70,
-                  )
-                ]
-            );
+                      ),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(
+                height: 70,
+              )
+            ]);
           }
         },
       ),

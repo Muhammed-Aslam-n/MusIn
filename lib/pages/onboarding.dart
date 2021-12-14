@@ -81,12 +81,13 @@ class _OnBoardingState extends State<OnBoarding> {
                 child: Container(
                   width: double.infinity,
                   decoration: const BoxDecoration(
-                      image: DecorationImage(
-                    image: ExactAssetImage(
-                      "assets/images/onBoardBgSplash.png",
+                    image: DecorationImage(
+                      image: ExactAssetImage(
+                        "assets/images/onBoardBgSplash.png",
+                      ),
+                      fit: BoxFit.fitHeight,
                     ),
-                    fit: BoxFit.fitHeight,
-                  ),),
+                  ),
                   child: GestureDetector(
                     onTap: () {
                       isLaunched.setBool('launchSharedData', true);
@@ -95,23 +96,28 @@ class _OnBoardingState extends State<OnBoarding> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Container(
-                          height: 350,
-                          width: 300,
-                          margin: const EdgeInsets.only(left: 30, top: 50),
-                          child: Image.asset(
-                            "assets/images/onBoardBgImage.png",
+                        Expanded(
+                          flex: 4,
+                          child: Container(
+                            height: 350,
+                            width: 300,
+                            margin: const EdgeInsets.only(left: 30, top: 50),
+                            child: Image.asset(
+                              "assets/images/onBoardBgImage.png",
+                            ),
                           ),
                         ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            textForAll(
-                                text: "MusIn",
-                                family: "Poppins-Light",
-                                size: 18),
-                            const Icon(Icons.arrow_right),
-                          ],
+                        Expanded(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              textForAll(
+                                  text: "MusIn",
+                                  family: "Poppins-Light",
+                                  size: 18),
+                              const Icon(Icons.arrow_right),
+                            ],
+                          ),
                         ),
                         const SizedBox(
                           height: 20,

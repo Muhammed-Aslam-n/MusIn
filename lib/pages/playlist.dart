@@ -164,33 +164,35 @@ class _PlayListState extends State<PlayList> {
                 },
                 child: Column(
                   children: [
-                    SizedBox(
-                      width: 200,
-                      height: 120,
-                      child: Container(
-                        decoration:  BoxDecoration(
-                          image: const DecorationImage(
-                            image: AssetImage("assets/images/playlist_Bg/playlist7.jpg"),fit: BoxFit.cover
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.5),
-                              spreadRadius: 2,
-                              blurRadius: 2, // changes position of shadow
+                    Expanded(
+                      child: SizedBox(
+                        width: 200,
+                        height: 120,
+                        child: Container(
+                          decoration:  BoxDecoration(
+                            image: const DecorationImage(
+                              image: AssetImage("assets/images/playlist_Bg/playlist7.jpg"),fit: BoxFit.cover
                             ),
-                          ]
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.5),
+                                spreadRadius: 2,
+                                blurRadius: 2, // changes position of shadow
+                              ),
+                            ]
 
+                          ),
+                          child: Stack(
+                            children: [
+                              Positioned(child: commonText(
+                                  text: "\n\t\t${songDatas!.playlistNames}",
+                                  color: Colors.white),
+                              right: 10,
+                                bottom: 20,
+                              ),
+                            ],
+                          )
                         ),
-                        child: Stack(
-                          children: [
-                            Positioned(child: commonText(
-                                text: "\n\t\t${songDatas!.playlistNames}",
-                                color: Colors.white),
-                            right: 10,
-                              bottom: 10,
-                            ),
-                          ],
-                        )
                       ),
                     ),
                   ],
