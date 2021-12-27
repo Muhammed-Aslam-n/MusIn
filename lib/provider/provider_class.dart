@@ -55,8 +55,7 @@ class PlayerCurrespondingItems extends ChangeNotifier {
   int? totalPlaylistSongs;
   int selectedSongCount = 0;
 
-  //////////////////////////////////
-
+  //----------------------------
 
   String? currentSongDuration;
   int? selectedSongKey;
@@ -116,10 +115,8 @@ class PlayerCurrespondingItems extends ChangeNotifier {
   bool updatePlaylistAfterAddingSong = false;
 
 
-
-
-
   final _assetsAudioPlayer = AssetsAudioPlayer();
+
   List<Audio> allSongsplayList = <Audio>[];
   List<Audio> favPlaylist = <Audio>[];
   List<Audio> playlistSongsPlaylist = <Audio>[];
