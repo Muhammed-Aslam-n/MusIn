@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:musin/materials/colors.dart';
 import 'package:musin/pages/widgets/widgets.dart';
+import 'package:get/get.dart';
 
 class PrivacyPolicy extends StatelessWidget {
   const PrivacyPolicy({Key? key}) : super(key: key);
@@ -14,7 +15,7 @@ class PrivacyPolicy extends StatelessWidget {
         iconTheme: const IconThemeData(color: Colors.black),
         leading: IconButton(
           onPressed: () {
-            Navigator.of(context).pop();
+            Get.back();
           },
           icon: const Icon(
             Icons.chevron_left_outlined,

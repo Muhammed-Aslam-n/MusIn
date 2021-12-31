@@ -1,18 +1,14 @@
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
+import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:marquee/marquee.dart';
+import 'package:musin/controller/musincontroller.dart';
 import 'package:musin/database/database.dart';
 import 'package:musin/materials/colors.dart';
 import 'package:musin/pages/widgets/commonminiplayer.dart';
 import 'package:musin/pages/widgets/widgets.dart';
-import 'package:musin/provider/provider_class.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import 'package:provider/provider.dart';
-
-import '../main.dart';
 
 class SongListMainHolder extends StatefulWidget {
   const SongListMainHolder({Key? key}) : super(key: key);
@@ -81,47 +77,36 @@ class SongsListMain extends StatefulWidget {
 var isSelected = true;
 
 class _SongsListMainState extends State<SongsListMain> {
+  final musinController = Get.find<MusinController>();
   final OnAudioQuery audioQuery = OnAudioQuery();
-  Box<UserSongs>? songDbInstance;
-  Box<UserPlaylistNames>? userPlaylistNameInstance;
-  Box<UserPlaylistSongs>? userPlaylistSongsInstance;
   List<String> songsPaths = [];
 
   @override
   void initState() {
-    songDbInstance = Hive.box<UserSongs>(songDetailListBoxName);
-    userPlaylistNameInstance = Hive.box<UserPlaylistNames>(userPlaylistBoxName);
-    userPlaylistSongsInstance =
-        Hive.box<UserPlaylistSongs>(userPlaylistSongBoxName);
     getSongPathsMan();
     super.initState();
   }
 
   getSongPathsMan() {
-    final pInstance =
-        Provider.of<PlayerCurrespondingItems>(context, listen: false);
-    if (pInstance.allSongsplayList.isEmpty) {
-      for (var element in songDbInstance!.values) {
+    if (musinController.allSongsplayList.isEmpty) {
+      for (var element in musinController.userSongsInstance!.values) {
         songsPaths.add(element.songPath!);
       }
     }
-    pInstance.playlistLength = songsPaths.length;
+    musinController.playlistLength = songsPaths.length;
   }
 
   changeModeOfPlay() {
-    final pInstance =
-        Provider.of<PlayerCurrespondingItems>(context, listen: false);
-    pInstance.getAllSongsPaths(songsPaths);
-    pInstance.modeOfPlaylist = 1;
+    musinController.getAllSongsPaths(songsPaths);
+    musinController.modeOfPlaylist = 1;
   }
 
-  bool addToFavs = false;
+  bool addToFavourite = false;
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<PlayerCurrespondingItems>(
-      builder: (_, setSongDetails, child) => ValueListenableBuilder(
-        valueListenable: songDbInstance!.listenable(),
+    return ValueListenableBuilder(
+        valueListenable: musinController.userSongsInstance!.listenable(),
         builder: (context, Box<UserSongs> songFetcher, _) {
           List<int> keys = songFetcher.keys.cast<int>().toList();
           if (songFetcher.isEmpty) {
@@ -146,14 +131,14 @@ class _SongsListMainState extends State<SongsListMain> {
               itemCount: keys.length,
               itemBuilder: (context, index) {
                 final key = keys[index];
-                final songDatas = songFetcher.get(key);
+                final songData = songFetcher.get(key);
                 return GestureDetector(
                   onTap: () {
-                    setSongDetails.isAudioPlayingFromPlaylist = false;
+                    musinController.isAudioPlayingFromPlaylist = false;
                     changeModeOfPlay();
-                    setSongDetails.isSelectedOrNot = false;
-                    setSongDetails.selectedSongKey = index;
-                    setSongDetails.opnPlaylist(setSongDetails.selectedSongKey);
+                    musinController.isSelectedOrNot = false;
+                    musinController.selectedSongKey = index;
+                    musinController.opnPlaylist(musinController.selectedSongKey);
                   },
                   child: Container(
                     decoration: BoxDecoration(
@@ -164,7 +149,7 @@ class _SongsListMainState extends State<SongsListMain> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         QueryArtworkWidget(
-                          id: songDatas!.imageId!,
+                          id: songData!.imageId!,
                           type: ArtworkType.AUDIO,
                           nullArtworkWidget: ClipRRect(
                             child: Image.asset(
@@ -192,10 +177,10 @@ class _SongsListMainState extends State<SongsListMain> {
                             children: [
                               IconButton(
                                 onPressed: () {
-                                  addToFavourites(songFetcher, songDatas, key);
+                                  addToFavourites(songFetcher, songData, key);
                                 },
                                 icon: Icon(CupertinoIcons.heart,
-                                    color: songDatas.isFavourited
+                                    color: songData.isFavourited
                                         ? Colors.red
                                         : Colors.black87),
                               ),
@@ -203,10 +188,10 @@ class _SongsListMainState extends State<SongsListMain> {
                                 onSelected: (result) {
                                   if (result == 1) {
                                     showPlaylistNames(
-                                        context, key, songDatas.songName);
+                                        context, key, songData.songName);
                                   } else {
                                     showPlaylistNameToRemove(
-                                        context, songDatas.songName);
+                                        context, songData.songName);
                                   }
                                 },
                                 itemBuilder: (context) => [
@@ -227,7 +212,7 @@ class _SongsListMainState extends State<SongsListMain> {
                           child: Padding(
                             padding: const EdgeInsets.only(left: 20),
                             child: Marquee(
-                              text: songDatas.artistName ?? "No Artist",
+                              text: songData.artistName ?? "No Artist",
                               blankSpace: 100,
                               velocity: 30,
                               pauseAfterRound: const Duration(seconds: 3),numberOfRounds: 1,
@@ -239,7 +224,7 @@ class _SongsListMainState extends State<SongsListMain> {
                             padding: const EdgeInsets.only(left: 20),
                             child: Marquee(
                               style: const TextStyle(fontFamily: "Poppins-Regular",fontSize: 18,fontWeight: FontWeight.w700),
-                              text: songDatas.songName ?? "No Song name",
+                              text: songData.songName ?? "No Song name",
                               blankSpace: 100,
                               velocity: 30,
                               pauseAfterRound: const Duration(seconds: 3),numberOfRounds: 1,
@@ -256,27 +241,26 @@ class _SongsListMainState extends State<SongsListMain> {
               },
             );
           }
-        },
-      ),
+        }
     );
   }
 
-  addToFavourites(Box songFetcher, UserSongs? songDatas, key) {
-    if (songDatas?.isFavourited == true) {
-      addToFavs = false;
+  addToFavourites(Box songFetcher, UserSongs? songData, key) {
+    if (songData?.isFavourited == true) {
+      addToFavourite= false;
     } else {
-      addToFavs = true;
+      addToFavourite = true;
     }
     final model = UserSongs(
-        songName: songDatas?.songName,
-        artistName: songDatas?.artistName,
-        duration: songDatas?.duration,
-        songPath: songDatas?.songPath,
-        imageId: songDatas?.imageId,
+        songName: songData?.songName,
+        artistName: songData?.artistName,
+        duration: songData?.duration,
+        songPath: songData?.songPath,
+        imageId: songData?.imageId,
         isAddedtoPlaylist: false,
-        isFavourited: addToFavs);
+        isFavourited: addToFavourite);
     songFetcher.putAt(key, model);
-    showFavouriteSnackBar(context: context, isFavourite: addToFavs);
+    showFavouriteSnackBar(context,isFavourite: addToFavourite);
   }
 
   showPlaylistNameToRemove(BuildContext context, songName) {
@@ -289,23 +273,21 @@ class _SongsListMainState extends State<SongsListMain> {
           height: 100,
           width: 200,
           child: ValueListenableBuilder(
-              valueListenable: userPlaylistNameInstance!.listenable(),
+              valueListenable: musinController.userPlaylistNameDbInstance!.listenable(),
               builder: (context, Box<UserPlaylistNames> songFetcher, _) {
                 List<int> allCurrespondingKeys = [];
-                List<int> verumKeys = userPlaylistSongsInstance!.keys
+                List<int> keys = musinController.userPlaylistSongsDbInstance!.keys
                     .cast<int>()
                     .where((key) =>
-                        userPlaylistSongsInstance!.get(key)!.songName ==
+                musinController.userPlaylistSongsDbInstance!.get(key)!.songName ==
                         songName)
                     .toList();
-                for (var element in userPlaylistSongsInstance!.values) {
+                for (var element in musinController.userPlaylistSongsDbInstance!.values) {
                   if (element.songName == songName) {
                     allCurrespondingKeys
                         .add(element.currespondingPlaylistId ?? 0);
                   }
                 }
-
-                int globalKey = 0;
                 return Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -316,14 +298,13 @@ class _SongsListMainState extends State<SongsListMain> {
                           itemBuilder: (_, index) {
                             final key = allCurrespondingKeys[index];
                             final currentPlaylist = songFetcher.get(key);
-                            globalKey = key;
                             return GestureDetector(
                               onTap: () {
-                                var songFetch = verumKeys[index];
+                                var songFetch = keys[index];
                                 showPlaylistSnackBar(
                                     context: context, isAdded: false);
-                                userPlaylistSongsInstance!.delete(songFetch);
-                                Navigator.of(context).pop();
+                                musinController.userPlaylistSongsDbInstance!.delete(songFetch);
+                                Get.back();
                               },
                               child: Padding(
                                 padding:
@@ -350,7 +331,7 @@ class _SongsListMainState extends State<SongsListMain> {
         ),
         actions: <Widget>[
           TextButton(
-            onPressed: () => Navigator.pop(context, 'Cancel'),
+            onPressed: () => Get.back(),
             child: const Text('Cancel'),
           ),
         ],
@@ -370,19 +351,19 @@ class _SongsListMainState extends State<SongsListMain> {
           height: 100,
           width: 200,
           child: ValueListenableBuilder(
-            valueListenable: userPlaylistNameInstance!.listenable(),
+            valueListenable: musinController.userPlaylistNameDbInstance!.listenable(),
             builder: (context, Box<UserPlaylistNames> songFetcher, _) {
               List songNonRepeatingPlaylistKey =
-                  userPlaylistNameInstance!.keys.cast<int>().toList();
+              musinController.userPlaylistNameDbInstance!.keys.cast<int>().toList();
 
-              for (var element in userPlaylistSongsInstance!.values) {
+              for (var element in musinController.userPlaylistSongsDbInstance!.values) {
                 if (element.songName == songName) {
                   alreadyExists = true;
                 }
               }
 
               if (alreadyExists) {
-                for (var element in userPlaylistSongsInstance!.values) {
+                for (var element in musinController.userPlaylistSongsDbInstance!.values) {
                   if (element.songName == songName) {
                     curr = element.currespondingPlaylistId;
                   }
@@ -394,10 +375,10 @@ class _SongsListMainState extends State<SongsListMain> {
                 }
               } else if (alreadyExists == false) {
                 songNonRepeatingPlaylistKey =
-                    userPlaylistNameInstance!.keys.cast<int>().toList();
+                    musinController.userPlaylistNameDbInstance!.keys.cast<int>().toList();
               }
 
-              if (userPlaylistNameInstance!.isEmpty) {
+              if (musinController.userPlaylistNameDbInstance!.isEmpty) {
                 return SizedBox(
                   height: 200,
                   child: Column(
@@ -413,7 +394,7 @@ class _SongsListMainState extends State<SongsListMain> {
                           ),
                           trailing: IconButton(
                             onPressed: () {
-                              Navigator.of(context).pop();
+                              Get.back();
                               createPlaylistAndAdd(context, songKey: songKey);
                             },
                             icon: Icon(Icons.add, color: HexColor("#A6B9FF")),
@@ -442,7 +423,7 @@ class _SongsListMainState extends State<SongsListMain> {
                             final currentPlaylist = songFetcher.get(key);
                             return GestureDetector(
                               onTap: () {
-                                final songData = songDbInstance!.get(songKey);
+                                final songData = musinController.userSongsInstance!.get(songKey);
                                 final model = UserPlaylistSongs(
                                     currespondingPlaylistId: key,
                                     songName: songData!.songName,
@@ -450,8 +431,8 @@ class _SongsListMainState extends State<SongsListMain> {
                                     songPath: songData.songPath,
                                     songImageId: songData.imageId,
                                     songDuration: songData.duration);
-                                userPlaylistSongsInstance!.add(model);
-                                Navigator.of(context).pop();
+                                musinController.userPlaylistSongsDbInstance!.add(model);
+                                Get.back();
                                 showPlaylistSnackBar(
                                     context: context, isAdded: true);
                               },
@@ -483,7 +464,7 @@ class _SongsListMainState extends State<SongsListMain> {
                           ),
                           trailing: IconButton(
                             onPressed: () {
-                              Navigator.of(context).pop();
+                              Get.back();
                               createPlaylistAndAdd(context, songKey: songKey);
                             },
                             icon: Icon(Icons.add, color: HexColor("#A6B9FF")),
@@ -499,7 +480,7 @@ class _SongsListMainState extends State<SongsListMain> {
         ),
         actions: <Widget>[
           TextButton(
-            onPressed: () => Navigator.pop(context, 'Cancel'),
+            onPressed: () => Get.back(),
             child: const Text('Cancel'),
           ),
         ],
@@ -519,13 +500,13 @@ class _SongsListMainState extends State<SongsListMain> {
         ),
         actions: <Widget>[
           TextButton(
-            onPressed: () => Navigator.pop(context, 'Cancel'),
+            onPressed: () => Get.back(),
             child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
               createPlaylistSub(playlistName);
-              final songData = songDbInstance!.get(songKey);
+              final songData = musinController.userSongsInstance!.get(songKey);
               addToCreatedPlaylist(songData);
             },
             child: const Text('create'),
@@ -539,21 +520,21 @@ class _SongsListMainState extends State<SongsListMain> {
     final playlistNameFromTextField = playlistName.text;
     final playlistModelVariable =
         UserPlaylistNames(playlistNames: playlistNameFromTextField);
-    userPlaylistNameInstance!.add(playlistModelVariable);
+    musinController.userPlaylistNameDbInstance!.add(playlistModelVariable);
   }
 
   addToCreatedPlaylist(
     UserSongs? songData,
   ) {
     final model = UserPlaylistSongs(
-        currespondingPlaylistId: userPlaylistNameInstance!.keys.last,
+        currespondingPlaylistId: musinController.userPlaylistNameDbInstance!.keys.last,
         songName: songData!.songName,
         artistName: songData.artistName,
         songImageId: songData.imageId,
         songDuration: songData.duration,
         songPath: songData.songPath);
-    userPlaylistSongsInstance!.add(model);
-    Navigator.of(context).pop();
+    musinController.userPlaylistSongsDbInstance!.add(model);
+    Get.back();
     showPlaylistSnackBar(context: context, isAdded: true);
   }
 }

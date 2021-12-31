@@ -2,17 +2,16 @@ import 'package:fluttericon/typicons_icons.dart';
 import 'package:marquee/marquee.dart';
 import 'package:musin/SettingsPages/feedback.dart';
 import 'package:musin/SettingsPages/privacypolicy.dart';
-import 'package:musin/SettingsPages/termsandcondiotion.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttericon/entypo_icons.dart';
+import 'package:musin/constants/constants.dart';
+import 'package:musin/controller/musincontroller.dart';
 import 'package:musin/materials/colors.dart';
-import 'package:musin/provider/provider_class.dart';
-import 'package:provider/provider.dart';
-import 'package:provider/src/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:share/share.dart';
-
 class CommonAppBar extends StatefulWidget implements PreferredSizeWidget {
   const CommonAppBar({Key? key}) : super(key: key);
 
@@ -38,18 +37,23 @@ class _CommonAppBarState extends State<CommonAppBar> {
   initializeNotificationShared() async {
     changeNotificationSettings = await SharedPreferences.getInstance();
   }
-
   Future<void> getSharedPreference() async {
-    var pInstance =
-        Provider.of<PlayerCurrespondingItems>(context, listen: false);
+    final musinController = Get.find<MusinController>();
     final sharedPref = await SharedPreferences.getInstance();
     turnNotificationOn = sharedPref.getBool('changeNotificationMode') ?? true;
     turnNotificationOn
-        ? pInstance.disableNotification()
-        : pInstance.enableNotification;
-    pInstance.turnNotificationOn = turnNotificationOn;
+        ? musinController.disableNotification()
+        : musinController.enableNotification;
+    musinController.turnNotificationOn = turnNotificationOn;
   }
-
+  void _launchURL(url) async {
+    var urllaunchable = await canLaunch(url);
+    if(urllaunchable){
+      await launch(url); //launch is from url_launcher package to launch URL
+    }else{
+      debugPrint("URL can't be launched.");
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -87,13 +91,11 @@ class _CommonAppBarState extends State<CommonAppBar> {
                             value: turnNotificationOn,
                             onChanged: (value) {
                               turnNotificationOn = value;
-                              var pInstance =
-                                  Provider.of<PlayerCurrespondingItems>(context,
-                                      listen: false);
+                              final musinController = Get.find<MusinController>();
                               turnNotificationOn
-                                  ? pInstance.enableNotification()
-                                  : pInstance.disableNotification();
-                              pInstance.turnNotificationOn = turnNotificationOn;
+                                  ? musinController.enableNotification()
+                                  : musinController.disableNotification();
+                              musinController.turnNotificationOn = turnNotificationOn;
                               changeNotificationSettings.setBool(
                                   'changeNotificationMode', turnNotificationOn);
                               setState(() {});
@@ -157,11 +159,7 @@ class _CommonAppBarState extends State<CommonAppBar> {
                     child: GestureDetector(
                       onTap: () {
                         Navigator.of(context).pop();
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    const TermsandCondition()));
+                        _launchURL(termsAndConditonsUrl);
                       },
                       child: Row(
                         children: const [
@@ -181,6 +179,7 @@ class _CommonAppBarState extends State<CommonAppBar> {
                   PopupMenuItem(
                     child: GestureDetector(
                       onTap: () {
+                        _launchURL(appUrl);
                         Navigator.of(context).pop();
                       },
                       child: Row(
@@ -201,6 +200,7 @@ class _CommonAppBarState extends State<CommonAppBar> {
                   PopupMenuItem(
                     child: GestureDetector(
                       onTap: () {
+                        Share.share(appUrl);
                         Navigator.of(context).pop();
                         // Share.share('text')
                       },
@@ -250,6 +250,8 @@ class _CommonAppBarState extends State<CommonAppBar> {
     );
   }
 
+
+
   showAbout(BuildContext context) {
     return showAboutDialog(
         context: (context),
@@ -296,7 +298,8 @@ style({color, size, family, weight}) {
 }
 
 class CommonHeaders extends StatelessWidget {
-  final title, subtitle,pLeft,pTop;
+  final String? title,subtitle;
+  final double? pLeft,pTop;
 
   const CommonHeaders({Key? key, this.title, this.subtitle, this.pLeft, this.pTop}) : super(key: key);
 
@@ -370,7 +373,6 @@ commonMarquees(
   );
 }
 
-var screenHeight, screenWidth;
 
 var sizedh1 = const SizedBox(
   height: 10,

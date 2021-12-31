@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
+import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:musin/controller/musincontroller.dart';
 import 'package:musin/database/database.dart';
-import 'package:musin/main.dart';
 import 'package:musin/materials/colors.dart';
-import 'package:musin/pages/favourites.dart';
 import 'package:musin/pages/playlist_songs.dart';
 import 'package:musin/pages/widgets/widgets.dart';
 import 'package:musin/provider/provider_class.dart';
 import 'package:provider/provider.dart';
-
 import 'addsongtoplaylist.dart';
 
 class PlayList extends StatefulWidget {
@@ -22,24 +20,19 @@ class PlayList extends StatefulWidget {
 var height, width;
 
 class _PlayListState extends State<PlayList> {
-  Box<UserPlaylistNames>? userPlaylistNameDbInstance;
-  Box<UserPlaylistSongs>? userPlaylistSongs;
 
-  final newPlaylistName = TextEditingController();
-  final formKey = GlobalKey<FormState>();
+  final musinController = Get.find<MusinController>();
   String errorMessage = "Name Required";
   List userPlaylistNames = [];
+
   @override
   initState() {
-    userPlaylistNameDbInstance =
-        Hive.box<UserPlaylistNames>(userPlaylistBoxName);
-    userPlaylistSongs = Hive.box<UserPlaylistSongs>(userPlaylistSongBoxName);
     getAllPlaylist();
     super.initState();
   }
 
   getAllPlaylist() {
-    for (var element in userPlaylistNameDbInstance!.values) {
+    for (var element in musinController.userPlaylistNameDbInstance!.values) {
       userPlaylistNames.add(element.playlistNames);
     }
   }
@@ -56,8 +49,7 @@ class _PlayListState extends State<PlayList> {
         appBar: const CommonAppBar(),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            var pInstance = Provider.of<PlayerCurrespondingItems>(context,listen:false);
-            pInstance.isAddingSongsToExistingPlaylist = false;
+            musinController.isAddingSongsToExistingPlaylist = false;
             setState(() {
               showAlertDialogue(context);
             });
@@ -84,39 +76,36 @@ class _PlayListState extends State<PlayList> {
               children: [
                 GestureDetector(
                   onTap: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => const Favourites()));
-                    debugPrint("Navigator to Playlist Clicked");
+                    Get.toNamed('/favourites');
                   },
                   child: Container(
-                    height: 160,
-                    width: MediaQuery.of(context).size.width * 0.92,
-                    decoration:  BoxDecoration(
-                      image: const DecorationImage(
-                        image: AssetImage("assets/images/playlist_Bg/playlist9.jpg"),
-                        fit: BoxFit.fill,
-                      ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.5),
-                            spreadRadius: 2,
-                            blurRadius: 2, // changes position of shadow
+                      height: 160,
+                      width: MediaQuery.of(context).size.width * 0.92,
+                      decoration: BoxDecoration(
+                          image: const DecorationImage(
+                            image: AssetImage(
+                                "assets/images/playlist_Bg/playlist9.jpg"),
+                            fit: BoxFit.fill,
                           ),
-                        ]
-                    ),
-                    child: Stack(
-                      children: [
-                        Positioned(
-                          bottom: 10,
-                          left: 10,
-                          child: commonText(
-                            text: "Favourites",
-                            color: Colors.white,
-                            isCenter: true),),
-                      ],
-                    )
-
-                  ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.5),
+                              spreadRadius: 2,
+                              blurRadius: 2, // changes position of shadow
+                            ),
+                          ]),
+                      child: Stack(
+                        children: [
+                          Positioned(
+                            bottom: 10,
+                            left: 10,
+                            child: commonText(
+                                text: "Favourites",
+                                color: Colors.white,
+                                isCenter: true),
+                          ),
+                        ],
+                      )),
                 ),
                 sizedh2,
                 commonText(
@@ -134,7 +123,7 @@ class _PlayListState extends State<PlayList> {
 
   playListHeads(BuildContext context) {
     return ValueListenableBuilder(
-        valueListenable: userPlaylistNameDbInstance!.listenable(),
+        valueListenable: musinController.userPlaylistNameDbInstance!.listenable(),
         builder: (context, Box<UserPlaylistNames> playlistNameFetcher, _) {
           List<int> allKeys = playlistNameFetcher.keys.cast<int>().toList();
           return GridView.builder(
@@ -154,13 +143,11 @@ class _PlayListState extends State<PlayList> {
                 onTap: () {
                   debugPrint("Index Curresponding to Playlist is $index");
                   debugPrint("Key Curresponding to Playlist is $key");
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => PlaylistSongs(
-                                selectedPlaylistKey: key,
-                              )));
-                  debugPrint("Navigator to Playlist Clicked");
+                  Get.to(
+                    PlaylistSongs(
+                      selectedPlaylistKey: key,
+                    ),
+                  );
                 },
                 child: Column(
                   children: [
@@ -169,37 +156,35 @@ class _PlayListState extends State<PlayList> {
                         width: 200,
                         height: 120,
                         child: Container(
-                          decoration:  BoxDecoration(
-                            image: const DecorationImage(
-                              image: AssetImage("assets/images/playlist_Bg/playlist7.jpg"),fit: BoxFit.cover
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.5),
-                                spreadRadius: 2,
-                                blurRadius: 2, // changes position of shadow
-                              ),
-                            ]
-
-                          ),
-                          child: Stack(
-                            children: [
-                              Positioned(child: commonText(
-                                  text: "\n\t\t${songDatas!.playlistNames}",
-                                  color: Colors.white),
-                              right: 10,
-                                bottom: 20,
-                              ),
-                            ],
-                          )
-                        ),
+                            decoration: BoxDecoration(
+                                image: const DecorationImage(
+                                    image: AssetImage(
+                                        "assets/images/playlist_Bg/playlist7.jpg"),
+                                    fit: BoxFit.cover),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.5),
+                                    spreadRadius: 2,
+                                    blurRadius: 2, // changes position of shadow
+                                  ),
+                                ]),
+                            child: Stack(
+                              children: [
+                                Positioned(
+                                  child: commonText(
+                                      text: "\n\t\t${songDatas!.playlistNames}",
+                                      color: Colors.white),
+                                  right: 10,
+                                  bottom: 20,
+                                ),
+                              ],
+                            )),
                       ),
                     ),
                   ],
                 ),
-
-                onLongPress: (){
-                  deleteOnLongPress(key,context);
+                onLongPress: () {
+                  deleteOnLongPress(key, context);
                 },
               );
             },
@@ -233,9 +218,9 @@ class _PlayListState extends State<PlayList> {
                   child: Padding(
                     padding: const EdgeInsets.only(top: 14),
                     child: Form(
-                      key: formKey,
+                      key: musinController.formKey,
                       child: TextFormField(
-                        controller: newPlaylistName,
+                        controller: musinController.newPlaylistName,
                         decoration: const InputDecoration.collapsed(
                             hintText: "Playlist Name"),
                         keyboardType: TextInputType.name,
@@ -256,7 +241,7 @@ class _PlayListState extends State<PlayList> {
                   children: [
                     MaterialButton(
                       onPressed: () {
-                        Navigator.pop(context);
+                        Get.back();
                       },
                       child: commonText(text: "Cancel", size: 13),
                     ),
@@ -264,7 +249,7 @@ class _PlayListState extends State<PlayList> {
                       onPressed: () {
                         createNewPlaylist();
                         debugPrint("Playlist Created");
-                        newPlaylistName.clear();
+                        musinController.newPlaylistName.clear();
                       },
                       child: commonText(
                           text: "Create", size: 13, color: HexColor("#A6B9FF")),
@@ -279,63 +264,56 @@ class _PlayListState extends State<PlayList> {
     );
   }
 
-  deleteOnLongPress(currespondingKey,BuildContext context){
+  deleteOnLongPress(currespondingKey, BuildContext context) {
     List playlistSongsOfSelectedPlaylist = [];
-    for (var element in userPlaylistSongs!.values) {
-      if(element.currespondingPlaylistId == currespondingKey){
+    for (var element in musinController.userPlaylistSongsDbInstance!.values) {
+      if (element.currespondingPlaylistId == currespondingKey) {
         playlistSongsOfSelectedPlaylist.add(element.currespondingPlaylistId);
       }
     }
-    userPlaylistSongs!.deleteAll(playlistSongsOfSelectedPlaylist);
-    userPlaylistNameDbInstance!.delete(currespondingKey);
-    showFavouriteSnackBar(context: context,text: "Deleted",duration: 1);
+    musinController.userPlaylistSongsDbInstance!.deleteAll(playlistSongsOfSelectedPlaylist);
+    musinController.userPlaylistSongsDbInstance!.delete(currespondingKey);
+    showFavouriteSnackBar(context: context, text: "Deleted", duration: 1);
   }
 
-
-
-
   bool didFound = false;
+
   createNewPlaylist() {
-    var pInstance = Provider.of<PlayerCurrespondingItems>(context,listen: false);
-    if (formKey.currentState!.validate()) {
-     for (var element in userPlaylistNames) {
-       if(element == newPlaylistName.text){
-         didFound = true;
-       }
-     }
-     if(didFound == false){
-       var newlyCreatedPlalistName = newPlaylistName.text;
-       final model = UserPlaylistNames(playlistNames: newlyCreatedPlalistName);
-       userPlaylistNameDbInstance!.add(model);
-       Navigator.pop(context);
-       pInstance.currentPlaylistKey = userPlaylistNameDbInstance!.keys.last;
-       pInstance. currentPlaylistName = newlyCreatedPlalistName;
-       Navigator.push(
-         context,
-         MaterialPageRoute(
-           builder: (context) => const AddToPlaylistHolder(
-             // pInstance.currentPlaylistKey: userPlaylistNameDbInstance!.keys.last,
-             // currentPlaylistName: newlyCreatedPlalistName,
-           ),
-         ),
-       );
-     }else{
-       debugPrint("POPPED");
-       Navigator.of(context).pop();
-       showFavouriteSnackBar(context: context,text:"Playlist Already exists, try with another name ");
-     }
+    if (musinController.formKey.currentState!.validate()) {
+      for (var element in userPlaylistNames) {
+        if (element == musinController.newPlaylistName.text) {
+          didFound = true;
+        }
+      }
+      if (didFound == false) {
+        var newlyCreatedPlalistName = musinController.newPlaylistName.text;
+        final model = UserPlaylistNames(playlistNames: newlyCreatedPlalistName);
+        musinController. userPlaylistNameDbInstance!.add(model);
+        Get.back();
+        musinController.currentPlaylistKey = musinController.userPlaylistNameDbInstance!.keys.last;
+        musinController.currentPlaylistName = newlyCreatedPlalistName;
+        Get.to(
+          const AddToPlaylistHolder(),
+        );
+      } else {
+        debugPrint("POPPED");
+        Get.back();
+        showFavouriteSnackBar(
+            context: context,
+            text: "Playlist Already exists, try with another name ");
+      }
     }
   }
 
-  showFavouriteSnackBar({required BuildContext context, text,duration}) {
+  showFavouriteSnackBar({required BuildContext context, text, duration}) {
     final snack = SnackBar(
-      content:commonText(
+      content: commonText(
           text: text,
           color: Colors.red,
           size: 13,
           weight: FontWeight.w500,
           isCenter: true),
-      duration:  Duration(seconds: duration??3),
+      duration: Duration(seconds: duration ?? 3),
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
@@ -344,10 +322,5 @@ class _PlayListState extends State<PlayList> {
       width: 100,
     );
     return ScaffoldMessenger.of(context).showSnackBar(snack);
-  }
-  @override
-  void dispose() {
-    newPlaylistName.dispose();
-    super.dispose();
   }
 }

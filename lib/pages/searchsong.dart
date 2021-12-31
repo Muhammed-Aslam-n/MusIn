@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:musin/controller/musincontroller.dart';
 import 'package:musin/database/database.dart';
 import 'package:musin/main.dart';
 import 'package:musin/materials/colors.dart';
 import 'package:musin/pages/widgets/widgets.dart';
-import 'package:musin/provider/provider_class.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 
 class SearchSong extends StatefulWidget {
   const SearchSong({Key? key}) : super(key: key);
@@ -17,18 +16,15 @@ class SearchSong extends StatefulWidget {
 }
 
 class _SearchSongState extends State<SearchSong> {
-  Box<UserSongs>? userSongsInstance;
+  final musinController = Get.find<MusinController>();
 
   @override
   void initState() {
-    userSongsInstance = Hive.box<UserSongs>(songDetailListBoxName);
     super.initState();
   }
-  var searchController = TextEditingController();
   @override
   Widget build(BuildContext context) {
-    return Consumer<PlayerCurrespondingItems>(
-        builder: (_, setSongDetails, child) => GestureDetector(
+    return GestureDetector(
         onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
         child: Scaffold(
           appBar: const CommonAppBar(),
@@ -40,7 +36,8 @@ class _SearchSongState extends State<SearchSong> {
                 subtitle: "Find your songs",
               ),
               Container(
-                margin: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
+                margin:
+                    const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
                 padding: const EdgeInsets.all(8),
                 height: 40,
                 width: 150,
@@ -58,10 +55,10 @@ class _SearchSongState extends State<SearchSong> {
                     Expanded(
                       child: Form(
                         child: TextFormField(
-                          onChanged: (k){
-                            setSongDetails.onSearchChanged(searchController);
+                          onChanged: (k) {
+                            musinController.onSearchChanged(musinController.searchController);
                           },
-                          controller: searchController,
+                          controller: musinController.searchController,
                           decoration: const InputDecoration.collapsed(
                               hintText: "\t\t\tSearch here ...",
                               hintStyle: TextStyle(fontSize: 12)),
@@ -71,72 +68,79 @@ class _SearchSongState extends State<SearchSong> {
                   ],
                 ),
               ),
-              songTileView(),
+              const SearchSongResults(),
             ],
           ),
-        ),
-      ),
-    );
+        ));
   }
+}
 
-  Widget songTileView() {
-        return Consumer<PlayerCurrespondingItems>(
-          builder: (_, setSongDetails, child) => ValueListenableBuilder(
-          valueListenable: userSongsInstance!.listenable(),
+class SearchSongResults extends StatelessWidget {
+  const SearchSongResults({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return GetBuilder<MusinController>(
+      id: 'searchBuilder',
+      init: MusinController(),
+      builder: (musinController) => ValueListenableBuilder(
+          valueListenable: musinController.userSongsInstance!.listenable(),
           builder: (context, Box<UserSongs> songFetcher, _) {
-            var results = searchController.text.isEmpty
+            var results = musinController.searchController.text.isEmpty
                 ? songFetcher.values.toList() // whole list
                 : songFetcher.values
-                .where((c) => c.songName!.toLowerCase().contains(setSongDetails.searchSongName??''))
-                .toList();
+                    .where((c) => c.songName!
+                        .toLowerCase()
+                        .contains(musinController.searchSongName ?? ''))
+                    .toList();
 
-            debugPrint("Value of Provider inside ValueListenableBuilder is ${setSongDetails.searchSongName}");
+            debugPrint(
+                "Value of Provider inside ValueListenableBuilder is ${musinController.searchSongName}");
 
             return results.isEmpty
                 ? const Center(
-              child: Text(
-                'No Songs found !',
-                style: TextStyle(color: Colors.redAccent),
-              ),
-            )
-                :ListView.builder(
-                itemCount: results.length,
-                shrinkWrap: true,
-                physics: const ScrollPhysics(),
-                itemBuilder: (context, index) {
-                  final UserSongs contactListItem = results[index];
-                  // var key = results[index];
-                  // var songData = songFetcher.get(key);
-
-                  return ListTile(
-                    leading: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: QueryArtworkWidget(
-                          id: contactListItem.imageId!,
-                          type: ArtworkType.AUDIO,
-                          nullArtworkWidget: ClipRRect(
-                              child: Image.asset(
-                                "assets/images/defaultImage.png",
-                                height: 50,
-                                width: 50,
-                                fit: BoxFit.fill,
-                              ),
-                              borderRadius: BorderRadius.circular(10)),
-                          artworkHeight: 50,
-                          artworkWidth: 50,
-                          artworkFit: BoxFit.fill,
-                          artworkBorder: BorderRadius.circular(10)),
+                    child: Text(
+                      'No Songs found !',
+                      style: TextStyle(color: Colors.redAccent),
                     ),
-                    title: commonText(
-                        text: contactListItem.songName, size: 15, weight: FontWeight.w600),
-                    subtitle: commonText(
-                        text: contactListItem.artistName,
-                        size: 12,
-                        color: HexColor("#ACB8C2"),
-                        weight: FontWeight.w600),
-                  );
-                });
+                  )
+                : ListView.builder(
+                    itemCount: results.length,
+                    shrinkWrap: true,
+                    physics: const ScrollPhysics(),
+                    itemBuilder: (context, index) {
+                      final UserSongs contactListItem = results[index];
+                      return ListTile(
+                        leading: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: QueryArtworkWidget(
+                              id: contactListItem.imageId!,
+                              type: ArtworkType.AUDIO,
+                              nullArtworkWidget: ClipRRect(
+                                  child: Image.asset(
+                                    "assets/images/defaultImage.png",
+                                    height: 50,
+                                    width: 50,
+                                    fit: BoxFit.fill,
+                                  ),
+                                  borderRadius: BorderRadius.circular(10)),
+                              artworkHeight: 50,
+                              artworkWidth: 50,
+                              artworkFit: BoxFit.fill,
+                              artworkBorder: BorderRadius.circular(10)),
+                        ),
+                        title: commonText(
+                            text: contactListItem.songName,
+                            size: 15,
+                            weight: FontWeight.w600),
+                        subtitle: commonText(
+                            text: contactListItem.artistName,
+                            size: 12,
+                            color: HexColor("#ACB8C2"),
+                            weight: FontWeight.w600),
+                      );
+                    });
           }),
-        );
+    );
   }
 }

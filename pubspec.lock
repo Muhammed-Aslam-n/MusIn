@@ -49,7 +49,7 @@ packages:
       name: async
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.8.1"
+    version: "2.8.2"
   boolean_selector:
     dependency: transitive
     description:
@@ -119,7 +119,7 @@ packages:
       name: characters
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.1.0"
+    version: "1.2.0"
   charcode:
     dependency: transitive
     description:
@@ -261,6 +261,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.1.2"
+  get:
+    dependency: "direct main"
+    description:
+      name: get
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "4.6.1"
   glob:
     dependency: transitive
     description:
@@ -372,7 +379,7 @@ packages:
       name: matcher
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.12.10"
+    version: "0.12.11"
   meta:
     dependency: transitive
     description:
@@ -492,13 +499,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.4"
-  percent_indicator:
-    dependency: "direct main"
-    description:
-      name: percent_indicator
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "3.4.0"
   persistent_bottom_nav_bar:
     dependency: "direct main"
     description:
@@ -644,13 +644,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.99"
-  sleek_circular_slider:
-    dependency: "direct main"
-    description:
-      name: sleek_circular_slider
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "2.0.1"
   source_gen:
     dependency: transitive
     description:
@@ -713,7 +706,7 @@ packages:
       name: test_api
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.4.2"
+    version: "0.4.3"
   timing:
     dependency: transitive
     description:
@@ -728,6 +721,62 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.3.0"
+  url_launcher:
+    dependency: "direct main"
+    description:
+      name: url_launcher
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "6.0.17"
+  url_launcher_android:
+    dependency: transitive
+    description:
+      name: url_launcher_android
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "6.0.13"
+  url_launcher_ios:
+    dependency: transitive
+    description:
+      name: url_launcher_ios
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "6.0.13"
+  url_launcher_linux:
+    dependency: transitive
+    description:
+      name: url_launcher_linux
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.2"
+  url_launcher_macos:
+    dependency: transitive
+    description:
+      name: url_launcher_macos
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.2"
+  url_launcher_platform_interface:
+    dependency: transitive
+    description:
+      name: url_launcher_platform_interface
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.4"
+  url_launcher_web:
+    dependency: transitive
+    description:
+      name: url_launcher_web
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.5"
+  url_launcher_windows:
+    dependency: transitive
+    description:
+      name: url_launcher_windows
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.2"
   uuid:
     dependency: transitive
     description:
@@ -741,7 +790,7 @@ packages:
       name: vector_math
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.1.0"
+    version: "2.1.1"
   watcher:
     dependency: transitive
     description:

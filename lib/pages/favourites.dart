@@ -1,19 +1,16 @@
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:musin/controller/musincontroller.dart';
 import 'package:musin/database/database.dart';
 import 'package:musin/materials/colors.dart';
 import 'package:musin/pages/widgets/commonminiplayer.dart';
 import 'package:musin/pages/widgets/widgets.dart';
-import 'package:musin/provider/provider_class.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import 'package:provider/provider.dart';
-import '../main.dart';
+import 'package:get/get.dart';
 
 class Favourites extends StatelessWidget {
   const Favourites({Key? key}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -47,45 +44,41 @@ class FavouriteSongList extends StatefulWidget {
 }
 
 class _FavouriteSongListState extends State<FavouriteSongList> {
-  Box<UserSongs>? userSongDbInstance;
+
+  final musinController = Get.find<MusinController>();
   List<String> songsPaths = [];
 
   @override
   void initState() {
-    userSongDbInstance = Hive.box<UserSongs>(songDetailListBoxName);
     getSongPathsMan();
     super.initState();
   }
 
   getSongPathsMan() {
-    final pInstance =
-        Provider.of<PlayerCurrespondingItems>(context, listen: false);
+
     // pInstance.favPlaylist.clear();
     // debugPrint("\n---------------------------");
     // debugPrint("INITIL - FAV SONGLIST Playlistinte Akathulla Value");
-    for (var element in userSongDbInstance!.values) {
+    for (var element in musinController.userSongsInstance!.values) {
       if (element.isFavourited == true) {
         songsPaths.add(element.songPath!);
         // debugPrint(element.songName?.split(" ")[0]);
       }
     }
     // debugPrint("\n---------------------------");
-    pInstance.showKeys();
+    musinController.showKeys();
     // debugPrint("Favourites Done");
   }
 
   changeModeOfPlay() {
-    final pInstance =
-        Provider.of<PlayerCurrespondingItems>(context, listen: false);
-    pInstance.getFavSongsPaths(songsPaths);
-    pInstance.modeOfPlaylist = 2;
+    musinController.getFavSongsPaths(songsPaths);
+    musinController.modeOfPlaylist = 2;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<PlayerCurrespondingItems>(
-      builder: (_, setSongDetails, child) => ValueListenableBuilder(
-        valueListenable: userSongDbInstance!.listenable(),
+    return ValueListenableBuilder(
+        valueListenable: musinController.userSongsInstance!.listenable(),
         builder: (context, Box<UserSongs> songFetcher, _) {
           List<int> keys = songFetcher.keys
               .cast<int>()
@@ -96,12 +89,12 @@ class _FavouriteSongListState extends State<FavouriteSongList> {
           // debugPrint("Length of SongsPath Before Adding is ${songsPaths.length}");
           // debugPrint("Length of FavsPath Before Adding is ${setSongDetails.favPlaylist.length}");
           // debugPrint("\n---------------------------");
-          if (setSongDetails.favPlaylist.isNotEmpty) {
+          if (musinController.favPlaylist.isNotEmpty) {
             // debugPrint("ENTERED INTO UPDATING FUNCTION 1");
-            if (songsPaths.length != setSongDetails.favPlaylist.length) {
+            if (songsPaths.length != musinController.favPlaylist.length) {
               // debugPrint("ENTERED INTO UPDATING FUNCTION 2");
               songsPaths.clear();
-              for (var element in userSongDbInstance!.values) {
+              for (var element in musinController.userSongsInstance!.values) {
                 if (element.isFavourited == true) {
                   // debugPrint("Veendum Updating SOngsPaths");
                   songsPaths.add(element.songPath!);
@@ -110,15 +103,15 @@ class _FavouriteSongListState extends State<FavouriteSongList> {
               }
 
               // debugPrint("CURRENTLY PLAYING SONG PATH IS "+setSongDetails.currentlyPlayingSongPath.toString());
-              setSongDetails.favPlaylist.clear();
+              musinController.favPlaylist.clear();
               for (var i = 0; i < songsPaths.length; i++) {
-                setSongDetails.favPlaylist.add(Audio.file(songsPaths[i]));
-                if (setSongDetails.currentlyPlayingSongPath == songsPaths[i]) {
+                musinController.favPlaylist.add(Audio.file(songsPaths[i]));
+                if (musinController.currentlyPlayingSongPath == songsPaths[i]) {
                   // debugPrint("NEW INDEX IS $i");
-                  setSongDetails.selectedSongKey = i;
+                  musinController.selectedSongKey = i;
                 }
               }
-              setSongDetails.isPlaylistUpdatedAnyWay = true;
+              musinController.isPlaylistUpdatedAnyWay = true;
             }
             // debugPrint("\n---------------------------");
             // debugPrint("UPDATIL - FAV SONGSPATHS Playlistinte Akathulla Value");
@@ -127,7 +120,7 @@ class _FavouriteSongListState extends State<FavouriteSongList> {
             }
             // debugPrint("\n---------------------------");
             // debugPrint("UPDATIL - FAV PLAYLIST Playlistinte Akathulla Value");
-            for (var element in setSongDetails.favPlaylist) {
+            for (var element in musinController.favPlaylist) {
               debugPrint(element.path.split(" ")[0].toString());
             }
           }
@@ -149,12 +142,12 @@ class _FavouriteSongListState extends State<FavouriteSongList> {
                   final songDatas = songFetcher.get(key);
                   return GestureDetector(
                     onTap: () async {
-                      setSongDetails.isAudioPlayingFromPlaylist = false;
+                      musinController.isAudioPlayingFromPlaylist = false;
                       changeModeOfPlay();
-                      setSongDetails.isSelectedOrNot = false;
-                      setSongDetails.selectedSongKey = index;
-                      setSongDetails
-                          .opnPlaylist(setSongDetails.selectedSongKey);
+                      musinController.isSelectedOrNot = false;
+                      musinController.selectedSongKey = index;
+                      musinController
+                          .opnPlaylist(musinController.selectedSongKey);
                     },
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -215,9 +208,9 @@ class _FavouriteSongListState extends State<FavouriteSongList> {
                                     debugPrint("INDEX IS $index");
                                     if (index == songsPaths.length - 1 ||
                                         songsPaths.length == index) {
-                                      setSongDetails.isSelectedOrNot = true;
+                                      musinController.isSelectedOrNot = true;
                                       songsPaths.removeAt(index);
-                                      setSongDetails.stop();
+                                      musinController.stop();
                                       setState(() {});
                                     } else {
                                       songsPaths.removeAt(index);
@@ -240,7 +233,6 @@ class _FavouriteSongListState extends State<FavouriteSongList> {
             ]);
           }
         },
-      ),
-    );
+      );
   }
 }

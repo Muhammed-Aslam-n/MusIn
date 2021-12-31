@@ -3,21 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:fluttericon/entypo_icons.dart';
 import 'package:fluttericon/font_awesome_icons.dart';
 import 'package:fluttericon/typicons_icons.dart';
-import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:miniplayer/miniplayer.dart';
+import 'package:musin/controller/musincontroller.dart';
 import 'package:musin/database/database.dart';
 import 'package:musin/materials/colors.dart';
 import 'package:musin/pages/widgets/widgets.dart';
-import 'package:musin/provider/provider_class.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import 'package:provider/provider.dart';
-
-import '../../main.dart';
 import '../home.dart';
+import 'package:get/get.dart';
 
 // Provider Integrated Working Player database
-
 
 // Class For Showing MiniPlayer in Application
 
@@ -31,43 +27,38 @@ class CommonMiniPlayer extends StatefulWidget {
 }
 
 class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
+  final musinController = Get.find<MusinController>();
+
   @override
   Widget build(BuildContext context) {
-    return Consumer<PlayerCurrespondingItems>(
-      builder: (context, songDetailsProvider, child) {
-        return Offstage(
-          offstage: songDetailsProvider.isSelectedOrNot,
-          child: Miniplayer(
-            maxHeight: MediaQuery.of(context).size.height,
-            minHeight: 80,
-            builder: (height, percentage) {
-              if (height <= 80) {
-                if (songDetailsProvider.isAudioPlayingFromPlaylist == false) {
-                  return const MiniPlayerForAllSongsAndFavourites();
-                } else {
-                  // MiniPlayer For Playlist is Here !!!!
-                  return const MiniPlayerForPlaylist();
-                }
+    return GetBuilder<MusinController>(
+      builder: (musinController) => Offstage(
+        offstage: musinController.isSelectedOrNot,
+        child: Miniplayer(
+          maxHeight: MediaQuery.of(context).size.height,
+          minHeight: 80,
+          builder: (height, percentage) {
+            if (height <= 80) {
+              if (musinController.isAudioPlayingFromPlaylist == false) {
+                return const MiniPlayerForAllSongsAndFavourites();
               } else {
-                if (songDetailsProvider.isAudioPlayingFromPlaylist == false) {
-                  return const MainSongForAllSongsAndFavourites();
-                } else {
-                  // MiniPlayer For Playlist is Here !!!!
-                  return const MainPageForPlaylist();
-                }
+                // MiniPlayer For Playlist is Here !!!!
+                return const MiniPlayerForPlaylist();
               }
-            },
-          ),
-        );
-      },
+            } else {
+              if (musinController.isAudioPlayingFromPlaylist == false) {
+                return const MainSongForAllSongsAndFavourites();
+              } else {
+                // MiniPlayer For Playlist is Here !!!!
+                return const MainPageForPlaylist();
+              }
+            }
+          },
+        ),
+      ),
     );
   }
 }
-
-
-
-
-
 
 //--------------------------------------------------------------------------------------
 // MiniPlayerClass For Displaying Both Songs from Song Database(All Songs and Favourites)
@@ -82,133 +73,128 @@ class MiniPlayerForAllSongsAndFavourites extends StatefulWidget {
 
 class _MiniPlayerForAllSongsAndFavouritesState
     extends State<MiniPlayerForAllSongsAndFavourites> {
-  Box<UserSongs>? songDetailsBox;
-
-  @override
-  void initState() {
-    songDetailsBox = Hive.box<UserSongs>(songDetailListBoxName);
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Consumer<PlayerCurrespondingItems>(
-      builder: (_, songDetailsProvider, child) {
-        return ValueListenableBuilder(
-          valueListenable: songDetailsBox!.listenable(),
-          builder: (context, Box<UserSongs> songFetcher, _) {
-            List keys = [];
-            if (songDetailsProvider.modeOfPlaylist == 1) {
-              keys = songDetailsBox!.keys.cast<int>().toList();
-            } else if (songDetailsProvider.modeOfPlaylist == 2) {
-              keys = songFetcher.keys
-                  .cast<int>()
-                  .where((key) => songFetcher.get(key)!.isFavourited == true)
-                  .toList();
-            }
+    return GetBuilder<MusinController>(
+      builder: (musinController) =>ValueListenableBuilder(
+        valueListenable: musinController.userSongsInstance!.listenable(),
+        builder: (context, Box<UserSongs> songFetcher, _) {
+          List keys = [];
+          if (musinController.modeOfPlaylist == 1) {
+            keys = musinController.userSongsInstance!.keys.cast<int>().toList();
+          } else if (musinController.modeOfPlaylist == 2) {
+            keys = songFetcher.keys
+                .cast<int>()
+                .where((key) => songFetcher.get(key)!.isFavourited == true)
+                .toList();
+          }
 
-            if (keys.isNotEmpty) {
-              // debugPrint("\n---------------------");
-              // songDetailsProvider.modeOfPlaylist == 1
-              //     ? debugPrint("The Keys in Key According to the AllSongs is ")
-              //     : debugPrint(
-              //         "The Keys in Key According to the Favourite is ");
-              // for (var element in keys) {
-              //   var songData = songFetcher.get(element);
-              //   debugPrint(
-              //       "Song Name : ${songData?.songName?.split(" ")[0]} || Song's Key " +
-              //           element.toString());
-              // }
-              // debugPrint("\n---------------------");
-              songDetailsProvider.currentSongKey =
-                  keys[songDetailsProvider.selectedSongKey ?? 0];
-              debugPrint('GETTING CURRENT KEY IS ${songDetailsProvider.selectedSongKey}');
-            }
+          if (keys.isNotEmpty) {
+            // debugPrint("\n---------------------");
+            // songDetailsProvider.modeOfPlaylist == 1
+            //     ? debugPrint("The Keys in Key According to the AllSongs is ")
+            //     : debugPrint(
+            //         "The Keys in Key According to the Favourite is ");
+            // for (var element in keys) {
+            //   var songData = songFetcher.get(element);
+            //   debugPrint(
+            //       "Song Name : ${songData?.songName?.split(" ")[0]} || Song's Key " +
+            //           element.toString());
+            // }
+            // debugPrint("\n---------------------");
+            musinController.currentSongKey =
+                keys[musinController.selectedSongKey ?? 0];
+            debugPrint(
+                'GETTING CURRENT KEY IS ${musinController.selectedSongKey}');
+          }
 
-            var songData = songFetcher.get(songDetailsProvider.currentSongKey);
+          var songData = songFetcher.get(musinController.currentSongKey);
 
-            if (songFetcher.isEmpty) {
-              return const Center(
-                child: Text("No Data Available"),
-              );
-            } else {
-              return Row(
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: ListTile(
-                      tileColor: Colors.white38,
-                      isThreeLine: true,
-                      leading: QueryArtworkWidget(
-                        id: songData?.imageId ?? 0,
-                        type: ArtworkType.AUDIO,
-                        nullArtworkWidget: ClipRRect(
-                          borderRadius: BorderRadius.circular(100),
-                          child: Image.asset(
-                            "assets/images/playlist_Bg/playlist16.jpg",
-                            fit: BoxFit.cover,
-                            height: 50,
-                            width: 50,
-                          ),
+          if (songFetcher.isEmpty) {
+            return const Center(
+              child: Text("No Data Available"),
+            );
+          } else {
+            return Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: ListTile(
+                    tileColor: Colors.white38,
+                    isThreeLine: true,
+                    leading: QueryArtworkWidget(
+                      id: songData?.imageId ?? 0,
+                      type: ArtworkType.AUDIO,
+                      nullArtworkWidget: ClipRRect(
+                        borderRadius: BorderRadius.circular(100),
+                        child: Image.asset(
+                          "assets/images/playlist_Bg/playlist16.jpg",
+                          fit: BoxFit.cover,
+                          height: 50,
+                          width: 50,
                         ),
-                        // artworkWidth: 200,
                       ),
-                      title: commonMarquees(
-                          text: songData?.songName,
-                          hPadding: 0.0,
-                          size: 13.0,
-                          height: 25.0),
-                      subtitle: commonMarquees(
-                          text: songData?.artistName,
-                          hPadding: 0.0,
-                          size: 11.0,
-                          height: 25.0),
+                      // artworkWidth: 200,
                     ),
+                    title: commonMarquees(
+                        text: songData?.songName,
+                        hPadding: 0.0,
+                        size: 13.0,
+                        height: 25.0),
+                    subtitle: commonMarquees(
+                        text: songData?.artistName,
+                        hPadding: 0.0,
+                        size: 11.0,
+                        height: 25.0),
                   ),
-                  Expanded(
-                    flex: 1,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: IconButton(
-                            onPressed: () {
-                              debugPrint("Previous Icon Clicked");
-                              songDetailsProvider.prev();
-                            },
-                            icon: const Icon(FontAwesome.left_dir),
-                          ),
-                        ),
-                        IconButton(
+                ),
+                Expanded(
+                  flex: 1,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: IconButton(
                           onPressed: () {
-                            songDetailsProvider.playOrpause();
+                            debugPrint("Previous Icon Clicked");
+                            musinController.prev();
                           },
-                          icon: songDetailsProvider.isIconChanged
-                              ? const Icon(
-                                  Icons.pause,
-                                  size: 32,
-                                )
-                              : const Icon(
-                                  Icons.play_arrow,
-                                  size: 32,
-                                ),
+                          icon: const Icon(FontAwesome.left_dir),
                         ),
-                        IconButton(
-                          onPressed: () {
-                            debugPrint("Next Icon Pressed");
-                            songDetailsProvider.next();
-                          },
-                          icon: const Icon(FontAwesome.right_dir),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          musinController.playOrpause();
+                        },
+                        icon: GetBuilder<MusinController>(
+                          id: 'play/pauseIcon',
+                          builder: (musinController) =>
+                              musinController.isIconChanged
+                                  ? const Icon(
+                                      Icons.pause,
+                                      size: 32,
+                                    )
+                                  : const Icon(
+                                      Icons.play_arrow,
+                                      size: 32,
+                                    ),
                         ),
-                      ],
-                    ),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          debugPrint("Next Icon Pressed");
+                          musinController.next();
+                        },
+                        icon: const Icon(FontAwesome.right_dir),
+                      ),
+                    ],
                   ),
-                ],
-              );
-            }
-          },
-        );
-      },
+                ),
+              ],
+            );
+          }
+        },
+      ),
     );
   }
 }
@@ -224,26 +210,18 @@ class MiniPlayerForPlaylist extends StatefulWidget {
 }
 
 class _MiniPlayerForPlaylistState extends State<MiniPlayerForPlaylist> {
-  Box<UserPlaylistSongs>? userPlaylistSongsInstance;
-
-  @override
-  void initState() {
-    userPlaylistSongsInstance =
-        Hive.box<UserPlaylistSongs>(userPlaylistSongBoxName);
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Consumer<PlayerCurrespondingItems>(
-      builder: (_, songDetailsProvider, child) => ValueListenableBuilder(
-        valueListenable: userPlaylistSongsInstance!.listenable(),
+    return GetBuilder<MusinController>(
+      builder: (musinController) => ValueListenableBuilder(
+        valueListenable:
+            musinController.userPlaylistSongsDbInstance!.listenable(),
         builder: (context, Box<UserPlaylistSongs> songFetcher, _) {
           List keys = songFetcher.keys
               .cast<int>()
               .where((key) =>
                   songFetcher.get(key)!.currespondingPlaylistId ==
-                  songDetailsProvider.test)
+                  musinController.test)
               .toList();
 
           if (keys.isNotEmpty) {
@@ -255,15 +233,15 @@ class _MiniPlayerForPlaylistState extends State<MiniPlayerForPlaylist> {
             //       element.toString());
             // }
             // debugPrint("\n---------------------");
-            try{
-              songDetailsProvider.currentSongKey =
-              keys[songDetailsProvider.selectedSongKey ?? 0];
-            }catch(e){
+            try {
+              musinController.currentSongKey =
+                  keys[musinController.selectedSongKey ?? 0];
+            } catch (e) {
               debugPrint("Range Error Handled");
             }
           }
 
-          var songData = songFetcher.get(songDetailsProvider.currentSongKey);
+          var songData = songFetcher.get(musinController.currentSongKey);
 
           if (songFetcher.isEmpty) {
             return const Center(
@@ -311,16 +289,16 @@ class _MiniPlayerForPlaylistState extends State<MiniPlayerForPlaylist> {
                         child: IconButton(
                           onPressed: () {
                             debugPrint("Previous Icon Clicked");
-                            songDetailsProvider.prev();
+                            musinController.prev();
                           },
                           icon: const Icon(FontAwesome.left_dir),
                         ),
                       ),
                       IconButton(
                         onPressed: () {
-                          songDetailsProvider.playOrpause();
+                          musinController.playOrpause();
                         },
-                        icon: songDetailsProvider.isIconChanged
+                        icon: musinController.isIconChanged
                             ? const Icon(
                                 Icons.pause,
                                 size: 32,
@@ -333,7 +311,7 @@ class _MiniPlayerForPlaylistState extends State<MiniPlayerForPlaylist> {
                       IconButton(
                         onPressed: () {
                           debugPrint("Next Icon Pressed");
-                          songDetailsProvider.next();
+                          musinController.next();
                         },
                         icon: const Icon(FontAwesome.right_dir),
                       ),
@@ -349,7 +327,6 @@ class _MiniPlayerForPlaylistState extends State<MiniPlayerForPlaylist> {
   }
 }
 
-
 //--------------------------------------------------------------------------------------
 // MainSongPlayingClass For Displaying Both Songs from Song Database(All Songs and Favourites)
 
@@ -363,51 +340,32 @@ class MainSongForAllSongsAndFavourites extends StatefulWidget {
 
 class _MainSongForAllSongsAndFavouritesState
     extends State<MainSongForAllSongsAndFavourites> {
-  Box<UserSongs>? songDetailsBox;
-  Box<UserPlaylistNames>? userPlaylistNameInstance;
-  Box<UserPlaylistSongs>? userPlaylistSongsInstance;
+  final musinController = Get.find<MusinController>();
   bool addToFavs = false;
 
   @override
-  void initState() {
-    songDetailsBox = Hive.box<UserSongs>(songDetailListBoxName);
-    userPlaylistNameInstance = Hive.box<UserPlaylistNames>(userPlaylistBoxName);
-    userPlaylistSongsInstance =
-        Hive.box<UserPlaylistSongs>(userPlaylistSongBoxName);
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Consumer<PlayerCurrespondingItems>(
-      builder: (_, setSongDetails, child) => Container(
-        margin: const EdgeInsets.only(top: 20),
-        width: double.infinity,
-        height: MediaQuery.of(context).size.height,
-        decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(24), topRight: Radius.circular(24))),
-        child: ListView(
-          shrinkWrap: true,
-          children: [
-            ValueListenableBuilder(
-              valueListenable: songDetailsBox!.listenable(),
+    return Container(
+      margin: const EdgeInsets.only(top: 20),
+      width: double.infinity,
+      height: MediaQuery.of(context).size.height,
+      decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(24), topRight: Radius.circular(24))),
+      child: ListView(
+        shrinkWrap: true,
+        children: [
+          GetBuilder<MusinController>(
+            builder: (musinController) => ValueListenableBuilder(
+              valueListenable: musinController.userSongsInstance!.listenable(),
               builder: (context, Box<UserSongs> songFetcher, _) {
                 List keys = [];
-                if (setSongDetails.modeOfPlaylist == 1) {
-                  if(setSongDetails.isShuffled){
-                    //
-                    // debugPrint("Is the List is Shuffling Aslam ? ${setSongDetails.isShuffled}");
-                    //
-                    // debugPrint("Then The Songs List after Shuffling is ");
-                    // setSongDetails.showKeys();
-                  }
-
-
-
-                  keys = songDetailsBox!.keys.cast<int>().toList();
-                } else if (setSongDetails.modeOfPlaylist == 2) {
+                if (musinController.modeOfPlaylist == 1) {
+                  keys = musinController.userSongsInstance!.keys
+                      .cast<int>()
+                      .toList();
+                } else if (musinController.modeOfPlaylist == 2) {
                   keys = songFetcher.keys
                       .cast<int>()
                       .where(
@@ -422,11 +380,11 @@ class _MainSongForAllSongsAndFavouritesState
                   //   debugPrint(element.toString());
                   // }
                   // debugPrint("\n---------------------");
-                  setSongDetails.currentSongKey =
-                      keys[setSongDetails.selectedSongKey ?? 0];
+                  musinController.currentSongKey =
+                      keys[musinController.selectedSongKey ?? 0];
                 }
 
-                var songData = songFetcher.get(setSongDetails.currentSongKey);
+                var songData = songFetcher.get(musinController.currentSongKey);
                 if (songFetcher.isEmpty) {
                   return const Center(
                     child: Text("No Songs Available"),
@@ -453,16 +411,11 @@ class _MainSongForAllSongsAndFavouritesState
                                       }
                                       makeFavouriteSong(
                                         songFetcher: songFetcher,
-                                        songDatas: songData,
-                                        putKey: setSongDetails.currentSongKey,
+                                        songData: songData,
+                                        putKey: musinController.currentSongKey,
                                         addToFav: addToFavs,
                                         context: context,
                                       );
-                                      debugPrint(
-                                          "Added to Favourites $addToFavs");
-                                      showFavouriteSnackBar(
-                                          context: context,
-                                          isFavourite: addToFavs);
                                     },
                                     icon: const Icon(CupertinoIcons.heart),
                                     color: songData!.isFavourited
@@ -474,7 +427,7 @@ class _MainSongForAllSongsAndFavouritesState
                                       if (result == 1) {
                                         showPlaylistNames(
                                             context,
-                                            setSongDetails.currentSongKey,
+                                            musinController.currentSongKey,
                                             songData.songName);
                                       } else {
                                         showPlaylistNameToRemove(
@@ -548,15 +501,15 @@ class _MainSongForAllSongsAndFavouritesState
                             children: [
                               IconButton(
                                 onPressed: () {
-                                  setSongDetails.loopSongs();
+                                  musinController.loopSongs();
                                 },
-                                icon: setSongDetails.loopIcon == 1
+                                icon: musinController.loopIcon == 1
                                     ? const Icon(
                                         Typicons.loop,
                                         size: 26,
                                         color: Colors.blueAccent,
                                       )
-                                    : setSongDetails.loopIcon == 2
+                                    : musinController.loopIcon == 2
                                         ? const Icon(
                                             Icons.playlist_play_outlined,
                                             size: 26,
@@ -570,7 +523,7 @@ class _MainSongForAllSongsAndFavouritesState
                               sizedw1,
                               IconButton(
                                 onPressed: () {
-                                  setSongDetails.prev();
+                                  musinController.prev();
                                 },
                                 icon: const Icon(
                                   FontAwesome.left_dir,
@@ -585,9 +538,9 @@ class _MainSongForAllSongsAndFavouritesState
                                     shape: BoxShape.circle, color: commonColor),
                                 child: IconButton(
                                   onPressed: () {
-                                    setSongDetails.playOrpause();
+                                    musinController.playOrpause();
                                   },
-                                  icon: setSongDetails.isIconChanged
+                                  icon: musinController.isIconChanged
                                       ? const Icon(
                                           Icons.pause,
                                           size: 60,
@@ -603,7 +556,7 @@ class _MainSongForAllSongsAndFavouritesState
                               sizedw2,
                               IconButton(
                                 onPressed: () {
-                                  setSongDetails.next();
+                                  musinController.next();
                                 },
                                 icon: const Icon(
                                   FontAwesome.right_dir,
@@ -613,12 +566,12 @@ class _MainSongForAllSongsAndFavouritesState
                               sizedw2,
                               IconButton(
                                 onPressed: () {
-                                  setSongDetails.shuffleSongs();
+                                  musinController.shuffleSongs();
                                 },
                                 icon: Icon(
                                   Entypo.shuffle,
                                   size: 22,
-                                  color: setSongDetails.isShuffled
+                                  color: musinController.isShuffled
                                       ? Colors.blueAccent
                                       : HexColor("#656F77"),
                                 ),
@@ -633,14 +586,14 @@ class _MainSongForAllSongsAndFavouritesState
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Expanded(
-                                child: setSongDetails.getDuration(),
+                                child: musinController.getDuration(),
                               ),
                               Expanded(
                                 flex: 3,
-                                child: setSongDetails.giveProgressBar(),
+                                child: musinController.giveProgressBar(),
                               ),
                               Expanded(
-                                child: setSongDetails.totalDuration(),
+                                child: musinController.totalDuration(),
                               ),
                             ],
                           ),
@@ -651,33 +604,33 @@ class _MainSongForAllSongsAndFavouritesState
                 }
               },
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   makeFavouriteSong(
       {required BuildContext context,
-      UserSongs? songDatas,
+      UserSongs? songData,
       required Box songFetcher,
       required putKey,
       addToFav}) {
-    if (songDatas?.isFavourited == true) {
+    if (songData?.isFavourited == true) {
       addToFavs = false;
     } else {
       addToFavs = true;
     }
     final model = UserSongs(
-        songName: songDatas?.songName,
-        artistName: songDatas?.artistName,
-        duration: songDatas?.duration,
-        songPath: songDatas?.songPath,
-        imageId: songDatas?.imageId,
+        songName: songData?.songName,
+        artistName: songData?.artistName,
+        duration: songData?.duration,
+        songPath: songData?.songPath,
+        imageId: songData?.imageId,
         isAddedtoPlaylist: false,
         isFavourited: addToFavs);
     songFetcher.putAt(putKey, model);
-    return showFavouriteSnackBar(context: context, isFavourite: addToFavs);
+    return showFavouriteSnackBar(context, isFavourite: addToFavs);
   }
 
   showPlaylistNameToRemove(BuildContext context, songName) {
@@ -690,16 +643,21 @@ class _MainSongForAllSongsAndFavouritesState
           height: 100,
           width: 200,
           child: ValueListenableBuilder(
-              valueListenable: userPlaylistNameInstance!.listenable(),
+              valueListenable:
+                  musinController.userPlaylistNameDbInstance!.listenable(),
               builder: (context, Box<UserPlaylistNames> songFetcher, _) {
                 List<int> allCurrespondingKeys = [];
-                List<int> verumKeys = userPlaylistSongsInstance!.keys
+                List<int> keys = musinController
+                    .userPlaylistSongsDbInstance!.keys
                     .cast<int>()
                     .where((key) =>
-                        userPlaylistSongsInstance!.get(key)!.songName ==
+                        musinController.userPlaylistSongsDbInstance!
+                            .get(key)!
+                            .songName ==
                         songName)
                     .toList();
-                for (var element in userPlaylistSongsInstance!.values) {
+                for (var element
+                    in musinController.userPlaylistSongsDbInstance!.values) {
                   if (element.songName == songName) {
                     allCurrespondingKeys
                         .add(element.currespondingPlaylistId ?? 0);
@@ -728,11 +686,12 @@ class _MainSongForAllSongsAndFavouritesState
                                 //             .currespondingPlaylistId ==
                                 //         key)
                                 //     .toList();
-                                var songFetch = verumKeys[index];
+                                var songFetch = keys[index];
                                 // var songData = songFetch!.get(key);
                                 showPlaylistSnackBar(
                                     context: context, isAdded: false);
-                                userPlaylistSongsInstance!.delete(songFetch);
+                                musinController.userPlaylistSongsDbInstance!
+                                    .delete(songFetch);
                                 Navigator.of(context).pop();
                               },
                               child: Padding(
@@ -798,7 +757,7 @@ class _MainSongForAllSongsAndFavouritesState
           TextButton(
             onPressed: () {
               createPlaylistSub(playlistName);
-              final songData = songDetailsBox!.get(songKey);
+              final songData = musinController.userSongsInstance!.get(songKey);
               addToCreatedPlaylist(songData);
             },
             child: const Text('create'),
@@ -812,20 +771,21 @@ class _MainSongForAllSongsAndFavouritesState
     final playlistNameFromTextField = playlistName.text;
     final playlistModelVariable =
         UserPlaylistNames(playlistNames: playlistNameFromTextField);
-    userPlaylistNameInstance!.add(playlistModelVariable);
+    musinController.userPlaylistNameDbInstance!.add(playlistModelVariable);
   }
 
   addToCreatedPlaylist(
     UserSongs? songData,
   ) {
     final model = UserPlaylistSongs(
-        currespondingPlaylistId: userPlaylistNameInstance!.keys.last,
+        currespondingPlaylistId:
+            musinController.userPlaylistNameDbInstance!.keys.last,
         songName: songData!.songName,
         artistName: songData.artistName,
         songImageId: songData.imageId,
         songDuration: songData.duration,
         songPath: songData.songPath);
-    userPlaylistSongsInstance!.add(model);
+    musinController.userPlaylistSongsDbInstance!.add(model);
     Navigator.of(context).pop();
     showPlaylistSnackBar(context: context, isAdded: true);
   }
@@ -842,19 +802,24 @@ class _MainSongForAllSongsAndFavouritesState
           height: 100,
           width: 200,
           child: ValueListenableBuilder(
-            valueListenable: userPlaylistNameInstance!.listenable(),
+            valueListenable:
+                musinController.userPlaylistNameDbInstance!.listenable(),
             builder: (context, Box<UserPlaylistNames> songFetcher, _) {
-              List songNonRepeatingPlaylistKey =
-                  userPlaylistNameInstance!.keys.cast<int>().toList();
+              List songNonRepeatingPlaylistKey = musinController
+                  .userPlaylistNameDbInstance!.keys
+                  .cast<int>()
+                  .toList();
 
-              for (var element in userPlaylistSongsInstance!.values) {
+              for (var element
+                  in musinController.userPlaylistSongsDbInstance!.values) {
                 if (element.songName == songName) {
                   alreadyExists = true;
                 }
               }
 
               if (alreadyExists) {
-                for (var element in userPlaylistSongsInstance!.values) {
+                for (var element
+                    in musinController.userPlaylistSongsDbInstance!.values) {
                   if (element.songName == songName) {
                     curr = element.currespondingPlaylistId;
                   }
@@ -865,11 +830,13 @@ class _MainSongForAllSongsAndFavouritesState
                   }
                 }
               } else if (alreadyExists == false) {
-                songNonRepeatingPlaylistKey =
-                    userPlaylistNameInstance!.keys.cast<int>().toList();
+                songNonRepeatingPlaylistKey = musinController
+                    .userPlaylistNameDbInstance!.keys
+                    .cast<int>()
+                    .toList();
               }
 
-              if (userPlaylistNameInstance!.isEmpty) {
+              if (musinController.userPlaylistNameDbInstance!.isEmpty) {
                 return SizedBox(
                   height: 200,
                   child: Column(
@@ -914,7 +881,9 @@ class _MainSongForAllSongsAndFavouritesState
                             final currentPlaylist = songFetcher.get(key);
                             return GestureDetector(
                               onTap: () {
-                                final songData = songDetailsBox!.get(songKey);
+                                final songData = musinController
+                                    .userSongsInstance!
+                                    .get(songKey);
                                 final model = UserPlaylistSongs(
                                     currespondingPlaylistId: key,
                                     songName: songData!.songName,
@@ -922,7 +891,8 @@ class _MainSongForAllSongsAndFavouritesState
                                     songPath: songData.songPath,
                                     songImageId: songData.imageId,
                                     songDuration: songData.duration);
-                                userPlaylistSongsInstance!.add(model);
+                                musinController.userPlaylistSongsDbInstance!
+                                    .add(model);
                                 Navigator.of(context).pop();
                                 showPlaylistSnackBar(
                                     context: context, isAdded: true);
@@ -1000,16 +970,18 @@ class _MainSongForAllSongsAndFavouritesState
               final playlistNameFromTextField = playlistName.text;
               final playlistModelVariable =
                   UserPlaylistNames(playlistNames: playlistNameFromTextField);
-              userPlaylistNameInstance!.add(playlistModelVariable);
-              final songData = songDetailsBox!.get(songKey);
+              musinController.userPlaylistNameDbInstance!
+                  .add(playlistModelVariable);
+              final songData = musinController.userSongsInstance!.get(songKey);
               final model = UserPlaylistSongs(
-                  currespondingPlaylistId: userPlaylistNameInstance!.keys.last,
+                  currespondingPlaylistId:
+                      musinController.userPlaylistNameDbInstance!.keys.last,
                   songName: songData!.songName,
                   artistName: songData.artistName,
                   songImageId: songData.imageId,
                   songDuration: songData.duration,
                   songPath: songData.songPath);
-              userPlaylistSongsInstance!.add(model);
+              musinController.userPlaylistSongsDbInstance!.add(model);
               Navigator.of(context).pop();
               showPlaylistSnackBar(context: context, isAdded: true);
             },
@@ -1032,50 +1004,40 @@ class MainPageForPlaylist extends StatefulWidget {
 }
 
 class _MainPageForPlaylistState extends State<MainPageForPlaylist> {
-  Box<UserSongs>? songDetailsBox;
-  Box<UserPlaylistNames>? userPlaylistNameInstance;
-  Box<UserPlaylistSongs>? userPlaylistSongsInstance;
+  final musinController = Get.find<MusinController>();
   bool addToFavs = false;
 
   @override
-  void initState() {
-    songDetailsBox = Hive.box<UserSongs>(songDetailListBoxName);
-    userPlaylistNameInstance = Hive.box<UserPlaylistNames>(userPlaylistBoxName);
-    userPlaylistSongsInstance =
-        Hive.box<UserPlaylistSongs>(userPlaylistSongBoxName);
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Consumer<PlayerCurrespondingItems>(
-      builder: (_, setSongDetails, child) => Container(
-        margin: const EdgeInsets.only(top: 20),
-        width: double.infinity,
-        height: MediaQuery.of(context).size.height,
-        decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(24), topRight: Radius.circular(24))),
-        child: ListView(
-          shrinkWrap: true,
-          children: [
-            ValueListenableBuilder(
-              valueListenable: userPlaylistSongsInstance!.listenable(),
+    return Container(
+      margin: const EdgeInsets.only(top: 20),
+      width: double.infinity,
+      height: MediaQuery.of(context).size.height,
+      decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(24), topRight: Radius.circular(24))),
+      child: ListView(
+        shrinkWrap: true,
+        children: [
+          GetBuilder<MusinController>(
+            builder: (musinController) => ValueListenableBuilder(
+              valueListenable:
+                  musinController.userPlaylistSongsDbInstance!.listenable(),
               builder: (context, Box<UserPlaylistSongs> songFetcher, _) {
                 List keys = songFetcher.keys
                     .cast<int>()
                     .where((key) =>
                         songFetcher.get(key)!.currespondingPlaylistId ==
-                        setSongDetails.test)
+                        musinController.test)
                     .toList();
 
-                setSongDetails.currentSongKey =
-                    keys[setSongDetails.selectedSongKey ?? 0];
+                musinController.currentSongKey =
+                    keys[musinController.selectedSongKey ?? 0];
 
                 // songDetailsProvider.selectedSongKey;
 
-                var songData = songFetcher.get(setSongDetails.currentSongKey);
+                var songData = songFetcher.get(musinController.currentSongKey);
 
                 if (songFetcher.isEmpty) {
                   return const Center(
@@ -1139,15 +1101,15 @@ class _MainPageForPlaylistState extends State<MainPageForPlaylist> {
                             children: [
                               IconButton(
                                 onPressed: () {
-                                  setSongDetails.loopSongs();
+                                  musinController.loopSongs();
                                 },
-                                icon: setSongDetails.loopIcon == 1
+                                icon: musinController.loopIcon == 1
                                     ? const Icon(
                                         Typicons.loop,
                                         size: 26,
                                         color: Colors.blueAccent,
                                       )
-                                    : setSongDetails.loopIcon == 2
+                                    : musinController.loopIcon == 2
                                         ? const Icon(
                                             Icons.playlist_play_outlined,
                                             size: 26,
@@ -1161,7 +1123,7 @@ class _MainPageForPlaylistState extends State<MainPageForPlaylist> {
                               sizedw1,
                               IconButton(
                                 onPressed: () {
-                                  setSongDetails.prev();
+                                  musinController.prev();
                                 },
                                 icon: const Icon(
                                   FontAwesome.left_dir,
@@ -1176,9 +1138,9 @@ class _MainPageForPlaylistState extends State<MainPageForPlaylist> {
                                     shape: BoxShape.circle, color: commonColor),
                                 child: IconButton(
                                   onPressed: () {
-                                    setSongDetails.playOrpause();
+                                    musinController.playOrpause();
                                   },
-                                  icon: setSongDetails.isIconChanged
+                                  icon: musinController.isIconChanged
                                       ? const Icon(
                                           Icons.pause,
                                           size: 60,
@@ -1194,7 +1156,7 @@ class _MainPageForPlaylistState extends State<MainPageForPlaylist> {
                               sizedw2,
                               IconButton(
                                 onPressed: () {
-                                  setSongDetails.next();
+                                  musinController.next();
                                 },
                                 icon: const Icon(
                                   FontAwesome.right_dir,
@@ -1205,12 +1167,12 @@ class _MainPageForPlaylistState extends State<MainPageForPlaylist> {
                               Expanded(
                                 child: IconButton(
                                   onPressed: () {
-                                    setSongDetails.shuffleSongs();
+                                    musinController.shuffleSongs();
                                   },
                                   icon: Icon(
                                     Entypo.shuffle,
                                     size: 22,
-                                    color: setSongDetails.isShuffled
+                                    color: musinController.isShuffled
                                         ? Colors.blueAccent
                                         : HexColor("#656F77"),
                                   ),
@@ -1226,14 +1188,14 @@ class _MainPageForPlaylistState extends State<MainPageForPlaylist> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Expanded(
-                                child: setSongDetails.getDuration(),
+                                child: musinController.getDuration(),
                               ),
                               Expanded(
                                 flex: 3,
-                                child: setSongDetails.giveProgressBar(),
+                                child: musinController.giveProgressBar(),
                               ),
                               Expanded(
-                                child: setSongDetails.totalDuration(),
+                                child: musinController.totalDuration(),
                               ),
                             ],
                           ),
@@ -1244,14 +1206,14 @@ class _MainPageForPlaylistState extends State<MainPageForPlaylist> {
                 }
               },
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
-showFavouriteSnackBar({required BuildContext context, isFavourite}) {
+showFavouriteSnackBar(context, {isFavourite}) {
   final snack = SnackBar(
     content: isFavourite!
         ? commonText(

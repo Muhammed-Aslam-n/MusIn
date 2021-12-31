@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
+import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:musin/controller/musincontroller.dart';
 import 'package:musin/database/database.dart';
-import 'package:musin/main.dart';
 import 'package:musin/materials/colors.dart';
 import 'package:musin/pages/playlist_songs.dart';
 import 'package:musin/pages/widgets/widgets.dart';
-import 'package:musin/provider/provider_class.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import 'package:provider/provider.dart';
 
 List songLeftToAddToPlaylist = [];
 
@@ -23,7 +21,7 @@ class AddToPlaylistHolder extends StatelessWidget {
         physics: const ScrollPhysics(),
         shrinkWrap: true,
         children: [
-          const AddToPlaylistHeader(),
+          AddToPlaylistHeader(),
           sizedh1,
           const AddSongstoPlaylist(),
         ],
@@ -32,119 +30,100 @@ class AddToPlaylistHolder extends StatelessWidget {
   }
 }
 
-class AddToPlaylistHeader extends StatefulWidget {
-  const AddToPlaylistHeader({Key? key}) : super(key: key);
-
-  @override
-  _AddToPlaylistHeaderState createState() => _AddToPlaylistHeaderState();
-}
-
-class _AddToPlaylistHeaderState extends State<AddToPlaylistHeader> {
-  Box<UserPlaylistSongs>? userPlaylistSongsDbInstane;
-  Box<UserSongs>? userSongsDbInstance;
-
-  @override
-  void initState() {
-    userPlaylistSongsDbInstane =
-        Hive.box<UserPlaylistSongs>(userPlaylistSongBoxName);
-    userSongsDbInstance = Hive.box<UserSongs>(songDetailListBoxName);
-    super.initState();
-  }
+class AddToPlaylistHeader extends StatelessWidget {
+  AddToPlaylistHeader({Key? key}) : super(key: key);
+  final musinController = Get.find<MusinController>();
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<PlayerCurrespondingItems>(
-      builder: (_, setSongDetails, child) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 40, top: 20, bottom: 5),
-            child: commonText(text: setSongDetails.currentPlaylistName),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 40, top: 20, bottom: 5),
+          child: commonText(text: musinController.currentPlaylistName),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 5),
+          child: commonText(
+            text: "Add Songs to Playlist",
+            color: HexColor("#ACB8C2"),
+            weight: FontWeight.w400,
+            size: 15,
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 5),
-            child: commonText(
-                text: "Add Songs to Playlist",
-                color: HexColor("#ACB8C2"),
-                weight: FontWeight.w400,
-                size: 15),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Expanded(flex: 2, child: SizedBox()),
-              Expanded(
-                flex: 2,
-                child: Visibility(
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Expanded(flex: 2, child: SizedBox()),
+            Expanded(
+              flex: 2,
+              child: GetBuilder<MusinController>(
+                builder: (musinController) => Visibility(
                   maintainState: true,
                   maintainAnimation: true,
-                  visible: setSongDetails.selectedSongCount == 0 ? false : true,
-                  child: setSongDetails.selectedSongCount == 1
+                  visible: true,
+                  child: musinController.selectedSongCount == 1
                       ? Text(
-                          "${setSongDetails.selectedSongCount} Song Selected",
+                          "${musinController.selectedSongCount} Song Selected",
                           style: TextStyle(color: HexColor("#A6B9FF")),
                         )
                       : Text(
-                          "${setSongDetails.selectedSongCount} Songs Selected",
+                          "${musinController.selectedSongCount} Songs Selected",
                           style: TextStyle(color: HexColor("#A6B9FF")),
                         ),
                 ),
               ),
-              ElevatedButton(
-                onPressed: () {
-                  if (setSongDetails.selectedSongCount >= 1) {
-                    addFn();
-                  } else {
-                    return;
-                  }
-                  setSongDetails.isAddingSongsToExistingPlaylist = false;
-                },
-                child: const Text(
-                  "Add",
-                  style: TextStyle(color: Colors.white),
-                ),
-                style: ElevatedButton.styleFrom(
-                  primary: HexColor("#A6B9FF"),
-                  fixedSize: const Size(30, 10),
-                ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (musinController.selectedSongCount >= 1) {
+                  addFn();
+                } else {
+                  return;
+                }
+                musinController.isAddingSongsToExistingPlaylist = false;
+              },
+              child: const Text(
+                "Add",
+                style: TextStyle(color: Colors.white),
               ),
-              sizedw2,
-            ],
-          ),
-        ],
-      ),
+              style: ElevatedButton.styleFrom(
+                primary: HexColor("#A6B9FF"),
+                fixedSize: const Size(30, 10),
+              ),
+            ),
+            sizedw2,
+          ],
+        ),
+      ],
     );
   }
 
   Future addFn() async {
-    var pInstance =
-        Provider.of<PlayerCurrespondingItems>(context, listen: false);
-
-    for (var i = 0; i < pInstance.checkBoxList.length; i++) {
-      debugPrint(pInstance.checkBoxList[i].toString());
-      if (pInstance.checkBoxList[i] == true) {
-        final songData = userSongsDbInstance!.get(songLeftToAddToPlaylist[i]);
+    for (var i = 0; i < musinController.checkBoxList.length; i++) {
+      debugPrint(musinController.checkBoxList[i].toString());
+      if (musinController.checkBoxList[i] == true) {
+        final songData =
+            musinController.userSongsInstance!.get(songLeftToAddToPlaylist[i]);
         final model = UserPlaylistSongs(
             songName: songData?.songName,
             artistName: songData?.artistName,
             songDuration: songData?.duration,
             songImageId: songData?.imageId,
-            currespondingPlaylistId: pInstance.currentPlaylistKey,
+            currespondingPlaylistId: musinController.currentPlaylistKey,
             songPath: songData?.songPath);
-        userPlaylistSongsDbInstane?.add(model);
+        musinController.userPlaylistSongsDbInstance?.add(model);
       }
     }
-    pInstance.isAddingSongsToExistingPlaylist
-        ? Navigator.of(context).pop()
-        : Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PlaylistSongs(
-                selectedPlaylistKey: pInstance.currentPlaylistKey,
-              ),
+    musinController.isAddingSongsToExistingPlaylist
+        ? Get.back()
+        : Get.off(
+            PlaylistSongs(
+              selectedPlaylistKey: musinController.currentPlaylistKey,
             ),
           );
-    pInstance.selectedSongCount = 0;
+    musinController.selectedSongCount = 0;
   }
 }
 
@@ -156,100 +135,91 @@ class AddSongstoPlaylist extends StatefulWidget {
 }
 
 class _AddSongstoPlaylistState extends State<AddSongstoPlaylist> {
-  Box<UserPlaylistSongs>? userPlaylistSongsDbInstane;
-  Box<UserSongs>? userSongsDbInstance;
-  Box<UserPlaylistNames>? userPlaylistNameDbInstance;
+  final musinController = Get.find<MusinController>();
   bool isAdded = false;
+
+  createCheckBoxList() {
+    var nKeys = musinController.userSongsInstance!.keys.cast<int>().toList();
+
+    if (musinController.isAddingSongsToExistingPlaylist == true) {
+      int balanceKeys =
+          nKeys.length - musinController.totalPlaylistSongs!.toInt();
+      musinController.generateSampleList(balanceKeys);
+    } else {
+      musinController.generateSampleList(nKeys.length);
+    }
+  }
 
   @override
   void initState() {
-    userPlaylistNameDbInstance =
-        Hive.box<UserPlaylistNames>(userPlaylistBoxName);
-    userPlaylistSongsDbInstane =
-        Hive.box<UserPlaylistSongs>(userPlaylistSongBoxName);
-    userSongsDbInstance = Hive.box<UserSongs>(songDetailListBoxName);
     createCheckBoxList();
     super.initState();
   }
 
-  List<bool> checkBoxList = [];
-
-  createCheckBoxList() {
-    var nKeys = userSongsDbInstance!.keys.cast<int>().toList();
-    var pInstance =
-        Provider.of<PlayerCurrespondingItems>(context, listen: false);
-    if (pInstance.isAddingSongsToExistingPlaylist == true) {
-      int balanceKeys = nKeys.length - pInstance.totalPlaylistSongs!.toInt();
-      pInstance.generateSampleList(balanceKeys);
-    } else {
-      pInstance.generateSampleList(nKeys.length);
-    }
-    checkBoxList = List<bool>.filled(nKeys.length, false);
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Consumer<PlayerCurrespondingItems>(
-      builder: (_, setSongDetails, child) => ListView(
-        physics: const ScrollPhysics(),
-        shrinkWrap: true,
-        children: [
-          Consumer<PlayerCurrespondingItems>(
-            builder: (_, setSongDetails, child) => ValueListenableBuilder(
-              valueListenable: userSongsDbInstance!.listenable(),
-              builder: (context, Box<UserSongs> songFetcher, _) {
-                List<int> keys = [];
-                List<int> songDbList = [];
-                keys = songFetcher.keys.cast<int>().toList();
+    return ListView(
+      physics: const ScrollPhysics(),
+      shrinkWrap: true,
+      children: [
+        ValueListenableBuilder(
+            valueListenable: musinController.userSongsInstance!.listenable(),
+            builder: (context, Box<UserSongs> songFetcher, _) {
+              List<int> keys = [];
+              List<int> songDbList = [];
+              keys = songFetcher.keys.cast<int>().toList();
 
-                if (setSongDetails.isAddingSongsToExistingPlaylist == true) {
-                  var pSongList = [];
-                  for (var element in userPlaylistSongsDbInstane!.values) {
-                    if (element.currespondingPlaylistId ==
-                        setSongDetails.currentPlaylistKey) {
-                      pSongList.add(element.songName);
-                    }
+              if (musinController.isAddingSongsToExistingPlaylist == true) {
+                var pSongList = [];
+                for (var element
+                    in musinController.userPlaylistSongsDbInstance!.values) {
+                  if (element.currespondingPlaylistId ==
+                      musinController.currentPlaylistKey) {
+                    pSongList.add(element.songName);
                   }
-                  var uList = userSongsDbInstance!.values.toList();
-                  for (var i = 0; i < userSongsDbInstance!.length; i++) {
-                    for (var j = 0; j < pSongList.length; j++) {
-                      if (uList[i].songName == pSongList[j]) {
-                        songDbList.add(i);
-                      }
-                    }
-                  }
-                  for (var i = 0; i < keys.length; i++) {
-                    for (var j = 0; j < songDbList.length; j++) {
-                      if (keys[i] == songDbList[j]) {
-                        keys.remove(keys[i]);
-                      }
+                }
+                var uList = musinController.userSongsInstance!.values.toList();
+                for (var i = 0;
+                    i < musinController.userSongsInstance!.length;
+                    i++) {
+                  for (var j = 0; j < pSongList.length; j++) {
+                    if (uList[i].songName == pSongList[j]) {
+                      songDbList.add(i);
                     }
                   }
                 }
-                songLeftToAddToPlaylist = keys;
+                for (var i = 0; i < keys.length; i++) {
+                  for (var j = 0; j < songDbList.length; j++) {
+                    if (keys[i] == songDbList[j]) {
+                      keys.remove(keys[i]);
+                    }
+                  }
+                }
+              }
+              songLeftToAddToPlaylist = keys;
 
-                // final pSongKey = userPlaylistSongsDbInstane!.keys.cast<int>().where((element) => userPlaylistSongsDbInstane!.get(element)!.currespondingPlaylistId == widget.currentPlaylistKey).toList();
+              // final pSongKey = userPlaylistSongsDbInstane!.keys.cast<int>().where((element) => userPlaylistSongsDbInstane!.get(element)!.currespondingPlaylistId == widget.currentPlaylistKey).toList();
 
-                if (songFetcher.isEmpty) {
-                  return Column(
-                    children: const [
-                      Text("No Songs So Far..."),
-                    ],
-                  );
-                } else {
-                  return ListView.builder(
+              if (songFetcher.isEmpty) {
+                return Column(
+                  children: const [
+                    Text("No Songs So Far..."),
+                  ],
+                );
+              } else {
+                return ListView.builder(
                     itemCount: keys.length,
                     shrinkWrap: true,
                     physics: const ScrollPhysics(),
                     itemBuilder: (context, index) {
                       final key = keys[index];
-                      final songDatas = songFetcher.get(key);
+                      final songData = songFetcher.get(key);
 
                       return ListTile(
                         leading: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           child: QueryArtworkWidget(
-                              id: songDatas!.imageId!,
+                              id: songData!.imageId!,
                               type: ArtworkType.AUDIO,
                               nullArtworkWidget: ClipRRect(
                                   child: Image.asset(
@@ -267,41 +237,40 @@ class _AddSongstoPlaylistState extends State<AddSongstoPlaylist> {
                         title: Padding(
                           padding: const EdgeInsets.only(top: 10),
                           child: commonText(
-                              text: songDatas.songName,
+                              text: songData.songName,
                               size: 15,
                               weight: FontWeight.w600),
                         ),
                         subtitle: Padding(
                           padding: const EdgeInsets.only(bottom: 10),
                           child: commonMarquees(
-                              text: songDatas.artistName,
+                              text: songData.artistName,
                               size: 12.0,
                               color: HexColor("#ACB8C2"),
                               weight: FontWeight.w600,
                               hPadding: 0.0,
                               vPadding: 1.0),
                         ),
-                        trailing: Checkbox(
-                          value: setSongDetails.checkBoxList[index],
-                          onChanged: (value) {
-                            setSongDetails.checkBoxList[index] = value!;
-                            setSongDetails.checkBoxList[index]
-                                ? setSongDetails.selectedSongCount++
-                                : setSongDetails.selectedSongCount--;
-                            setState(() {});
-                          },
-                          shape: const CircleBorder(),
-                          activeColor: HexColor("#A6B9FF"),
+                        trailing: GetBuilder<MusinController>(
+                          builder: (musinController) =>  Checkbox(
+                            value: musinController.checkBoxList[index],
+                            onChanged: (value) {
+                              debugPrint("Before CheckBox value is $value");
+                              musinController.updateCheck(value, index);
+                              musinController.checkBoxList[index]
+                                  ? musinController.selectedSongCount++
+                                  : musinController.selectedSongCount--;
+                            },
+                            shape: const CircleBorder(),
+                            activeColor: HexColor("#A6B9FF"),
+                          ),
                         ),
                       );
                     },
-                  );
-                }
-              },
-            ),
-          ),
-        ],
-      ),
+                );
+              }
+            }),
+      ],
     );
   }
 }

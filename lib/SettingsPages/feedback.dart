@@ -1,8 +1,7 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:musin/materials/colors.dart';
 import 'package:musin/pages/widgets/widgets.dart';
-
+import 'package:get/get.dart';
 class UserFeedback extends StatefulWidget {
   const UserFeedback({Key? key}) : super(key: key);
 
@@ -20,7 +19,7 @@ class _UserFeedbackState extends State<UserFeedback> {
         iconTheme: const IconThemeData(color: Colors.black),
         leading: IconButton(
           onPressed: () {
-            Navigator.of(context).pop();
+            Get.back();
           },
           icon: const Icon(
             Icons.chevron_left_outlined,

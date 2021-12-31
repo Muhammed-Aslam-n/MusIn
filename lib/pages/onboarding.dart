@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:musin/materials/colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -32,7 +31,7 @@ class _OnBoardingState extends State<OnBoarding> {
 
   void initial() async {
     isLaunched = await SharedPreferences.getInstance();
-    debugPrint("Launch Data inside OnBoard is $isLaunched");
+    debugPrint("Launch Data inside OnBoard is ${isLaunched.get("launchSharedData")}");
   }
 
   @override
@@ -90,8 +89,10 @@ class _OnBoardingState extends State<OnBoarding> {
                   ),
                   child: GestureDetector(
                     onTap: () {
+
                       isLaunched.setBool('launchSharedData', true);
                       Navigator.pushReplacementNamed(context, '/home');
+                      debugPrint("SharedPreference after login is ${isLaunched.get("launchSharedData")}");
                     },
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,

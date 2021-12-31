@@ -1,9 +1,8 @@
 import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
+import 'package:musin/controller/musincontroller.dart';
 import 'package:musin/database/database.dart';
-import 'package:musin/main.dart';
 import 'package:musin/materials/colors.dart';
 import 'package:musin/pages/favourites.dart';
 import 'package:musin/pages/onboarding.dart';
@@ -15,6 +14,7 @@ import 'package:musin/pages/songslist_main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:get/get.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -26,14 +26,13 @@ class Home extends StatefulWidget {
 Color commonColor = HexColor("#A6B9FF");
 
 class _HomeState extends State<Home> {
-  Box<UserSongs>? userSong;
+  final musinController = Get.find<MusinController>();
   List<SongModel> queriedSongs=[];
 
   final OnAudioQuery _audioQuery = OnAudioQuery();
   @override
   void initState() {
     requestPermission();
-    userSong = Hive.box<UserSongs>(songDetailListBoxName);
     querySongs();
     super.initState();
   }
@@ -50,27 +49,27 @@ class _HomeState extends State<Home> {
   querySongs()async {
     queriedSongs = await _audioQuery.querySongs();
 
-    if (userSong!.isEmpty) {
+    if (musinController.userSongsInstance!.isEmpty) {
       for (var element in queriedSongs) {
         final model = UserSongs(songName: element.title,
             artistName: element.artist,
             imageId: element.id,
             songPath: element.data,
             duration: element.duration);
-        userSong!.add(model);
+        musinController.userSongsInstance!.add(model);
       }
     }else {
       // userSong!.clear();
-      var list = userSong!.values.toList();
+      var list = musinController.userSongsInstance!.values.toList();
       for(var i=0;i<queriedSongs.length;i++){
-        for(var j=0;j<userSong!.length;j++){
+        for(var j=0;j<musinController.userSongsInstance!.length;j++){
           if(queriedSongs[i].title != list[i].songName){
             final model = UserSongs(songName: queriedSongs[i].title,
                 artistName: queriedSongs[i].artist,
                 imageId: queriedSongs[i].id,
                 songPath: queriedSongs[i].data,
                 duration: queriedSongs[i].duration);
-            userSong!.add(model);
+            musinController.userSongsInstance!.add(model);
           }else{
             break;
           }
@@ -80,13 +79,9 @@ class _HomeState extends State<Home> {
   }
 
   int currentIndex = 0;
-  final PageController _pageController =
-      PageController(initialPage: 0, keepPage: true);
 
   @override
   Widget build(BuildContext context) {
-    screenHeight = MediaQuery.of(context).size.height;
-    screenWidth = MediaQuery.of(context).size.width;
     return
         // WillPopScope(
         // onWillPop: () async{
@@ -106,15 +101,7 @@ class _HomeState extends State<Home> {
         // },
         // child:
         Scaffold(
-      body: PageView(
-        controller: _pageController,
-        onPageChanged: (index) {
-          setState(() {
-            currentIndex = index;
-          });
-        },
-        children: tabs,
-      ),
+      body: tabs[currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         selectedItemColor: HexColor("#9baffa"),
         elevation: 0,
@@ -134,14 +121,12 @@ class _HomeState extends State<Home> {
         onTap: (index) {
           setState(() {
             currentIndex = index;
-            _pageController.animateToPage(index, duration: const Duration(milliseconds: 500), curve: Curves.ease);
-          });
+           });
         },
       ),
       // ),
     );
   }
-
   final tabs = [
     const SongListMainHolder(),
     const SearchSong(),
@@ -158,9 +143,9 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  late SharedPreferences launchData;
-  bool newUser = false;
 
+  bool isLaunched = false;
+  late SharedPreferences launchData;
   @override
   void initState() {
     getSharedPreference();
@@ -191,11 +176,9 @@ class _SplashScreenState extends State<SplashScreen> {
       ),
       nextScreen: isLaunched ? const Home() : const OnBoarding(),
       splashTransition: SplashTransition.fadeTransition,
-      // animationDuration: Duration(milliseconds: 1),
     );
   }
 
-  bool isLaunched = false;
 
   Future<void> getSharedPreference() async {
     final sharedPref = await SharedPreferences.getInstance();
