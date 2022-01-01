@@ -22,8 +22,8 @@ class _SongListMainHolderState extends State<SongListMainHolder> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
-        children: const [
-          SongListViewHolder(),
+        children: [
+          const SongListViewHolder(),
           CommonMiniPlayer(),
         ],
       ),
@@ -52,7 +52,7 @@ class SongListViewHolder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CommonAppBar(),
+      appBar: CommonAppBar(),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(10),
         child: Column(

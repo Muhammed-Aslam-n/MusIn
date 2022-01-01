@@ -23,7 +23,7 @@ class AddToPlaylistHolder extends StatelessWidget {
         children: [
           AddToPlaylistHeader(),
           sizedh1,
-          const AddSongstoPlaylist(),
+          AddSongstoPlaylist(),
         ],
       ),
     );
@@ -127,37 +127,17 @@ class AddToPlaylistHeader extends StatelessWidget {
   }
 }
 
-class AddSongstoPlaylist extends StatefulWidget {
-  const AddSongstoPlaylist({Key? key}) : super(key: key);
+//ignore: must_be_immutable
+class AddSongstoPlaylist extends StatelessWidget {
+  AddSongstoPlaylist({Key? key}) : super(key: key);
 
-  @override
-  _AddSongstoPlaylistState createState() => _AddSongstoPlaylistState();
-}
-
-class _AddSongstoPlaylistState extends State<AddSongstoPlaylist> {
   final musinController = Get.find<MusinController>();
   bool isAdded = false;
 
-  createCheckBoxList() {
-    var nKeys = musinController.userSongsInstance!.keys.cast<int>().toList();
-
-    if (musinController.isAddingSongsToExistingPlaylist == true) {
-      int balanceKeys =
-          nKeys.length - musinController.totalPlaylistSongs!.toInt();
-      musinController.generateSampleList(balanceKeys);
-    } else {
-      musinController.generateSampleList(nKeys.length);
-    }
-  }
-
-  @override
-  void initState() {
-    createCheckBoxList();
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
+    musinController.createCheckBoxList();
     return ListView(
       physics: const ScrollPhysics(),
       shrinkWrap: true,
@@ -172,7 +152,7 @@ class _AddSongstoPlaylistState extends State<AddSongstoPlaylist> {
               if (musinController.isAddingSongsToExistingPlaylist == true) {
                 var pSongList = [];
                 for (var element
-                    in musinController.userPlaylistSongsDbInstance!.values) {
+                in musinController.userPlaylistSongsDbInstance!.values) {
                   if (element.currespondingPlaylistId ==
                       musinController.currentPlaylistKey) {
                     pSongList.add(element.songName);
@@ -180,8 +160,8 @@ class _AddSongstoPlaylistState extends State<AddSongstoPlaylist> {
                 }
                 var uList = musinController.userSongsInstance!.values.toList();
                 for (var i = 0;
-                    i < musinController.userSongsInstance!.length;
-                    i++) {
+                i < musinController.userSongsInstance!.length;
+                i++) {
                   for (var j = 0; j < pSongList.length; j++) {
                     if (uList[i].songName == pSongList[j]) {
                       songDbList.add(i);
@@ -197,9 +177,6 @@ class _AddSongstoPlaylistState extends State<AddSongstoPlaylist> {
                 }
               }
               songLeftToAddToPlaylist = keys;
-
-              // final pSongKey = userPlaylistSongsDbInstane!.keys.cast<int>().where((element) => userPlaylistSongsDbInstane!.get(element)!.currespondingPlaylistId == widget.currentPlaylistKey).toList();
-
               if (songFetcher.isEmpty) {
                 return Column(
                   children: const [
@@ -208,69 +185,71 @@ class _AddSongstoPlaylistState extends State<AddSongstoPlaylist> {
                 );
               } else {
                 return ListView.builder(
-                    itemCount: keys.length,
-                    shrinkWrap: true,
-                    physics: const ScrollPhysics(),
-                    itemBuilder: (context, index) {
-                      final key = keys[index];
-                      final songData = songFetcher.get(key);
+                  itemCount: keys.length,
+                  shrinkWrap: true,
+                  physics: const ScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    final key = keys[index];
+                    final songData = songFetcher.get(key);
 
-                      return ListTile(
-                        leading: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: QueryArtworkWidget(
-                              id: songData!.imageId!,
-                              type: ArtworkType.AUDIO,
-                              nullArtworkWidget: ClipRRect(
-                                  child: Image.asset(
-                                    "assets/images/defaultImage.png",
-                                    height: 50,
-                                    width: 50,
-                                    fit: BoxFit.fill,
-                                  ),
-                                  borderRadius: BorderRadius.circular(10)),
-                              artworkHeight: 50,
-                              artworkWidth: 50,
-                              artworkFit: BoxFit.fill,
-                              artworkBorder: BorderRadius.circular(10)),
+                    return ListTile(
+                      leading: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: QueryArtworkWidget(
+                            id: songData!.imageId!,
+                            type: ArtworkType.AUDIO,
+                            nullArtworkWidget: ClipRRect(
+                                child: Image.asset(
+                                  "assets/images/defaultImage.png",
+                                  height: 50,
+                                  width: 50,
+                                  fit: BoxFit.fill,
+                                ),
+                                borderRadius: BorderRadius.circular(10)),
+                            artworkHeight: 50,
+                            artworkWidth: 50,
+                            artworkFit: BoxFit.fill,
+                            artworkBorder: BorderRadius.circular(10)),
+                      ),
+                      title: Padding(
+                        padding: const EdgeInsets.only(top: 10),
+                        child: commonText(
+                            text: songData.songName,
+                            size: 15,
+                            weight: FontWeight.w600),
+                      ),
+                      subtitle: Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: commonMarquees(
+                            text: songData.artistName,
+                            size: 12.0,
+                            color: HexColor("#ACB8C2"),
+                            weight: FontWeight.w600,
+                            hPadding: 0.0,
+                            vPadding: 1.0),
+                      ),
+                      trailing: GetBuilder<MusinController>(
+                        builder: (musinController) =>  Checkbox(
+                          value: musinController.checkBoxList[index],
+                          onChanged: (value) {
+                            debugPrint("Before CheckBox value is $value");
+                            musinController.updateCheck(value, index);
+                            musinController.checkBoxList[index]
+                                ? musinController.selectedSongCount++
+                                : musinController.selectedSongCount--;
+                          },
+                          shape: const CircleBorder(),
+                          activeColor: HexColor("#A6B9FF"),
                         ),
-                        title: Padding(
-                          padding: const EdgeInsets.only(top: 10),
-                          child: commonText(
-                              text: songData.songName,
-                              size: 15,
-                              weight: FontWeight.w600),
-                        ),
-                        subtitle: Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: commonMarquees(
-                              text: songData.artistName,
-                              size: 12.0,
-                              color: HexColor("#ACB8C2"),
-                              weight: FontWeight.w600,
-                              hPadding: 0.0,
-                              vPadding: 1.0),
-                        ),
-                        trailing: GetBuilder<MusinController>(
-                          builder: (musinController) =>  Checkbox(
-                            value: musinController.checkBoxList[index],
-                            onChanged: (value) {
-                              debugPrint("Before CheckBox value is $value");
-                              musinController.updateCheck(value, index);
-                              musinController.checkBoxList[index]
-                                  ? musinController.selectedSongCount++
-                                  : musinController.selectedSongCount--;
-                            },
-                            shape: const CircleBorder(),
-                            activeColor: HexColor("#A6B9FF"),
-                          ),
-                        ),
-                      );
-                    },
+                      ),
+                    );
+                  },
                 );
               }
             }),
       ],
     );
   }
+
 }
+

@@ -17,16 +17,9 @@ import 'package:get/get.dart';
 
 // Class For Showing MiniPlayer in Application
 
-class CommonMiniPlayer extends StatefulWidget {
-  const CommonMiniPlayer({
-    Key? key,
-  }) : super(key: key);
 
-  @override
-  State<CommonMiniPlayer> createState() => _CommonMiniPlayerState();
-}
-
-class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
+class CommonMiniPlayer extends StatelessWidget {
+  CommonMiniPlayer({Key? key}) : super(key: key);
   final musinController = Get.find<MusinController>();
 
   @override
@@ -47,7 +40,7 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
               }
             } else {
               if (musinController.isAudioPlayingFromPlaylist == false) {
-                return const MainSongForAllSongsAndFavourites();
+                return MainSongForAllSongsAndFavourites();
               } else {
                 // MiniPlayer For Playlist is Here !!!!
                 return const MainPageForPlaylist();
@@ -60,19 +53,15 @@ class _CommonMiniPlayerState extends State<CommonMiniPlayer> {
   }
 }
 
+
 //--------------------------------------------------------------------------------------
 // MiniPlayerClass For Displaying Both Songs from Song Database(All Songs and Favourites)
 
-class MiniPlayerForAllSongsAndFavourites extends StatefulWidget {
+
+class MiniPlayerForAllSongsAndFavourites extends StatelessWidget {
   const MiniPlayerForAllSongsAndFavourites({Key? key}) : super(key: key);
 
-  @override
-  State<MiniPlayerForAllSongsAndFavourites> createState() =>
-      _MiniPlayerForAllSongsAndFavouritesState();
-}
 
-class _MiniPlayerForAllSongsAndFavouritesState
-    extends State<MiniPlayerForAllSongsAndFavourites> {
   @override
   Widget build(BuildContext context) {
     return GetBuilder<MusinController>(
@@ -103,7 +92,7 @@ class _MiniPlayerForAllSongsAndFavouritesState
             // }
             // debugPrint("\n---------------------");
             musinController.currentSongKey =
-                keys[musinController.selectedSongKey ?? 0];
+            keys[musinController.selectedSongKey ?? 0];
             debugPrint(
                 'GETTING CURRENT KEY IS ${musinController.selectedSongKey}');
           }
@@ -169,15 +158,15 @@ class _MiniPlayerForAllSongsAndFavouritesState
                         icon: GetBuilder<MusinController>(
                           id: 'play/pauseIcon',
                           builder: (musinController) =>
-                              musinController.isIconChanged
-                                  ? const Icon(
-                                      Icons.pause,
-                                      size: 32,
-                                    )
-                                  : const Icon(
-                                      Icons.play_arrow,
-                                      size: 32,
-                                    ),
+                          musinController.isIconChanged
+                              ? const Icon(
+                            Icons.pause,
+                            size: 32,
+                          )
+                              : const Icon(
+                            Icons.play_arrow,
+                            size: 32,
+                          ),
                         ),
                       ),
                       IconButton(
@@ -199,29 +188,26 @@ class _MiniPlayerForAllSongsAndFavouritesState
   }
 }
 
+
 //--------------------------------------------------------------------------------------
 // MiniPlayerClass For Displaying Songs from Playlist Database
 
-class MiniPlayerForPlaylist extends StatefulWidget {
+
+class MiniPlayerForPlaylist extends StatelessWidget {
   const MiniPlayerForPlaylist({Key? key}) : super(key: key);
 
-  @override
-  _MiniPlayerForPlaylistState createState() => _MiniPlayerForPlaylistState();
-}
-
-class _MiniPlayerForPlaylistState extends State<MiniPlayerForPlaylist> {
   @override
   Widget build(BuildContext context) {
     return GetBuilder<MusinController>(
       builder: (musinController) => ValueListenableBuilder(
         valueListenable:
-            musinController.userPlaylistSongsDbInstance!.listenable(),
+        musinController.userPlaylistSongsDbInstance!.listenable(),
         builder: (context, Box<UserPlaylistSongs> songFetcher, _) {
           List keys = songFetcher.keys
               .cast<int>()
               .where((key) =>
-                  songFetcher.get(key)!.currespondingPlaylistId ==
-                  musinController.test)
+          songFetcher.get(key)!.currespondingPlaylistId ==
+              musinController.test)
               .toList();
 
           if (keys.isNotEmpty) {
@@ -235,7 +221,7 @@ class _MiniPlayerForPlaylistState extends State<MiniPlayerForPlaylist> {
             // debugPrint("\n---------------------");
             try {
               musinController.currentSongKey =
-                  keys[musinController.selectedSongKey ?? 0];
+              keys[musinController.selectedSongKey ?? 0];
             } catch (e) {
               debugPrint("Range Error Handled");
             }
@@ -300,13 +286,13 @@ class _MiniPlayerForPlaylistState extends State<MiniPlayerForPlaylist> {
                         },
                         icon: musinController.isIconChanged
                             ? const Icon(
-                                Icons.pause,
-                                size: 32,
-                              )
+                          Icons.pause,
+                          size: 32,
+                        )
                             : const Icon(
-                                Icons.play_arrow,
-                                size: 32,
-                              ),
+                          Icons.play_arrow,
+                          size: 32,
+                        ),
                       ),
                       IconButton(
                         onPressed: () {
@@ -330,16 +316,9 @@ class _MiniPlayerForPlaylistState extends State<MiniPlayerForPlaylist> {
 //--------------------------------------------------------------------------------------
 // MainSongPlayingClass For Displaying Both Songs from Song Database(All Songs and Favourites)
 
-class MainSongForAllSongsAndFavourites extends StatefulWidget {
-  const MainSongForAllSongsAndFavourites({Key? key}) : super(key: key);
+class MainSongForAllSongsAndFavourites extends StatelessWidget {
+  MainSongForAllSongsAndFavourites({Key? key}) : super(key: key);
 
-  @override
-  _MainSongForAllSongsAndFavouritesState createState() =>
-      _MainSongForAllSongsAndFavouritesState();
-}
-
-class _MainSongForAllSongsAndFavouritesState
-    extends State<MainSongForAllSongsAndFavourites> {
   final musinController = Get.find<MusinController>();
   bool addToFavs = false;
 
@@ -381,7 +360,7 @@ class _MainSongForAllSongsAndFavouritesState
                   // }
                   // debugPrint("\n---------------------");
                   musinController.currentSongKey =
-                      keys[musinController.selectedSongKey ?? 0];
+                  keys[musinController.selectedSongKey ?? 0];
                 }
 
                 var songData = songFetcher.get(musinController.currentSongKey);
@@ -465,7 +444,7 @@ class _MainSongForAllSongsAndFavouritesState
                               id: songData.imageId!,
                               type: ArtworkType.AUDIO,
                               artworkBorder:
-                                  const BorderRadius.all(Radius.circular(100)),
+                              const BorderRadius.all(Radius.circular(100)),
                               artworkFit: BoxFit.fill,
                               artworkHeight: double.infinity,
                               artworkWidth: double.infinity,
@@ -505,20 +484,20 @@ class _MainSongForAllSongsAndFavouritesState
                                 },
                                 icon: musinController.loopIcon == 1
                                     ? const Icon(
-                                        Typicons.loop,
-                                        size: 26,
-                                        color: Colors.blueAccent,
-                                      )
+                                  Typicons.loop,
+                                  size: 26,
+                                  color: Colors.blueAccent,
+                                )
                                     : musinController.loopIcon == 2
-                                        ? const Icon(
-                                            Icons.playlist_play_outlined,
-                                            size: 26,
-                                            color: Colors.blueAccent,
-                                          )
-                                        : const Icon(
-                                            Icons.loop_outlined,
-                                            size: 26,
-                                          ),
+                                    ? const Icon(
+                                  Icons.playlist_play_outlined,
+                                  size: 26,
+                                  color: Colors.blueAccent,
+                                )
+                                    : const Icon(
+                                  Icons.loop_outlined,
+                                  size: 26,
+                                ),
                               ),
                               sizedw1,
                               IconButton(
@@ -542,15 +521,15 @@ class _MainSongForAllSongsAndFavouritesState
                                   },
                                   icon: musinController.isIconChanged
                                       ? const Icon(
-                                          Icons.pause,
-                                          size: 60,
-                                          color: Colors.white,
-                                        )
+                                    Icons.pause,
+                                    size: 60,
+                                    color: Colors.white,
+                                  )
                                       : const Icon(
-                                          Icons.play_arrow,
-                                          size: 60,
-                                          color: Colors.white,
-                                        ),
+                                    Icons.play_arrow,
+                                    size: 60,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
                               sizedw2,
@@ -612,10 +591,10 @@ class _MainSongForAllSongsAndFavouritesState
 
   makeFavouriteSong(
       {required BuildContext context,
-      UserSongs? songData,
-      required Box songFetcher,
-      required putKey,
-      addToFav}) {
+        UserSongs? songData,
+        required Box songFetcher,
+        required putKey,
+        addToFav}) {
     if (songData?.isFavourited == true) {
       addToFavs = false;
     } else {
@@ -644,20 +623,20 @@ class _MainSongForAllSongsAndFavouritesState
           width: 200,
           child: ValueListenableBuilder(
               valueListenable:
-                  musinController.userPlaylistNameDbInstance!.listenable(),
+              musinController.userPlaylistNameDbInstance!.listenable(),
               builder: (context, Box<UserPlaylistNames> songFetcher, _) {
                 List<int> allCurrespondingKeys = [];
                 List<int> keys = musinController
                     .userPlaylistSongsDbInstance!.keys
                     .cast<int>()
                     .where((key) =>
-                        musinController.userPlaylistSongsDbInstance!
-                            .get(key)!
-                            .songName ==
-                        songName)
+                musinController.userPlaylistSongsDbInstance!
+                    .get(key)!
+                    .songName ==
+                    songName)
                     .toList();
                 for (var element
-                    in musinController.userPlaylistSongsDbInstance!.values) {
+                in musinController.userPlaylistSongsDbInstance!.values) {
                   if (element.songName == songName) {
                     allCurrespondingKeys
                         .add(element.currespondingPlaylistId ?? 0);
@@ -696,7 +675,7 @@ class _MainSongForAllSongsAndFavouritesState
                               },
                               child: Padding(
                                 padding:
-                                    const EdgeInsets.symmetric(horizontal: 10),
+                                const EdgeInsets.symmetric(horizontal: 10),
                                 child: Row(
                                   children: [
                                     Expanded(
@@ -758,7 +737,7 @@ class _MainSongForAllSongsAndFavouritesState
             onPressed: () {
               createPlaylistSub(playlistName);
               final songData = musinController.userSongsInstance!.get(songKey);
-              addToCreatedPlaylist(songData);
+              addToCreatedPlaylist(songData,context);
             },
             child: const Text('create'),
           ),
@@ -770,16 +749,17 @@ class _MainSongForAllSongsAndFavouritesState
   createPlaylistSub(playlistName) {
     final playlistNameFromTextField = playlistName.text;
     final playlistModelVariable =
-        UserPlaylistNames(playlistNames: playlistNameFromTextField);
+    UserPlaylistNames(playlistNames: playlistNameFromTextField);
     musinController.userPlaylistNameDbInstance!.add(playlistModelVariable);
   }
 
   addToCreatedPlaylist(
-    UserSongs? songData,
-  ) {
+      UserSongs? songData,
+      context,
+      ) {
     final model = UserPlaylistSongs(
         currespondingPlaylistId:
-            musinController.userPlaylistNameDbInstance!.keys.last,
+        musinController.userPlaylistNameDbInstance!.keys.last,
         songName: songData!.songName,
         artistName: songData.artistName,
         songImageId: songData.imageId,
@@ -803,7 +783,7 @@ class _MainSongForAllSongsAndFavouritesState
           width: 200,
           child: ValueListenableBuilder(
             valueListenable:
-                musinController.userPlaylistNameDbInstance!.listenable(),
+            musinController.userPlaylistNameDbInstance!.listenable(),
             builder: (context, Box<UserPlaylistNames> songFetcher, _) {
               List songNonRepeatingPlaylistKey = musinController
                   .userPlaylistNameDbInstance!.keys
@@ -811,7 +791,7 @@ class _MainSongForAllSongsAndFavouritesState
                   .toList();
 
               for (var element
-                  in musinController.userPlaylistSongsDbInstance!.values) {
+              in musinController.userPlaylistSongsDbInstance!.values) {
                 if (element.songName == songName) {
                   alreadyExists = true;
                 }
@@ -819,7 +799,7 @@ class _MainSongForAllSongsAndFavouritesState
 
               if (alreadyExists) {
                 for (var element
-                    in musinController.userPlaylistSongsDbInstance!.values) {
+                in musinController.userPlaylistSongsDbInstance!.values) {
                   if (element.songName == songName) {
                     curr = element.currespondingPlaylistId;
                   }
@@ -899,7 +879,7 @@ class _MainSongForAllSongsAndFavouritesState
                               },
                               child: Padding(
                                 padding:
-                                    const EdgeInsets.symmetric(horizontal: 10),
+                                const EdgeInsets.symmetric(horizontal: 10),
                                 child: Row(
                                   children: [
                                     Expanded(
@@ -969,13 +949,13 @@ class _MainSongForAllSongsAndFavouritesState
             onPressed: () {
               final playlistNameFromTextField = playlistName.text;
               final playlistModelVariable =
-                  UserPlaylistNames(playlistNames: playlistNameFromTextField);
+              UserPlaylistNames(playlistNames: playlistNameFromTextField);
               musinController.userPlaylistNameDbInstance!
                   .add(playlistModelVariable);
               final songData = musinController.userSongsInstance!.get(songKey);
               final model = UserPlaylistSongs(
                   currespondingPlaylistId:
-                      musinController.userPlaylistNameDbInstance!.keys.last,
+                  musinController.userPlaylistNameDbInstance!.keys.last,
                   songName: songData!.songName,
                   artistName: songData.artistName,
                   songImageId: songData.imageId,
@@ -991,7 +971,11 @@ class _MainSongForAllSongsAndFavouritesState
       ),
     );
   }
+
 }
+
+
+
 
 //--------------------------------------------------------------------------------------
 // MainSongPlayingClass For Displaying Songs from Playlist Database

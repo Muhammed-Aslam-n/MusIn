@@ -6,8 +6,6 @@ import 'package:musin/database/database.dart';
 import 'package:musin/materials/colors.dart';
 import 'package:musin/pages/playlist_songs.dart';
 import 'package:musin/pages/widgets/widgets.dart';
-import 'package:musin/provider/provider_class.dart';
-import 'package:provider/provider.dart';
 import 'addsongtoplaylist.dart';
 
 class PlayList extends StatefulWidget {
@@ -46,7 +44,7 @@ class _PlayListState extends State<PlayList> {
         FocusManager.instance.primaryFocus?.unfocus();
       },
       child: Scaffold(
-        appBar: const CommonAppBar(),
+        appBar: CommonAppBar(),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
             musinController.isAddingSongsToExistingPlaylist = false;

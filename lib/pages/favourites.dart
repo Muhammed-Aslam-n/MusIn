@@ -29,7 +29,7 @@ class Favourites extends StatelessWidget {
               FavouriteSongList(),
             ],
           ),
-          const CommonMiniPlayer(),
+          CommonMiniPlayer(),
         ],
       ),
     );

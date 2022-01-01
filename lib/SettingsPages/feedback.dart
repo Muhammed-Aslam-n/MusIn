@@ -2,14 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:musin/materials/colors.dart';
 import 'package:musin/pages/widgets/widgets.dart';
 import 'package:get/get.dart';
-class UserFeedback extends StatefulWidget {
+
+class UserFeedback extends StatelessWidget {
   const UserFeedback({Key? key}) : super(key: key);
 
-  @override
-  _UserFeedbackState createState() => _UserFeedbackState();
-}
-
-class _UserFeedbackState extends State<UserFeedback> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

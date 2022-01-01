@@ -357,4 +357,20 @@ class MusinController extends GetxController {
     _assetsAudioPlayer.seek(newDuration);
     update();
   }
+
+
+  createCheckBoxList() {
+    var nKeys = userSongsInstance!.keys.cast<int>().toList();
+
+    if (isAddingSongsToExistingPlaylist == true) {
+      int balanceKeys =
+          nKeys.length - totalPlaylistSongs!.toInt();
+      generateSampleList(balanceKeys);
+    } else {
+      generateSampleList(nKeys.length);
+    }
+  }
+
+
+
 }

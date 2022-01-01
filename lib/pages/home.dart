@@ -8,7 +8,6 @@ import 'package:musin/pages/favourites.dart';
 import 'package:musin/pages/onboarding.dart';
 import 'package:musin/pages/playlist.dart';
 import 'package:musin/pages/searchsong.dart';
-import 'package:musin/pages/widgets/widgets.dart';
 import 'package:animated_splash_screen/animated_splash_screen.dart';
 import 'package:musin/pages/songslist_main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -83,23 +82,6 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return
-        // WillPopScope(
-        // onWillPop: () async{
-        //   final timegap = DateTime.now().difference(pre_backpress);
-        //   final cantExit = timegap >= Duration(seconds: 2);
-        //   pre_backpress = DateTime.now();
-        //   if(cantExit){
-        //     //show snackbar
-        //     final snack = SnackBar(content: Text('Press Back button again to Exit'),duration: Duration(seconds: 2),);
-        //     debugPrint("BackButton Pressed");
-        //     ScaffoldMessenger.of(context).showSnackBar(snack);
-        //     return false;
-        //   }else{
-        //     debugPrint("Exiting...");
-        //     return true;
-        //   }
-        // },
-        // child:
         Scaffold(
       body: tabs[currentIndex],
       bottomNavigationBar: BottomNavigationBar(

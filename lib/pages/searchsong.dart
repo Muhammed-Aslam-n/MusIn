@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:musin/controller/musincontroller.dart';
 import 'package:musin/database/database.dart';
-import 'package:musin/main.dart';
 import 'package:musin/materials/colors.dart';
 import 'package:musin/pages/widgets/widgets.dart';
 import 'package:on_audio_query/on_audio_query.dart';

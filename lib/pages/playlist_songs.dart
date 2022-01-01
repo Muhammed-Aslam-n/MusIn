@@ -140,7 +140,7 @@ class _PlaylistSongsState extends State<PlaylistSongs> {
               playlistSongTileView(context),
             ],
           ),
-          const CommonMiniPlayer(),
+          CommonMiniPlayer(),
         ],
       ),
     );

@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:share/share.dart';
+
 class CommonAppBar extends StatefulWidget implements PreferredSizeWidget {
   const CommonAppBar({Key? key}) : super(key: key);
 

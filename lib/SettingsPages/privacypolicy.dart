@@ -50,8 +50,7 @@ class PrivacyPolicy extends StatelessWidget {
                       const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                   child: privacyText(
                       content:
-                          "This Privacy Policy describes Our policies and procedures on the collection, use and disclosure of Your information when You use the Service and tells You about Your privacy rights and how the law protects You." +
-                              "We use Your Personal data to provide and improve the Service. By using the Service, You agree to the collection and use of information in accordance with this Privacy Policy. ")),
+                          "This Privacy Policy describes Our policies and procedures on the collection, use and disclosure of Your information when You use the Service and tells You about Your privacy rights and how the law protects You." "We use Your Personal data to provide and improve the Service. By using the Service, You agree to the collection and use of information in accordance with this Privacy Policy. ")),
             ),
             sizedh2,
             commonText(text: "Interpretation and Definitions", size: 19),
@@ -313,7 +312,7 @@ class PrivacyPolicy extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 const Text("• ",
-                    style: const TextStyle(fontSize: 22, color: Colors.black)),
+                    style: TextStyle(fontSize: 22, color: Colors.black)),
                 Expanded(
                   child: RichText(
                     text: TextSpan(
